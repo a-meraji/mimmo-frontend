@@ -1,0 +1,16 @@
+export { default as Hero } from "./Hero";
+export { default as Stats } from "./Stats";
+export { default as MediaPartners } from "./MediaPartners";
+export { default as Roadmap } from "./Roadmap";
+export { default as PackagesCarousel } from "../PackagesCarousel";
+export { default as PackageCard } from "../PackageCard";
+export { default as PackageConteiner } from "./PackageConteiner";
+export { default as DrivingLicenseHome } from "./DrivingLicenseHome";
+export { default as Testimonials } from "./Testimonials";
+export { default as TestimonialCard } from "./TestimonialCard";
+export { default as DownloadLinks } from "./DownloadLinks";
+export { default as DownloadCard } from "./DownloadCard";
+export { default as SocialLinks } from "./SocialLinks";
+export { default as SocialCard } from "./SocialCard";
+export { default as FAQ } from "./FAQ";
+export { default as FAQItem } from "./FAQItem";

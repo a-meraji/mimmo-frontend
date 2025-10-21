@@ -1,0 +1,125 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #17192c;
+}
+
+@theme inline {
+  /* Font Configuration */
+  --font-sans: var(--font-kalameh);
+  
+  /* Base Colors */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  
+  /* Primary Colors */
+  --color-primary: #6661e2;
+  --color-primary-accent: #6661e2;
+  --color-secondary: #ffc95c;
+  --color-secondary-accent: #fff1cc;
+  
+  /* Gradient Colors */
+  --color-gradient-purple: #E2E1F9;
+  --color-gradient-yellow: #fff9ef;
+  --color-gradient-yellow-muted: #FFF5E4; 
+  
+  /* Neutral Foundations */
+  --color-neutral-indigo: #e9e9ef;
+  --color-neutral-yellow: #fff4d8;
+  --color-neutral-gray: #c7c7c7;
+  --color-neutral-lighter: #d9d9d9;
+  --color-neutral-extralight: #F3F3F3;
+  --color-neutral-darker: #c5c5c5;
+  
+  /* Text and Content */
+  --color-text-charcoal: #212529;
+  --color-text-dark: #252525;
+  --color-text-gray: #7a7a7a;
+  --color-text-light: #959da3;
+  --color-text-muted: #323752;
+  --color-text-onYellow: #636363;
+  
+  /* Border Colors */
+  --color-border-gray: #7a7a7a;
+  --color-border-light: #959da3;
+  --color-border-accent: #6661e2;
+}
+
+
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-kalameh), Arial, Helvetica, sans-serif;
+}
+
+/* Hide scrollbar for carousel */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
+}
+
+
+@keyframes scroll {
+  0% {
+    transform: translateX(0px);
+  }
+  100% {
+    transform: translateX(1800px);
+  }
+}
+
+.animate-scroll {
+  animation: scroll 50s linear infinite;
+}
+
+.animate-scroll:hover {
+  animation-play-state: paused;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Infinite Scroll Animations for License Background */
+@keyframes scroll-left {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes scroll-right {
+  0% {
+    transform: translateX(-50%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.animate-scroll-left {
+  animation: scroll-left 60s linear infinite;
+}
+
+.animate-scroll-right {
+  animation: scroll-right 70s linear infinite;
+}
+
+.animate-scroll-left-slow {
+  animation: scroll-left 80s linear infinite;
+}

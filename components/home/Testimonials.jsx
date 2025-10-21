@@ -1,0 +1,157 @@
+"use client";
+
+import { useState, useEffect, useRef } from "react";
+import TestimonialCard from "./TestimonialCard";
+
+export default function Testimonials() {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const intervalRef = useRef(null);
+
+  // Sample testimonials data
+  const testimonials = [
+    {
+      id: 1,
+      name: "سارا احمدی",
+      role: "دانشجو",
+      avatar: "/license1.webp",
+      rating: 5,
+      review:
+        "دوره‌های میمو واقعاً عالی هستند! با روش‌های نوین و جذاب، یادگیری زبان ایتالیایی خیلی راحت‌تر شده. استادها حرفه‌ای هستند و همیشه آماده کمک.",
+    },
+    {
+      id: 2,
+      name: "علی کریمی",
+      role: "مهندس نرم‌افزار",
+      avatar: "/license2.webp",
+      rating: 5,
+      review:
+        "من با استفاده از پلتفرم میمو، در عرض ۶ ماه توانستم گواهینامه B1 را بگیرم. پشتیبانی عالی و محتوای باکیفیت. واقعاً پیشنهاد می‌کنم.",
+    },
+    {
+      id: 3,
+      name: "سارا احمدی",
+      role: "دانشجو",
+      avatar: "/license1.webp",
+      rating: 5,
+      review:
+        "دوره‌های میمو واقعاً عالی هستند! با روش‌های نوین و جذاب، یادگیری زبان ایتالیایی خیلی راحت‌تر شده. استادها حرفه‌ای هستند و همیشه آماده کمک.",
+    },
+    {
+      id: 4,
+      name: "مریم حسینی",
+      role: "معلم",
+      avatar: "/license3.webp",
+      rating: 4,
+      review:
+        "پلتفرم بسیار کاربرپسند و دوره‌ها خیلی منظم و ساختار یافته هستند. تمرین‌های تعاملی به من کمک زیادی کرد. ممنون از تیم میمو!",
+    },
+    {
+      id: 5,
+      name: "رضا محمدی",
+      role: "کارآفرین",
+      avatar: "/license0.webp",
+      rating: 5,
+      review:
+        "بهترین انتخاب برای یادگیری زبان ایتالیایی! محتوای غنی، استادهای با تجربه و امکان تمرین در هر زمان و مکان. عالی!",
+    },
+    {
+      id: 6,
+      name: "رضا محمدی",
+      role: "کارآفرین",
+      avatar: "/license0.webp",
+      rating: 5,
+      review:
+        "بهترین انتخاب برای یادگیری زبان ایتالیایی! محتوای غنی، استادهای با تجربه و امکان تمرین در هر زمان و مکان. عالی!",
+    },
+    {
+      id: 7,
+      name: "رضا محمدی",
+      role: "کارآفرین",
+      avatar: "/license0.webp",
+      rating: 5,
+      review:
+        "بهترین انتخاب برای یادگیری زبان ایتالیایی! محتوای غنی، استادهای با تجربه و امکان تمرین در هر زمان و مکان. عالی!",
+    },
+  ];
+
+  // Auto-advance carousel
+  useEffect(() => {
+    if (!isPaused) {
+      intervalRef.current = setInterval(() => {
+        setCurrentIndex((prev) => (prev + 1) % testimonials.length);
+      }, 3000); // Change every 3 seconds
+    }
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [isPaused, testimonials.length]);
+
+  // Calculate position for each card relative to current index
+  const getCardPosition = (index) => {
+    const diff = index - currentIndex;
+    
+    // Normalize the difference to be within -length/2 to length/2
+    if (diff > testimonials.length / 2) {
+      return diff - testimonials.length;
+    } else if (diff < -testimonials.length / 2) {
+      return diff + testimonials.length;
+    }
+    
+    return diff;
+  };
+
+  return (
+    <section className="w-full py-20 bg-gradient-to-b from-white to-neutral-indigo overflow-hidden">
+      <div className="container mx-auto px-6">
+        {/* Section Title */}
+        <h2 className="text-3xl font-extrabold text-text-charcoal text-center mb-16">
+         داستان موفقیت دانشجویان میمو
+        </h2>
+
+        {/* Testimonials Carousel */}
+        <div
+          className="relative h-[400px] flex items-center justify-center px-4 lg:px-0"
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+        >
+          {testimonials.map((testimonial, index) => (
+            <TestimonialCard
+              key={testimonial.id}
+              testimonial={testimonial}
+              isActive={index === currentIndex}
+              position={getCardPosition(index)}
+            />
+          ))}
+        </div>
+
+        {/* Navigation Dots */}
+        <div className="flex justify-center gap-2 mt-12">
+          {testimonials.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentIndex(index)}
+              className={`h-2 rounded-full transition-all duration-300 ${
+                currentIndex === index
+                  ? "w-8 bg-primary"
+                  : "w-2 bg-neutral-gray hover:bg-neutral-darker"
+              }`}
+              aria-label={`نظر ${index + 1}`}
+            />
+          ))}
+        </div>
+
+        {/* Pause Indicator */}
+        {isPaused && (
+          <p className="text-center text-sm text-text-gray mt-4">
+            ⏸ موقتاً متوقف شده
+          </p>
+        )}
+      </div>
+    </section>
+  );
+}
+

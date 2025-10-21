@@ -1,0 +1,128 @@
+"use client";
+
+import { useEffect, useRef } from "react";
+import Image from "next/image";
+import PackageCard from "../PackageCard";
+
+export default function DrivingLicenseHome() {
+  const scrollRowRef = useRef(null);
+
+  const pkg = {
+    id: 1,
+    name: "پکیج آزمون آیین نامه رانندگی در ایتالیا",
+    description: "منبع : درس اول کتاب اسپرسو 1",
+    image: "/license2.webp",
+    originalPrice: 990000,
+    discountedPrice: 500000,
+  };
+
+  // Background images configuration - bigger sizes
+  const backgroundImages = [
+    { src: "/license0.webp", width: 350, height: 480, rotation: -4 },
+    { src: "/license1.webp", width: 320, height: 450, rotation: 6 },
+    { src: "/license2.webp", width: 380, height: 500, rotation: -3 },
+    { src: "/license3.webp", width: 340, height: 470, rotation: 5 },
+    { src: "/license4.webp", width: 360, height: 490, rotation: -5 },
+    { src: "/license5.webp", width: 340, height: 470, rotation: 6 },
+  ];
+
+  // Parallax scroll effect
+  useEffect(() => {
+    const handleScroll = () => {
+      if (scrollRowRef.current) {
+        const scrollPosition = window.scrollY;
+        // Move horizontally based on vertical scroll (0.3 is the parallax speed factor)
+        const horizontalOffset = scrollPosition * 0.3;
+        scrollRowRef.current.style.transform = `translateX(-${horizontalOffset}px)`;
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  return (
+    <section className="relative bg-gradient-to-b from-white via-gradient-yellow-muted to-white py-20 overflow-hidden">
+      {/* Animated Background Layer with Parallax */}
+      <div className="absolute inset-0 opacity-35 blur-[2px]">
+        <div
+          ref={scrollRowRef}
+          className="absolute top-1/2 -translate-y-1/2 left-0 flex gap-16 animate-scroll-left transition-transform duration-100 ease-out"
+          style={{ willChange: "transform" }}
+        >
+          {/* Triple the images for seamless infinite scroll */}
+          {[...backgroundImages, ...backgroundImages, ...backgroundImages].map((img, index) => (
+            <div
+              key={`bg-${index}`}
+              className="relative flex-shrink-0 transform hover:scale-105 transition-transform duration-500"
+              style={{
+                width: `${img.width}px`,
+                height: `${img.height}px`,
+                transform: `rotate(${img.rotation}deg)`,
+              }}
+            >
+              <Image
+                src={img.src}
+                alt="گواهینامه"
+                fill
+                className="object-cover rounded-3xl blur-[2px] shadow-2xl"
+                priority={index < 5}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Content Layer */}
+      <div className="container mx-auto px-6 relative z-10">
+        {/* Title */}
+        <h2 className="font-extrabold text-[#583d01] text-3xl text-center mb-12">
+          دوره گواهینامه رانندگی در ایتالیا
+        </h2>
+
+        {/* Desktop Layout with Side Images */}
+        <div className="hidden lg:flex items-start justify-center  max-w-7xl mx-auto">
+          {/* Left Image */}
+          <div className="flex-shrink-0 relative">
+            <div className="relative w-64 h-80 -ml-8  mt-10 transform rotate-[8deg] hover:rotate-[4deg] transition-transform duration-300">
+              <div className="absolute inset-0 bg-white rounded-2xl max-w-48 max-h-48">
+                <Image
+                  src="/license1.webp"
+                  alt="گواهینامه رانندگی ایتالیا"
+                  fill
+                  className="object-cover rounded-2xl p-3 shadow-xl"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Center - Package Card */}
+          <div className="flex-shrink-0 w-[380px] relative z-10">
+            <PackageCard package={pkg} />
+          </div>
+
+          {/* Right Image */}
+          <div className="flex-shrink-0  relative mt-20 -mr-2 z-10">
+            <div className="relative w-64 h-80 transform rotate-[-10deg] hover:rotate-[-4deg] transition-transform duration-300">
+              <div className="absolute inset-0  bg-white rounded-2xl ">
+                <Image
+                  src="/license0.webp"
+                  alt="آموزش رانندگی در ایتالیا"
+                  fill
+                  className="object-cover rounded-2xl p-3 shadow-xl"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Layout - Card Only */}
+        <div className="lg:hidden flex justify-center">
+          <div className="w-full max-w-sm">
+            <PackageCard package={pkg} />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}

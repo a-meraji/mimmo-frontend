@@ -1,0 +1,82 @@
+import SocialCard from "./SocialCard";
+
+export default function SocialLinks() {
+  const socials = [
+    {
+      platform: "Instagram",
+      title: "از دوره ها و تخفیف ها جا نمونی !",
+      handle: "@italian4u.italian4u",
+      image: "/instagram.webp",
+      gradientFrom: "#FFDDBE",
+      gradientVia: "#FCBBCE",
+      gradientTo: "#CFBBDB",
+      url: "https://instagram.com/italian4u.italian4u",
+    },
+    {
+      platform: "Telegram",
+      title: "مارا در کانال تلگرام دنبال کنید",
+      handle: "@mimmo_academy",
+      image: "/telegram.webp",
+      gradientFrom: "#8DD3FF",
+      gradientVia: null,
+      gradientTo: "#6489D0",
+      url: "https://t.me/mimmo_academy",
+    },
+    {
+      platform: "YouTube",
+      title: "زندگی در ایتالیا در یوتیوب میمو",
+      handle: "@italian4u.italian4u",
+      image: "/youtube.webp",
+      gradientFrom: "#FFFFFF",
+      gradientVia: null,
+      gradientTo: "#FF4E4E",
+      url: "https://youtube.com/@italian4u",
+    },
+  ];
+
+  return (
+    <section className="w-full py-20 bg-white">
+      <div className="container mx-auto px-6">
+        {/* Section Title */}
+        <h2 className="text-3xl font-extrabold text-text-charcoal text-center mb-12">
+          میمو را در شبکه های اجتماعی دنبال کنید
+        </h2>
+
+        {/* Mobile Layout - Stacked */}
+        <div className="lg:hidden flex flex-col gap-4 max-w-lg mx-auto">
+          {socials.map((social) => (
+            <SocialCard
+              key={social.platform}
+              platform={social.platform}
+              title={social.title}
+              handle={social.handle}
+              image={social.image}
+              gradientFrom={social.gradientFrom}
+              gradientVia={social.gradientVia}
+              gradientTo={social.gradientTo}
+              url={social.url}
+            />
+          ))}
+        </div>
+
+        {/* Desktop Layout - Horizontal */}
+        <div className="hidden lg:grid lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          {socials.map((social) => (
+            <SocialCard
+              key={social.platform}
+              platform={social.platform}
+              title={social.title}
+              handle={social.handle}
+              image={social.image}
+              gradientFrom={social.gradientFrom}
+              gradientVia={social.gradientVia}
+              gradientTo={social.gradientTo}
+              url={social.url}
+            />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
