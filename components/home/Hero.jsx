@@ -2,26 +2,26 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 
 export default function Hero() {
   const [isPlaying, setIsPlaying] = useState(false);
   const videoRef = useRef(null);
 
-  const handlePlay = () => {
+  const handlePlay = useCallback(() => {
     setIsPlaying(true);
-  };
+  }, []);
 
-  const handlePause = () => {
+  const handlePause = useCallback(() => {
     setIsPlaying(false);
-  };
+  }, []);
 
-  const handleEnded = () => {
+  const handleEnded = useCallback(() => {
     setIsPlaying(false);
-  };
+  }, []);
 
   return (
-    <section className="w-full py-20 bg-gradient-to-b from-gradient-purple to-white">
+    <section className="w-full py-20 bg-gradient-to-b from-gradient-purple to-white" aria-label="معرفی میمو آکادمی">
       {/* Mobile Layout */}
       <div className="container mx-auto px-6 sm:px-6 max-w-lg lg:hidden">
         <div className="flex flex-col items-center text-center pt-16">
@@ -65,10 +65,12 @@ export default function Hero() {
                 className="w-full h-auto aspect-video object-cover z-20"
                 controls
                 poster="/mimmo1.webp"
-                preload="metadata"
+                preload="none"
+                loading="lazy"
                 onPlay={handlePlay}
                 onPause={handlePause}
                 onEnded={handleEnded}
+                aria-label="ویدیو معرفی میمو آکادمی"
               >
                 <source src="/videos/mimmoapp.mp4" type="video/mp4" />
                 مرورگر شما از پخش ویدیو پشتیبانی نمی‌کند.
@@ -138,10 +140,12 @@ export default function Hero() {
                 className="w-full h-auto aspect-video object-cover"
                 controls
                 poster="/mimmo1.webp"
-                preload="metadata"
+                preload="none"
+                loading="lazy"
                 onPlay={handlePlay}
                 onPause={handlePause}
                 onEnded={handleEnded}
+                aria-label="ویدیو معرفی میمو آکادمی"
               >
                 <source src="/videos/mimmoapp.mp4" type="video/mp4" />
                 مرورگر شما از پخش ویدیو پشتیبانی نمی‌کند.
@@ -157,10 +161,13 @@ export default function Hero() {
               <div className="bg-white rounded-xl shadow-2xl p-1 transform rotate-[-8deg]">
                 <Image
                   src="/mimmo2.webp"
-                  alt="دوره آموزشی"
+                  alt="نمونه دوره آموزشی زبان ایتالیایی میمو"
                   width={160}
                   height={180}
                   className="rounded-lg"
+                  loading="eager"
+                  quality={85}
+                  sizes="160px"
                 />
               </div>
             </div>
@@ -174,10 +181,13 @@ export default function Hero() {
               <div className="bg-white rounded-xl shadow-2xl p-1 transform rotate-[6deg]">
                 <Image
                   src="/mimmo.webp"
-                  alt="کلمه ANDARE"
+                  alt="نمونه آموزش کلمات ایتالیایی - ANDARE"
                   width={160}
                   height={180}
                   className="rounded-lg"
+                  loading="eager"
+                  quality={85}
+                  sizes="160px"
                 />
               </div>
             </div>

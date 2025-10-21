@@ -1,50 +1,50 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback, useMemo } from "react";
 import Image from "next/image";
 import PackageCard from "../PackageCard";
 
 export default function DrivingLicenseHome() {
   const scrollRowRef = useRef(null);
 
-  const pkg = {
+  const pkg = useMemo(() => ({
     id: 1,
     name: "پکیج آزمون آیین نامه رانندگی در ایتالیا",
     description: "منبع : درس اول کتاب اسپرسو 1",
     image: "/license2.webp",
     originalPrice: 990000,
     discountedPrice: 500000,
-  };
+  }), []);
 
   // Background images configuration - bigger sizes
-  const backgroundImages = [
+  const backgroundImages = useMemo(() => [
     { src: "/license0.webp", width: 350, height: 480, rotation: -4 },
     { src: "/license1.webp", width: 320, height: 450, rotation: 6 },
     { src: "/license2.webp", width: 380, height: 500, rotation: -3 },
     { src: "/license3.webp", width: 340, height: 470, rotation: 5 },
     { src: "/license4.webp", width: 360, height: 490, rotation: -5 },
     { src: "/license5.webp", width: 340, height: 470, rotation: 6 },
-  ];
+  ], []);
 
-  // Parallax scroll effect
-  useEffect(() => {
-    const handleScroll = () => {
-      if (scrollRowRef.current) {
-        const scrollPosition = window.scrollY;
-        // Move horizontally based on vertical scroll (0.3 is the parallax speed factor)
-        const horizontalOffset = scrollPosition * 0.3;
-        scrollRowRef.current.style.transform = `translateX(-${horizontalOffset}px)`;
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+  // Parallax scroll effect with useCallback
+  const handleScroll = useCallback(() => {
+    if (scrollRowRef.current) {
+      const scrollPosition = window.scrollY;
+      // Move horizontally based on vertical scroll (0.3 is the parallax speed factor)
+      const horizontalOffset = scrollPosition * 0.3;
+      scrollRowRef.current.style.transform = `translateX(-${horizontalOffset}px)`;
+    }
   }, []);
 
+  useEffect(() => {
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [handleScroll]);
+
   return (
-    <section className="relative bg-gradient-to-b from-white via-gradient-yellow-muted to-white py-20 overflow-hidden">
+    <section className="relative bg-gradient-to-b from-white via-gradient-yellow-muted to-white py-20 overflow-hidden" aria-label="دوره گواهینامه رانندگی">
       {/* Animated Background Layer with Parallax */}
-      <div className="absolute inset-0 opacity-35 blur-[2px]">
+      <div className="absolute inset-0 opacity-35 blur-[2px]" aria-hidden="true">
         <div
           ref={scrollRowRef}
           className="absolute top-1/2 -translate-y-1/2 left-0 flex gap-16 animate-scroll-left transition-transform duration-100 ease-out"
@@ -63,10 +63,12 @@ export default function DrivingLicenseHome() {
             >
               <Image
                 src={img.src}
-                alt="گواهینامه"
+                alt=""
                 fill
                 className="object-cover rounded-3xl blur-[2px] shadow-2xl"
-                priority={index < 5}
+                loading={index < 6 ? "eager" : "lazy"}
+                quality={75}
+                sizes={`${img.width}px`}
               />
             </div>
           ))}

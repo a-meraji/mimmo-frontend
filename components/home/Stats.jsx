@@ -3,40 +3,46 @@ export default function Stats() {
     {
       value: "۱۰",
       label: "دوره آموزشی",
+      ariaLabel: "ده دوره آموزشی",
     },
     {
       value: "% ۹۸",
       label: "رضایت دانشجویان",
+      ariaLabel: "نود و هشت درصد رضایت دانشجویان",
     },
     {
       value: "۲،۵۰۰",
       label: "کاربر",
+      ariaLabel: "دو هزار و پانصد کاربر",
     },
     {
       value: "۸",
       label: "سال تجربه",
+      ariaLabel: "هشت سال تجربه",
     },
   ];
 
   return (
-    <section className="w-full bg-white">
+    <section className="w-full bg-white" aria-label="آمار میمو آکادمی">
       <div className="container mx-auto px-6 max-w-6xl">
         {/* Grid: 2 columns on mobile, 4 columns on larger screens */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 items-start">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 items-start" role="list">
           {stats.map((stat, index) => (
-            <div
+            <article
               key={index}
               className="flex flex-col items-center justify-center text-center p-8"
+              role="listitem"
+              aria-label={stat.ariaLabel}
             >
               {/* Value - Large, Bold */}
-              <h3 className="text-3xl font-bold scale-150 mb-2 bg-gradient-to-b from-[#212529] to-[#2125298a] bg-clip-text text-transparent">
+              <div className="text-3xl font-bold scale-150 mb-2 bg-gradient-to-b from-[#212529] to-[#2125298a] bg-clip-text text-transparent" aria-hidden="true">
                 {stat.value}
-              </h3>
+              </div>
               {/* Label - Smaller, Medium weight */}
               <p className="text-lg font-medium text-text-gray">
                 {stat.label}
               </p>
-            </div>
+            </article>
           ))}
         </div>
       </div>

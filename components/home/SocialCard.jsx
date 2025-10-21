@@ -1,9 +1,12 @@
+import { useMemo } from "react";
 import Image from "next/image";
 
 export default function SocialCard({ platform, title, handle, image, gradientFrom, gradientVia, gradientTo, url }) {
-  const gradientClass = gradientVia
-    ? `bg-gradient-to-r from-[${gradientFrom}] via-[${gradientVia}] to-[${gradientTo}]`
-    : `bg-gradient-to-r from-[${gradientFrom}] to-[${gradientTo}]`;
+  const gradientStyle = useMemo(() => ({
+    background: gradientVia
+      ? `linear-gradient(to right, ${gradientFrom}, ${gradientVia}, ${gradientTo})`
+      : `linear-gradient(to right, ${gradientFrom}, ${gradientTo})`,
+  }), [gradientFrom, gradientVia, gradientTo]);
 
   return (
     <a
@@ -11,16 +14,14 @@ export default function SocialCard({ platform, title, handle, image, gradientFro
       target="_blank"
       rel="noopener noreferrer"
       className="group block rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-[1.02]"
-      style={{
-        background: gradientVia
-          ? `linear-gradient(to right, ${gradientFrom}, ${gradientVia}, ${gradientTo})`
-          : `linear-gradient(to right, ${gradientFrom}, ${gradientTo})`,
-      }}
+      style={gradientStyle}
+      aria-label={`دنبال کردن میمو در ${platform}`}
+      role="listitem"
     >
-      <div className="flex items-center justify-between p-6 gap-4">
+      <article className="flex items-center justify-between p-6 gap-4">
         {/* Text Content */}
         <div className={`flex-1 font-bold text-right ${platform === "Instagram" ? "text-[#836880]" : "text-white"}`}>
-          <h3 className={`text-lg mb-2`}>
+          <h3 className="text-lg mb-2">
             {title}
           </h3>
           <p className="text-sm bg-white/30 rounded-full px-4 py-2 w-fit">
@@ -32,12 +33,15 @@ export default function SocialCard({ platform, title, handle, image, gradientFro
         <div className="flex-shrink-0 w-16 h-16 relative">
           <Image
             src={image}
-            alt={platform}
+            alt={`لوگوی ${platform}`}
             fill
             className="object-contain scale-200"
+            loading="lazy"
+            quality={85}
+            sizes="64px"
           />
         </div>
-      </div>
+      </article>
     </a>
   );
 }

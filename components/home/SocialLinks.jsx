@@ -1,7 +1,8 @@
+import { useMemo } from "react";
 import SocialCard from "./SocialCard";
 
 export default function SocialLinks() {
-  const socials = [
+  const socials = useMemo(() => [
     {
       platform: "Instagram",
       title: "از دوره ها و تخفیف ها جا نمونی !",
@@ -32,10 +33,10 @@ export default function SocialLinks() {
       gradientTo: "#FF4E4E",
       url: "https://youtube.com/@italian4u",
     },
-  ];
+  ], []);
 
   return (
-    <section className="w-full py-20 bg-white">
+    <section className="w-full py-20 bg-white" aria-label="شبکه های اجتماعی">
       <div className="container mx-auto px-6">
         {/* Section Title */}
         <h2 className="text-3xl font-extrabold text-text-charcoal text-center mb-12">
@@ -43,7 +44,7 @@ export default function SocialLinks() {
         </h2>
 
         {/* Mobile Layout - Stacked */}
-        <div className="lg:hidden flex flex-col gap-4 max-w-lg mx-auto">
+        <nav className="lg:hidden flex flex-col gap-4 max-w-lg mx-auto" role="list">
           {socials.map((social) => (
             <SocialCard
               key={social.platform}
@@ -57,10 +58,10 @@ export default function SocialLinks() {
               url={social.url}
             />
           ))}
-        </div>
+        </nav>
 
         {/* Desktop Layout - Horizontal */}
-        <div className="hidden lg:grid lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+        <nav className="hidden lg:grid lg:grid-cols-3 gap-6 max-w-6xl mx-auto" role="list">
           {socials.map((social) => (
             <SocialCard
               key={social.platform}
@@ -74,7 +75,7 @@ export default function SocialLinks() {
               url={social.url}
             />
           ))}
-        </div>
+        </nav>
       </div>
     </section>
   );

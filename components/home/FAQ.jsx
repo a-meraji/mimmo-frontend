@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback, useMemo } from "react";
 import FAQItem from "./FAQItem";
 import Image from "next/image";
 
@@ -34,34 +34,42 @@ export default function FAQ() {
     },
   ];
 
+  const handleToggle = useCallback((index) => {
+    setOpenIndex(prevIndex => prevIndex === index ? null : index);
+  }, []);
+
   return (
-    <section className="w-full mx-auto py-20 bg-gradient-to-b from-white via-neutral-indigo to-white">
-      <div className="container  w-fit mx-auto px-6 gap-x-4 lg:grid lg:grid-cols-3 justify-center">
+    <section className="w-full mx-auto py-20 bg-gradient-to-b from-white via-neutral-indigo to-white" aria-label="سوالات متداول">
+      <div className="container w-fit mx-auto px-6 gap-x-4 lg:grid lg:grid-cols-3 justify-center">
         {/* Section Title */}
-        <div className="">
-        <h2 className="text-3xl font-extrabold text-text-charcoal text-center lg:text-right mb-4">
-          پاسخ به سوالات متداول شما
-        </h2>
-        <p className="text-text-gray  text-lg font-medium text-center lg:text-right mb-12">شاید جواب سوالتون اینجا باشه!
-</p>
-<Image 
-src="/questions.webp"
-className="hidden lg:block"
-alt="FAQ"
-width={300}
-height={300}
-/>
+        <div>
+          <h2 className="text-3xl font-extrabold text-text-charcoal text-center lg:text-right mb-4">
+            پاسخ به سوالات متداول شما
+          </h2>
+          <p className="text-text-gray text-lg font-medium text-center lg:text-right mb-12">
+            شاید جواب سوالتون اینجا باشه!
+          </p>
+          <Image 
+            src="/questions.webp"
+            className="hidden lg:block"
+            alt="تصویر سوالات متداول"
+            width={300}
+            height={300}
+            loading="lazy"
+            quality={85}
+            sizes="300px"
+          />
         </div>
 
         {/* FAQ Items */}
-        <div className="max-w-4xl  space-y-4 lg:col-span-2">
+        <div className="max-w-4xl space-y-4 lg:col-span-2" role="list">
           {faqs.map((faq, index) => (
             <FAQItem 
               key={faq.id} 
               question={faq.question} 
               answer={faq.answer}
               isOpen={openIndex === index}
-              onToggle={() => setOpenIndex(openIndex === index ? null : index)}
+              onToggle={() => handleToggle(index)}
             />
           ))}
         </div>

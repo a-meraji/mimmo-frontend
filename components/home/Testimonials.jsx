@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import TestimonialCard from "./TestimonialCard";
 
 export default function Testimonials() {
@@ -90,8 +90,8 @@ export default function Testimonials() {
     };
   }, [isPaused, testimonials.length]);
 
-  // Calculate position for each card relative to current index
-  const getCardPosition = (index) => {
+  // Calculate position for each card relative to current index - memoized
+  const getCardPosition = useCallback((index) => {
     const diff = index - currentIndex;
     
     // Normalize the difference to be within -length/2 to length/2
@@ -102,10 +102,14 @@ export default function Testimonials() {
     }
     
     return diff;
-  };
+  }, [currentIndex, testimonials.length]);
+
+  const handleMouseEnter = useCallback(() => setIsPaused(true), []);
+  const handleMouseLeave = useCallback(() => setIsPaused(false), []);
+  const handleDotClick = useCallback((index) => setCurrentIndex(index), []);
 
   return (
-    <section className="w-full py-20 bg-gradient-to-b from-white to-neutral-indigo overflow-hidden">
+    <section className="w-full py-20 bg-gradient-to-b from-white to-neutral-indigo overflow-hidden" aria-label="نظرات دانشجویان">
       <div className="container mx-auto px-6">
         {/* Section Title */}
         <h2 className="text-3xl font-extrabold text-text-charcoal text-center mb-16">
@@ -115,8 +119,11 @@ export default function Testimonials() {
         {/* Testimonials Carousel */}
         <div
           className="relative h-[400px] flex items-center justify-center px-4 lg:px-0"
-          onMouseEnter={() => setIsPaused(true)}
-          onMouseLeave={() => setIsPaused(false)}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+          role="region"
+          aria-roledescription="carousel"
+          aria-label="نظرات کاربران"
         >
           {testimonials.map((testimonial, index) => (
             <TestimonialCard
@@ -129,17 +136,20 @@ export default function Testimonials() {
         </div>
 
         {/* Navigation Dots */}
-        <div className="flex justify-center gap-2 mt-12">
+        <div className="flex justify-center gap-2 mt-12" role="tablist" aria-label="انتخاب نظر">
           {testimonials.map((_, index) => (
             <button
               key={index}
-              onClick={() => setCurrentIndex(index)}
+              onClick={() => handleDotClick(index)}
               className={`h-2 rounded-full transition-all duration-300 ${
                 currentIndex === index
                   ? "w-8 bg-primary"
                   : "w-2 bg-neutral-gray hover:bg-neutral-darker"
               }`}
-              aria-label={`نظر ${index + 1}`}
+              role="tab"
+              aria-selected={currentIndex === index}
+              aria-label={`نظر ${index + 1} از ${testimonials.length}`}
+              type="button"
             />
           ))}
         </div>

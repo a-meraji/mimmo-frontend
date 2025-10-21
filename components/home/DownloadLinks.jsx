@@ -1,7 +1,8 @@
+import { useMemo } from "react";
 import DownloadCard from "./DownloadCard";
 
 export default function DownloadLinks() {
-  const platforms = [
+  const platforms = useMemo(() => [
     {
       platform: "Mac",
       downloadUrl: "#", // Replace with actual download URL
@@ -18,13 +19,13 @@ export default function DownloadLinks() {
       platform: "iOS",
       downloadUrl: "#", // Replace with actual download URL
     },
-  ];
+  ], []);
 
   return (
-    <section className="w-full py-20 bg-gradient-to-b from-neutral-indigo to-white relative overflow-hidden">
+    <section className="w-full py-20 bg-gradient-to-b from-neutral-indigo to-white relative overflow-hidden" aria-label="دانلود اپلیکیشن">
       {/* Decorative Background Elements for Desktop */}
-      <div className="hidden lg:block absolute top-10 left-10 w-64 h-64 bg-gradient-purple rounded-full opacity-10 blur-3xl" />
-      <div className="hidden lg:block absolute bottom-10 right-10 w-80 h-80 bg-gradient-yellow rounded-full opacity-10 blur-3xl" />
+      <div className="hidden lg:block absolute top-10 left-10 w-64 h-64 bg-gradient-purple rounded-full opacity-10 blur-3xl" aria-hidden="true" />
+      <div className="hidden lg:block absolute bottom-10 right-10 w-80 h-80 bg-gradient-yellow rounded-full opacity-10 blur-3xl" aria-hidden="true" />
 
       <div className="container mx-auto px-6 relative z-10">
         {/* Section Title */}
@@ -33,7 +34,7 @@ export default function DownloadLinks() {
         </h2>
 
         {/* Desktop Layout - Creative Horizontal with Stagger */}
-        <div className="hidden lg:flex items-center justify-center gap-6 max-w-6xl mx-auto">
+        <nav className="hidden lg:flex items-center justify-center gap-6 max-w-6xl mx-auto" aria-label="لینک های دانلود">
           {platforms.map((platform, index) => (
             <div
               key={platform.platform}
@@ -50,10 +51,10 @@ export default function DownloadLinks() {
               />
             </div>
           ))}
-        </div>
+        </nav>
 
         {/* Mobile Layout - 2x2 Grid */}
-        <div className="lg:hidden grid grid-cols-2 gap-4 max-w-md mx-auto">
+        <nav className="lg:hidden grid grid-cols-2 gap-4 max-w-md mx-auto" aria-label="لینک های دانلود">
           {platforms.map((platform) => (
             <DownloadCard
               key={platform.platform}
@@ -61,7 +62,7 @@ export default function DownloadLinks() {
               downloadUrl={platform.downloadUrl}
             />
           ))}
-        </div>
+        </nav>
 
         {/* Subtitle */}
         <p className="text-center mt-8 text-text-gray  text-lg font-medium">

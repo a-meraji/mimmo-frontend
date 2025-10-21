@@ -1,5 +1,7 @@
+import { useMemo } from "react";
+
 export default function DownloadCard({ platform, downloadUrl }) {
-  const getIcon = () => {
+  const icon = useMemo(() => {
     switch (platform.toLowerCase()) {
       case "mac":
         return (
@@ -33,9 +35,9 @@ export default function DownloadCard({ platform, downloadUrl }) {
           </svg>
         );
     }
-  };
+  }, [platform]);
 
-  const getPlatformLabel = () => {
+  const platformLabel = useMemo(() => {
     switch (platform.toLowerCase()) {
       case "mac":
         return "نسخه Mac";
@@ -48,7 +50,7 @@ export default function DownloadCard({ platform, downloadUrl }) {
       default:
         return platform;
     }
-  };
+  }, [platform]);
 
   return (
     <a
@@ -56,17 +58,18 @@ export default function DownloadCard({ platform, downloadUrl }) {
       target="_blank"
       rel="noopener noreferrer"
       className="group block bg-white rounded-2xl p-6 border border-neutral-lighter shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-105"
+      aria-label={`دانلود اپلیکیشن میمو برای ${platformLabel}`}
     >
       <div className="flex flex-col items-center text-center gap-4">
         {/* Icon */}
-        <div className="w-[4.5rem] h-[4.5rem] rounded-full bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center justify-center text-text-muted group-hover:from-primary/20 group-hover:to-secondary/20 transition-all duration-300">
-          {getIcon()}
+        <div className="w-[4.5rem] h-[4.5rem] rounded-full bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center justify-center text-text-muted group-hover:from-primary/20 group-hover:to-secondary/20 transition-all duration-300" aria-hidden="true">
+          {icon}
         </div>
 
         {/* Platform Label */}
         <div>
           <h3 className="font-bold text-text-charcoal text-lg mb-1">دانلود</h3>
-          <p className="text-sm text-text-gray">{getPlatformLabel()}</p>
+          <p className="text-sm text-text-gray">{platformLabel}</p>
         </div>
       </div>
     </a>

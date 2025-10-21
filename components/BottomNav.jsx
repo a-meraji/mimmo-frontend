@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { NAV_ITEMS, isPathActive } from "@/constants/routes";
 
@@ -10,6 +10,18 @@ export default function BottomNav() {
   const [isVisible, setIsVisible] = useState(true);
   const [isMounted, setIsMounted] = useState(false);
 
+  const handleIntersection = useCallback((entries) => {
+    entries.forEach((entry) => {
+      // Hide when footer is more than 50% visible
+      // Show when footer is less than 50% visible
+      if (entry.intersectionRatio > 0.5) {
+        setIsVisible(false);
+      } else {
+        setIsVisible(true);
+      }
+    });
+  }, []);
+
   useEffect(() => {
     // Mark component as mounted
     setIsMounted(true);
@@ -17,34 +29,16 @@ export default function BottomNav() {
     const footer = document.getElementById("main-footer");
     if (!footer) return;
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          // Hide when footer is more than 50% visible
-          // Show when footer is less than 50% visible
-          if (entry.intersectionRatio > 0.5) {
-            setIsVisible(false);
-          } else {
-            setIsVisible(true);
-          }
-        });
-      },
-      {
-        threshold: [0, 0.5, 1], // Observe at 0%, 50%, and 100% visibility
-      }
-    );
+    const observer = new IntersectionObserver(handleIntersection, {
+      threshold: [0, 0.5, 1], // Observe at 0%, 50%, and 100% visibility
+    });
 
     observer.observe(footer);
 
     return () => {
       observer.disconnect();
     };
-  }, []);
-
-/*
- <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="relative mt-4 rounded-2xl backdrop-blur-xl bg-white/70 border border-white/20 shadow-lg">
-*/
+  }, [handleIntersection]);
 
   return (
     <nav 
@@ -55,6 +49,9 @@ export default function BottomNav() {
             : "translate-y-full opacity-0 pointer-events-none"
         }` : ""
       }`}
+      role="navigation"
+      aria-label="ناوبری اصلی پایین"
+      aria-hidden={!isVisible}
     >
       <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-around relative mb-2 rounded-2xl bg-white border border-neutral-extralight shadow-2xl py-0.5">
@@ -67,12 +64,15 @@ export default function BottomNav() {
                 key={item.path}
                 href={item.path}
                 className="relative flex flex-col items-center justify-center gap-1 px-6 py-2 transition-all duration-200 group"
+                aria-label={item.label}
+                aria-current={isActive ? "page" : undefined}
               >
                 {/* Top indicator line for active state */}
                 <div
-                  className={`absolute top-0 max-w-10 right-1/2 w-10  translate-x-1/2 h-0.5 transition-all duration-300 ${
+                  className={`absolute top-0 max-w-10 right-1/2 w-10 translate-x-1/2 h-0.5 transition-all duration-300 ${
                     isActive ? "bg-primary" : "bg-transparent"
                   }`}
+                  aria-hidden="true"
                 />
 
                 {/* Icon */}
@@ -83,6 +83,7 @@ export default function BottomNav() {
                       : "text-text-light group-hover:text-text-gray"
                   }`}
                   strokeWidth={isActive ? 2 : 1.5}
+                  aria-hidden="true"
                 />
 
                 {/* Label */}

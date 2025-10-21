@@ -1,9 +1,10 @@
+import { useMemo } from "react";
 import Image from "next/image";
 import { Star } from "lucide-react";
 
 export default function TestimonialCard({ testimonial, isActive, position }) {
-  // Calculate styles based on position
-  const getCardStyles = () => {
+  // Calculate styles based on position - memoized for performance
+  const cardStyles = useMemo(() => {
     if (position === 0) {
       // Active card - front and center
       return {
@@ -69,18 +70,17 @@ export default function TestimonialCard({ testimonial, isActive, position }) {
         filter: "blur(4px)",
       };
     }
-  };
-
-  const cardStyles = getCardStyles();
+  }, [position]);
 
   return (
-    <div
+    <article
       className="absolute w-full max-w-md transition-all duration-700 ease-in-out"
       style={cardStyles}
+      aria-hidden={!isActive}
     >
       <div className="bg-white rounded-3xl p-8 shadow-xl border border-neutral-lighter">
         {/* Rating Stars */}
-        <div className="flex gap-1 mb-4">
+        <div className="flex gap-1 mb-4" role="img" aria-label={`${testimonial.rating} از 5 ستاره`}>
           {[...Array(5)].map((_, index) => (
             <Star
               key={index}
@@ -89,14 +89,15 @@ export default function TestimonialCard({ testimonial, isActive, position }) {
                     ? "fill-[#ffc95c] text-[#ffc95c]"
                   : "fill-neutral-lighter text-neutral-lighter"
               }`}
+              aria-hidden="true"
             />
           ))}
         </div>
 
         {/* Review Text */}
-        <p className="text-text-gray text-base leading-relaxed mb-6 min-h-[120px]">
+        <blockquote className="text-text-gray text-base leading-relaxed mb-6 min-h-[120px]">
           {testimonial.review}
-        </p>
+        </blockquote>
 
         {/* Profile Section */}
         <div className="flex items-center gap-4 pt-4 border-t border-neutral-lighter">
@@ -104,9 +105,12 @@ export default function TestimonialCard({ testimonial, isActive, position }) {
           <div className="relative w-14 h-14 rounded-full overflow-hidden flex-shrink-0">
             <Image
               src={testimonial.avatar}
-              alt={testimonial.name}
+              alt={`عکس پروفایل ${testimonial.name}`}
               fill
               className="object-cover"
+              loading="lazy"
+              quality={85}
+              sizes="56px"
             />
           </div>
 
@@ -119,7 +123,7 @@ export default function TestimonialCard({ testimonial, isActive, position }) {
           </div>
         </div>
       </div>
-    </div>
+    </article>
   );
 }
 

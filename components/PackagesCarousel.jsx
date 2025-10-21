@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import PackageCard from "./PackageCard";
 
@@ -60,16 +60,26 @@ export default function PackagesCarousel() {
     // Set initial value
     updateSlidesPerView();
 
+    // Debounce resize for better performance
+    let timeoutId;
+    const debouncedResize = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(updateSlidesPerView, 150);
+    };
+
     // Add resize listener
-    window.addEventListener('resize', updateSlidesPerView);
+    window.addEventListener('resize', debouncedResize, { passive: true });
     
     // Cleanup
-    return () => window.removeEventListener('resize', updateSlidesPerView);
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener('resize', debouncedResize);
+    };
   }, []);
 
-  const totalSlides = Math.ceil(packages.length / slidesPerView);
+  const totalSlides = useMemo(() => Math.ceil(packages.length / slidesPerView), [packages.length, slidesPerView]);
 
-  const scrollToPosition = (direction) => {
+  const scrollToPosition = useCallback((direction) => {
     if (scrollContainerRef.current) {
       const container = scrollContainerRef.current;
       const scrollAmount = container.offsetWidth * 0.8;
@@ -80,34 +90,34 @@ export default function PackagesCarousel() {
         container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
       }
     }
-  };
+  }, []);
 
-  const nextSlide = () => {
+  const nextSlide = useCallback(() => {
     if (currentSlide < totalSlides - 1) {
       scrollToPosition('next');
       setCurrentSlide((prev) => prev + 1);
     }
-  };
+  }, [currentSlide, totalSlides, scrollToPosition]);
 
-  const prevSlide = () => {
+  const prevSlide = useCallback(() => {
     if (currentSlide > 0) {
       scrollToPosition('prev');
       setCurrentSlide((prev) => prev - 1);
     }
-  };
+  }, [currentSlide, scrollToPosition]);
 
-  const goToSlide = (index) => {
+  const goToSlide = useCallback((index) => {
     if (scrollContainerRef.current) {
       const container = scrollContainerRef.current;
       const scrollAmount = container.offsetWidth * index * 0.8;
       container.scrollTo({ left: -scrollAmount, behavior: 'smooth' });
     }
     setCurrentSlide(index);
-  };
+  }, []);
 
   return (
-    <section className="w-full  overflow-x-hidden">
-      <div className="container mx-auto px-6 relative">
+    <section className="w-full overflow-x-hidden" aria-label="پکیج های آموزشی">
+      <div className="container mx-auto px-6 relative" role="region" aria-roledescription="carousel">
         {/* Navigation Buttons - Fixed to Screen Edges */}
         {/* Previous Button - Right Edge */}
         <button
@@ -146,12 +156,12 @@ export default function PackagesCarousel() {
             className="overflow-x-auto overflow-y-hidden px-12 scrollbar-hide scroll-smooth"
           >
             <div className="flex gap-6 pb-4">
-              {packages.map((pkg) => (
+              {packages.map((pkg, index) => (
                 <div
                   key={pkg.id}
                   className="flex-shrink-0 w-full sm:w-[calc(50%-12px)] lg:w-[calc(30%-25px)]"
                 >
-                  <PackageCard package={pkg} />
+                  <PackageCard package={pkg} priority={index < 2} />
                 </div>
               ))}
             </div>
