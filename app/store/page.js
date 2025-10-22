@@ -12,22 +12,21 @@ export default function StorePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [cart, setCart] = useState([]);
 
-  // Package data
+  // Package data - Same structure as ProductInfo.jsx
   const packages = useMemo(() => [
     {
       id: 1,
       title: "Espresso 1 (درس‌های 1 تا 5)",
       subtitle: "شروع مسیر یادگیری زبان ایتالیایی",
       level: "A1",
-      lessons: 5,
       price: 450000,
       originalPrice: 600000,
-      image: "/license0.webp",
+      image: "/es1.webp",
       category: "italian",
-      features: [
-        "ویدیوهای آموزشی با کیفیت بالا",
-        "تمرینات تعاملی و کوئیز",
-        "پشتیبانی آنلاین استاد"
+      specifications: [
+        { icon: "BookOpenText", label: "تعداد درس", value: "۵ درس" },
+        { icon: "Clock", label: "مدت زمان", value: "۱۴ ساعت" },
+        {icon:"NotebookText", label:"تمرین و آزمون", value: "دارد"}
       ]
     },
     {
@@ -35,15 +34,14 @@ export default function StorePage() {
       title: "Espresso 1 (درس‌های 6 تا 10)",
       subtitle: "ادامه سطح مقدماتی",
       level: "A1",
-      lessons: 5,
       price: 450000,
-      originalPrice: 600000,
-      image: "/license1.webp",
+      image: "/es1.webp",
       category: "italian",
-      features: [
-        "تکمیل سطح A1",
-        "آزمون‌های تعاملی",
-        "دسترسی مادام‌العمر"
+      specifications: [
+        { icon: "BookOpenText", label: "تعداد درس", value: "۵ درس" },
+        { icon: "Clock", label: "مدت زمان", value: "۱۱ ساعت" },
+        {icon:"NotebookText", label:"تمرین و آزمون", value: "دارد"}
+
       ]
     },
     {
@@ -51,16 +49,16 @@ export default function StorePage() {
       title: "Full Espresso 1",
       subtitle: "پکیج کامل سطح مقدماتی",
       level: "A1",
-      lessons: 10,
       price: 750000,
       originalPrice: 1200000,
-      image: "/license2.webp",
+      image: "/es1.webp",
       category: "italian",
       badge: "پرفروش",
-      features: [
-        "تمام درس‌های Espresso 1",
-        "20٪ تخفیف ویژه",
-        "گواهینامه معتبر پایان دوره"
+      specifications: [
+        { icon: "BookOpenText", label: "تعداد درس", value: "۱۰ درس" },
+        { icon: "Clock", label: "مدت زمان", value: "۱۲ ساعت" },
+        {icon:"NotebookText", label:"تمرین و آزمون", value: "دارد"}
+
       ]
     },
     {
@@ -68,15 +66,14 @@ export default function StorePage() {
       title: "Espresso 2 (درس‌های 1 تا 5)",
       subtitle: "ارتقا به سطح متوسط",
       level: "A2",
-      lessons: 5,
       price: 500000,
-      originalPrice: 650000,
-      image: "/license0.webp",
+      image: "/es2.webp",
       category: "italian",
-      features: [
-        "گرامر پیشرفته‌تر",
-        "مکالمات کاربردی",
-        "تمرینات گوش دادن"
+      specifications: [
+        { icon: "BookOpenText", label: "تعداد درس", value: "۵ درس" },
+        { icon: "Clock", label: "مدت زمان", value: "۲۰ ساعت" },
+        {icon:"NotebookText", label:"تمرین و آزمون", value: "دارد"}
+
       ]
     },
     {
@@ -84,15 +81,14 @@ export default function StorePage() {
       title: "Espresso 2 (درس‌های 6 تا 10)",
       subtitle: "تکمیل سطح A2",
       level: "A2",
-      lessons: 5,
       price: 500000,
-      originalPrice: 650000,
-      image: "/license1.webp",
+      image: "/es2.webp",
       category: "italian",
-      features: [
-        "تسلط بر مکالمات روزمره",
-        "واژگان گسترده",
-        "آزمون‌های جامع"
+      specifications: [
+        { icon: "BookOpenText", label: "تعداد درس", value: "۵ درس" },
+        { icon: "Clock", label: "مدت زمان", value: "۱۶ ساعت" },
+        {icon:"NotebookText", label:"تمرین و آزمون", value: "دارد"}
+
       ]
     },
     {
@@ -100,16 +96,16 @@ export default function StorePage() {
       title: "Full Espresso 2",
       subtitle: "پکیج کامل سطح متوسط",
       level: "A2",
-      lessons: 10,
       price: 850000,
       originalPrice: 1300000,
-      image: "/license2.webp",
+      image: "/es2.webp",
       category: "italian",
-      badge: "پیشنهاد ویژه",
-      features: [
-        "تمام درس‌های Espresso 2",
-        "تخفیف 35٪",
-        "پروژه‌های عملی"
+      badge: "پرفروش",
+      specifications: [
+        { icon: "BookOpenText", label: "تعداد درس", value: "۱۰ درس" },
+        { icon: "Clock", label: "مدت زمان", value: "۱۴ ساعت" },
+        {icon:"NotebookText", label:"تمرین و آزمون", value: "دارد"}
+
       ]
     },
     {
@@ -117,15 +113,14 @@ export default function StorePage() {
       title: "Espresso 3 (درس‌های 1 تا 5)",
       subtitle: "سطح پیشرفته",
       level: "B1",
-      lessons: 5,
       price: 550000,
-      originalPrice: 700000,
-      image: "/license0.webp",
+      image: "/es3.webp",
       category: "italian",
-      features: [
-        "مکالمات پیچیده",
-        "درک متن‌های تخصصی",
-        "نگارش متون ساده"
+      specifications: [
+        { icon: "BookOpenText", label: "تعداد درس", value: "۵ درس" },
+        { icon: "Clock", label: "مدت زمان", value: "۸ ساعت" },
+        {icon:"NotebookText", label:"تمرین و آزمون", value: "دارد"}
+
       ]
     },
     {
@@ -133,15 +128,14 @@ export default function StorePage() {
       title: "Espresso 3 (درس‌های 6 تا 10)",
       subtitle: "تکمیل سطح B1",
       level: "B1",
-      lessons: 5,
       price: 550000,
-      originalPrice: 700000,
-      image: "/license1.webp",
+      image: "/es3.webp",
       category: "italian",
-      features: [
-        "تسلط کامل بر زبان",
-        "آمادگی برای آزمون‌های بین‌المللی",
-        "مکالمات تخصصی"
+      specifications: [
+        { icon: "BookOpenText", label: "تعداد درس", value: "۵ درس" },
+        { icon: "Clock", label: "مدت زمان", value: "۸ ساعت" },
+        {icon:"NotebookText", label:"تمرین و آزمون", value: "دارد"}
+
       ]
     },
     {
@@ -149,16 +143,16 @@ export default function StorePage() {
       title: "Full Espresso 3",
       subtitle: "پکیج کامل سطح پیشرفته",
       level: "B1",
-      lessons: 10,
       price: 950000,
       originalPrice: 1400000,
-      image: "/license2.webp",
+      image: "/es3.webp",
       category: "italian",
-      badge: "محبوب",
-      features: [
-        "تمام درس‌های Espresso 3",
-        "32٪ تخفیف",
-        "گواهینامه بین‌المللی"
+      badge: "پرفروش",
+      specifications: [
+        { icon: "BookOpenText", label: "تعداد درس", value: "۱۰ درس" },
+        { icon: "Clock", label: "مدت زمان", value: "۱۶ ساعت" },
+        {icon:"NotebookText", label:"تمرین و آزمون", value: "دارد"}
+
       ]
     },
     {
@@ -166,17 +160,15 @@ export default function StorePage() {
       title: "پکیج گواهینامه رانندگی ایتالیا",
       subtitle: "آموزش کامل آیین نامه رانندگی",
       level: null,
-      lessons: 40,
       price: 650000,
       originalPrice: 900000,
-      image: "/mimmo1.webp",
+      image: "/license2.webp",
       category: "license",
-      badge: "جدید",
-      features: [
-        "آموزش کامل قوانین رانندگی ایتالیا",
-        "بانک سوالات کامل آزمون",
-        "آزمون‌های شبیه‌سازی شده",
-        "پشتیبانی تا زمان قبولی"
+      badge: "پرفروش",
+      specifications: [
+        { icon: "BookOpenText", label: "تعداد درس", value: "۴۰ درس" },
+        { icon: "Clock", label: "مدت زمان", value: "۲۰ ساعت" },
+        {icon:"NotebookText", label:"تمرین و آزمون", value: "دارد"}
       ]
     }
   ], []);
@@ -276,11 +268,19 @@ export default function StorePage() {
         {/* Package Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
           {filteredPackages.map((pkg) => (
-            <StorePackageCard
-              key={pkg.id}
-              {...pkg}
-              onAddToCart={handleAddToCart}
-            />
+          <StorePackageCard
+            key={pkg.id}
+            id={pkg.id}
+            title={pkg.title}
+            subtitle={pkg.subtitle}
+            level={pkg.level}
+            price={pkg.price}
+            originalPrice={pkg.originalPrice}
+            image={pkg.image}
+            specifications={pkg.specifications}
+            badge={pkg.badge}
+            onAddToCart={handleAddToCart}
+          />
           ))}
         </div>
 

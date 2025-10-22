@@ -55,6 +55,7 @@ export default function Roadmap() {
                   className="w-full h-auto"
                   priority
                   loading="eager"
+                quality={75}
                 />
               </div>
             </div>

@@ -9,41 +9,46 @@ export default function PackagesCarousel() {
   const [slidesPerView, setSlidesPerView] = useState(1); // Default to mobile view for SSR
   const scrollContainerRef = useRef(null);
 
-  // Sample packages data
-  const packages = [
+  // Sample packages data - same structure as store page
+  const packages = useMemo(() => [
     {
       id: 1,
-      name: "پکیج 1",
-      description: "منبع : درس اول کتاب اسپرسو 1",
+      title: "Full Espresso 1",
+      subtitle: "پکیج کامل سطح مقدماتی",
+      level: "A1",
+      price: 450000,
+      originalPrice: 600000,
+      badge: "پرفروش",
       image: "/es1.webp",
-      originalPrice: 990000,
-      discountedPrice: 500000,
     },
     {
       id: 2,
-      name: "پکیج جامع مقدماتی",
-      description: "ویدیو آموزشی + درسنامه + تمرین انتهای درسنامه + آزمون",
+      title: "Full Espresso 2",
+      subtitle: "پکیج کامل سطح متوسط",
+      level: "A2",
+      price: 500000,
+      badge: "پرفروش",
       image: "/es2.webp",
-      originalPrice: 1500000,
-      discountedPrice: null,
     },
     {
       id: 3,
-      name: "پکیج پیشرفته ایتالیایی",
-      description: "دوره کامل با پشتیبانی 24 ساعته و گواهینامه معتبر",
-      image: "/es1.webp",
-      originalPrice: 2500000,
-      discountedPrice: 1800000,
+      title: "Full Espresso 3",
+      subtitle: "پکیج کامل سطح پیشرفته",
+      level: "A1",
+      price: 750000,
+      originalPrice: 1200000,
+      image: "/es3.webp",
     },
     {
-      id: 4,
-      name: "پکیج مکالمه محور",
-      description: "تمرکز بر مکالمه روزمره و تلفظ صحیح با اساتید بومی",
-      image: "/es2.webp",
-      originalPrice: 1200000,
-      discountedPrice: null,
+      id:4,
+      title: "Espresso 1 (درس‌های 1 تا 5)",
+      subtitle: "شروع مسیر یادگیری زبان ایتالیایی",
+      level: "A1",
+      price: 850000,
+      originalPrice: 1300000,
+      image: "/es1.webp",
     },
-  ];
+  ], []);
 
   // Update slides per view on mount and window resize
   useEffect(() => {

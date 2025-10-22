@@ -109,8 +109,7 @@ export default function TestimonialCard({ testimonial, isActive, position }) {
               fill
               className="object-cover"
               loading="lazy"
-              quality={85}
-              sizes="56px"
+              quality={70}
             />
           </div>
 

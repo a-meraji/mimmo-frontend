@@ -85,8 +85,8 @@ export default function Header() {
                   fill
                   className="object-contain scale-150"
                   priority
-                  quality={90}
-                  sizes="(max-width: 1024px) 40px, 48px"
+                quality={50}
+
                 />
               </div>
             </Link>

@@ -166,8 +166,8 @@ export default function Hero() {
                   height={180}
                   className="rounded-lg"
                   loading="eager"
-                  quality={85}
-                  sizes="160px"
+                quality={75}
+
                 />
               </div>
             </div>
@@ -186,8 +186,7 @@ export default function Hero() {
                   height={180}
                   className="rounded-lg"
                   loading="eager"
-                  quality={85}
-                  sizes="160px"
+                quality={75}
                 />
               </div>
             </div>

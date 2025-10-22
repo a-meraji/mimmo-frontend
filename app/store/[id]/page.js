@@ -15,7 +15,7 @@ const getProductData = (id) => {
     id,
     title: "Nuovo Espresso 1",
     subtitle: "دوره جامع یادگیری زبان ایتالیایی از سطح مقدماتی",
-    image: "/license0.webp",
+    image: "/es1.webp",
     price: 750000,
     originalPrice: 1200000,
     rating: 4.9,
@@ -26,10 +26,9 @@ const getProductData = (id) => {
     
     علاوه بر این، دسترسی به بانک تمرینات تعاملی، آزمون‌های پایان فصل و پشتیبانی مستمر اساتید، یادگیری را برای شما لذت‌بخش‌تر و موثرتر می‌کند.`,
     specifications: [
-      { icon: "BookOpen", label: "تعداد فصل", value: "۱۰ فصل" },
+      { icon: "BookOpenText", label: "تعداد درس", value: "۱۰ درس" },
       { icon: "Clock", label: "مدت زمان", value: "۲۴ ساعت" },
-      { icon: "Award", label: "گواهینامه", value: "دارد" },
-      { icon: "Users", label: "دانشجو", value: "+۵,۰۰۰" },
+      { icon: "NotebookText", label: "تمرین و آزمون", value: "دارد" },
     ],
     seasons: [
       {
@@ -185,6 +184,7 @@ export default function ProductPage({ params }) {
             originalPrice={product.originalPrice}
             rating={product.rating}
             reviewCount={product.reviewCount}
+            specifications={product.specifications}
             onAddToCart={handleAddToCart}
           />
           <CourseChapters seasons={product.seasons} />
@@ -213,10 +213,11 @@ export default function ProductPage({ params }) {
                 subtitle={product.subtitle}
                 price={product.price}
                 originalPrice={product.originalPrice}
-                rating={product.rating}
-                reviewCount={product.reviewCount}
-                onAddToCart={handleAddToCart}
-              />
+              rating={product.rating}
+              reviewCount={product.reviewCount}
+              specifications={product.specifications}
+              onAddToCart={handleAddToCart}
+            />
               <div ref={commentFormRef}>
                 <CommentForm onSubmit={handleCommentSubmit} />
               </div>
@@ -239,7 +240,7 @@ export default function ProductPage({ params }) {
       </div>
 
         {/* popular products */}
-          <PackageConteiner title="دیگر محصولات پرفروش میمو" />
+          <PackageConteiner title="دیگر محصولات محبوب میمو" />
     </div>
   );
 }

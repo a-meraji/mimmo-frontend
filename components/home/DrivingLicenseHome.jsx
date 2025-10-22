@@ -8,12 +8,14 @@ export default function DrivingLicenseHome() {
   const scrollRowRef = useRef(null);
 
   const pkg = useMemo(() => ({
-    id: 1,
-    name: "پکیج آزمون آیین نامه رانندگی در ایتالیا",
-    description: "منبع : درس اول کتاب اسپرسو 1",
+    id: 10,
+    title: "پکیج گواهینامه رانندگی ایتالیا",
+    subtitle: "آموزش کامل آیین نامه رانندگی",
+    level: null,
+    price: 650000,
+    originalPrice: 900000,
     image: "/license2.webp",
-    originalPrice: 990000,
-    discountedPrice: 500000,
+    badge: "پرفروش",
   }), []);
 
   // Background images configuration - bigger sizes
@@ -43,8 +45,8 @@ export default function DrivingLicenseHome() {
 
   return (
     <section className="relative bg-gradient-to-b from-white via-gradient-yellow-muted to-white py-20 overflow-hidden" aria-label="دوره گواهینامه رانندگی">
-      {/* Animated Background Layer with Parallax */}
-      <div className="absolute inset-0 opacity-35 blur-[2px]" aria-hidden="true">
+      {/* Animated Background Layer with Parallax - Desktop Only */}
+      <div className="hidden lg:block absolute inset-0 opacity-35 blur-[2px]" aria-hidden="true">
         <div
           ref={scrollRowRef}
           className="absolute top-1/2 -translate-y-1/2 left-0 flex gap-16 animate-scroll-left transition-transform duration-100 ease-out"
@@ -67,7 +69,7 @@ export default function DrivingLicenseHome() {
                 fill
                 className="object-cover rounded-3xl blur-[2px] shadow-2xl"
                 loading={index < 6 ? "eager" : "lazy"}
-                quality={75}
+                quality={20}
                 sizes={`${img.width}px`}
               />
             </div>
@@ -87,12 +89,14 @@ export default function DrivingLicenseHome() {
           {/* Left Image */}
           <div className="flex-shrink-0 relative">
             <div className="relative w-64 h-80 -ml-8  mt-10 transform rotate-[8deg] hover:rotate-[4deg] transition-transform duration-300">
-              <div className="absolute inset-0 bg-white rounded-2xl max-w-48 max-h-48">
+              <div className="absolute inset-0 bg-white rounded-2xl max-w-64 max-h-64">
                 <Image
                   src="/license1.webp"
                   alt="گواهینامه رانندگی ایتالیا"
                   fill
-                  className="object-cover rounded-2xl p-3 shadow-xl"
+                  className="object-cover rounded-2xl p-3 shadow-xl border-[1px] border-neutral-lighter"
+                quality={70}
+
                 />
               </div>
             </div>
@@ -111,7 +115,8 @@ export default function DrivingLicenseHome() {
                   src="/license0.webp"
                   alt="آموزش رانندگی در ایتالیا"
                   fill
-                  className="object-cover rounded-2xl p-3 shadow-xl"
+                  className="object-cover rounded-2xl p-3 shadow-xl border-[1px] border-neutral-lighter"
+                quality={70}
                 />
               </div>
             </div>
@@ -122,6 +127,33 @@ export default function DrivingLicenseHome() {
         <div className="lg:hidden flex justify-center">
           <div className="w-full max-w-sm">
             <PackageCard package={pkg} />
+          </div>
+        </div>
+
+        {/* Mobile Auto-Scroll Images - Below Card */}
+        <div className="lg:hidden mt-8 overflow-hidden">
+          <div className="flex gap-4 animate-scroll-right-fast">
+            {/* Triple the images for seamless infinite scroll */}
+            {[...backgroundImages, ...backgroundImages, ...backgroundImages].map((img, index) => (
+              <div
+                key={`mobile-${index}`}
+                className="relative flex-shrink-0 transform hover:scale-105 transition-transform duration-300"
+                style={{
+                  width: '120px',
+                  height: '160px',
+                  transform: `rotate(${img.rotation}deg)`,
+                }}
+              >
+                <Image
+                  src={img.src}
+                  alt={`نمونه گواهینامه ${index + 1}`}
+                  fill
+                  className="object-cover rounded-2xl shadow-xl border border-neutral-lighter"
+                  loading="lazy"
+                  quality={75}
+                />
+              </div>
+            ))}
           </div>
         </div>
       </div>

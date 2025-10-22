@@ -1,6 +1,6 @@
 "use client";
 
-import { ShoppingCart, Star, Clock, BookOpen, Award, Users } from "lucide-react";
+import { ShoppingCart, Star, Clock, BookOpenText, NotebookText } from "lucide-react";
 
 export default function ProductInfo({ 
   title, 
@@ -14,11 +14,17 @@ export default function ProductInfo({
 }) {
   const discount = originalPrice ? Math.round(((originalPrice - price) / originalPrice) * 100) : null;
 
+  // Icon mapping - same as StorePackageCard.jsx
+  const iconMap = {
+    BookOpenText,
+    Clock,
+    NotebookText
+  };
+
   const defaultSpecs = [
-    { icon: BookOpen, label: "از متوسطه تا پیشرفته", value: "۴ سطح" },
+    { icon: BookOpenText, label: "از متوسطه تا پیشرفته", value: "۴ سطح" },
     { icon: Clock, label: "ساعت ویدیو آموزشی", value: "۲۴" },
-    { icon: Award, label: "تضمین کیفیت دوره", value: "۳۰ روز" },
-    { icon: Users, label: "دانشجویان فعال", value: "+۵,۰۰۰" },
+    {icon: NotebookText, label: "تمرین و آزمون", value: "دارد"}
   ];
 
   const specs = specifications.length > 0 ? specifications : defaultSpecs;
@@ -75,7 +81,7 @@ export default function ProductInfo({
         <h3 className="text-sm font-semibold text-text-charcoal">اطلاعات دوره</h3>
         <div className="space-y-2">
           {specs.map((spec, index) => {
-            const Icon = spec.icon;
+            const Icon = typeof spec.icon === 'string' ? iconMap[spec.icon] : spec.icon;
             return (
               <div key={index} className="flex items-center justify-between py-2 border-b border-neutral-extralight last:border-0">
                 <div className="flex items-center gap-2">

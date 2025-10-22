@@ -112,12 +112,25 @@ body {
   }
 }
 
+@keyframes scroll-right-fast {
+  0% {
+    transform: translateX(300%);
+  }
+  100% {
+    transform: translateX(10%);
+  }
+}
+
 .animate-scroll-left {
   animation: scroll-left 60s linear infinite;
 }
 
 .animate-scroll-right {
   animation: scroll-right 70s linear infinite;
+}
+
+.animate-scroll-right-fast {
+  animation: scroll-right-fast 35s linear infinite;
 }
 
 .animate-scroll-left-slow {

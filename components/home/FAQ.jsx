@@ -56,8 +56,7 @@ export default function FAQ() {
             width={300}
             height={300}
             loading="lazy"
-            quality={85}
-            sizes="300px"
+            quality={75}
           />
         </div>
 

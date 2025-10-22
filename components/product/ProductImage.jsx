@@ -10,7 +10,7 @@ export default function ProductImage({ image, title, description }) {
   return (
     <div className="bg-white rounded-2xl border border-neutral-extralight p-6 space-y-4">
       {/* Product Image */}
-      <div className="relative w-full aspect-square bg-gradient-to-br from-neutral-indigo/30 to-white rounded-xl overflow-hidden">
+      <div className="relative w-full aspect-square max-h-[60vh] bg-gradient-to-br from-neutral-indigo/30 to-white rounded-xl overflow-hidden">
         <Image
           src={image}
           alt={title}
@@ -18,7 +18,6 @@ export default function ProductImage({ image, title, description }) {
           className="object-contain p-4"
           priority
           quality={90}
-          sizes="(max-width: 768px) 100vw, 50vw"
         />
       </div>
 

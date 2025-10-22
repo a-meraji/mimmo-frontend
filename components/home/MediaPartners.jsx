@@ -37,8 +37,7 @@ export default function MediaPartners() {
                   height={80}
                   className="object-contain grayscale hover:grayscale-0 transition-all duration-300 opacity-60 hover:opacity-100"
                   loading={index < 4 ? "eager" : "lazy"}
-                  quality={80}
-                  sizes="200px"
+                  quality={70}
                 />
               </div>
             ))}

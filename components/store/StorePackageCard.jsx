@@ -3,18 +3,17 @@
 import { useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ShoppingCart, BookOpen, GraduationCap, CheckCircle } from "lucide-react";
+import { ShoppingCart, BookOpenText, Clock, NotebookText  } from "lucide-react";
 
 export default function StorePackageCard({ 
   id,
   title, 
   subtitle,
   level,
-  lessons,
   price, 
   originalPrice,
   image,
-  features = [],
+  specifications = [],
   badge,
   onAddToCart 
 }) {
@@ -26,29 +25,35 @@ export default function StorePackageCard({
   const levelColor = useMemo(() => {
     switch (level) {
       case 'A1':
-        return 'bg-green-500/10 text-green-700 border-green-500/20';
+        return 'bg-green-500/10 text-green-700 border-green-500/40';
       case 'A2':
-        return 'bg-blue-500/10 text-blue-700 border-blue-500/20';
+        return 'bg-blue-500/10 text-blue-700 border-blue-500/40';
       case 'B1':
-        return 'bg-purple-500/10 text-purple-700 border-purple-500/20';
+        return 'bg-purple-500/10 text-purple-700 border-purple-500/40';
       default:
-        return 'bg-primary/10 text-primary border-primary/20';
+        return 'bg-primary/10 text-primary border-primary/40';
     }
   }, [level]);
+
+  // Icon mapping - same as ProductInfo.jsx
+  const iconMap = {
+    BookOpenText,
+    Clock,
+    NotebookText,
+  };
 
   return (
     <article className="group h-full flex flex-col bg-white rounded-2xl border border-neutral-lighter shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden">
       <Link href={`/store/${id}`} className="flex-1 flex flex-col">
         {/* Image Container */}
-        <div className="relative w-full aspect-[4/3] flex-shrink-0 overflow-hidden bg-gradient-to-br from-neutral-indigo to-white">
+        <div className="relative w-full aspect-[4/3] flex-shrink-0 overflow-hidden ">
         <Image
           src={image}
           alt={`پکیج ${title}`}
           fill
-          className="object-cover group-hover:scale-105 transition-transform duration-500"
+          className="object-contain group-hover:scale-105 transition-transform duration-500"
           loading="lazy"
-          quality={85}
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          quality={80}
         />
         
         {/* Discount Badge */}
@@ -64,7 +69,7 @@ export default function StorePackageCard({
 
         {/* Special Badge */}
         {badge && (
-          <div className="absolute top-3 right-3 bg-primary text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
+          <div className="absolute top-3 right-3 bg-amber-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
             {badge}
           </div>
         )}
@@ -91,24 +96,23 @@ export default function StorePackageCard({
           )}
         </div>
 
-        {/* Lessons Info */}
-        {lessons && (
-          <div className="flex items-center gap-2 mb-4 text-text-gray">
-            <BookOpen className="w-4 h-4" aria-hidden="true" />
-            <span className="text-sm">{lessons} درس</span>
+        {/* Specifications - Same structure as ProductInfo.jsx */}
+        {specifications.length > 0 && (
+          <div className="space-y-1 mb-4">
+            {specifications.map((spec, index) => {
+              const Icon = typeof spec.icon === 'string' ? iconMap[spec.icon] : spec.icon;
+              return (
+                <div key={index} className="flex items-center justify-between py-2 border-b border-neutral-extralight last:border-0">
+                  <div className="flex items-center gap-2">
+                      <Icon className="w-4 h-4 text-text-gray" aria-hidden="true" />
+     
+                    <span className="text-xs text-text-gray">{spec.label}</span>
+                  </div>
+                  <span className="text-xs font-medium text-text-charcoal">{spec.value}</span>
+                </div>
+              );
+            })}
           </div>
-        )}
-
-        {/* Features */}
-        {features.length > 0 && (
-          <ul className="space-y-2 mb-4" role="list">
-            {features.slice(0, 3).map((feature, index) => (
-              <li key={index} className="flex items-start gap-2 text-xs text-text-gray">
-                <CheckCircle className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" aria-hidden="true" />
-                <span>{feature}</span>
-              </li>
-            ))}
-          </ul>
         )}
 
         {/* Spacer */}
@@ -117,7 +121,7 @@ export default function StorePackageCard({
         {/* Pricing Display */}
         <div className="mt-4 pt-4 border-t border-neutral-lighter">
           <div className="flex flex-col items-end">
-            {originalPrice && (
+            {originalPrice && discount && (
               <span 
                 className="text-xs text-text-light line-through mb-1"
                 aria-label={`قیمت اصلی: ${originalPrice.toLocaleString('fa-IR')} تومان`}

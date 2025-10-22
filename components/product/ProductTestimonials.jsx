@@ -39,7 +39,6 @@ const TestimonialCard = ({ testimonial }) => {
               className="object-cover"
               loading="lazy"
               quality={75}
-              sizes="40px"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-primary text-sm font-bold">

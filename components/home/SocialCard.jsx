@@ -37,8 +37,7 @@ export default function SocialCard({ platform, title, handle, image, gradientFro
             fill
             className="object-contain scale-200"
             loading="lazy"
-            quality={85}
-            sizes="64px"
+            quality={50}
           />
         </div>
       </article>
