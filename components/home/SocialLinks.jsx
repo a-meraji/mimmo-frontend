@@ -24,6 +24,16 @@ export default function SocialLinks() {
       url: "https://t.me/mimmo_academy",
     },
     {
+      platform: "Facebook",
+      title: "از اخبار آکادمی ما مطلع شوید",
+      handle: "@italian4u.italian4u",
+      image: "/facebook.webp",
+      gradientFrom: "#badcff",
+      gradientVia: null,
+      gradientTo: "#0c3fc2",
+      url: "https://facebook.com/italian4u",
+    },
+    {
       platform: "YouTube",
       title: "زندگی در ایتالیا در یوتیوب میمو",
       handle: "@italian4u.italian4u",
@@ -31,7 +41,7 @@ export default function SocialLinks() {
       gradientFrom: "#FFFFFF",
       gradientVia: null,
       gradientTo: "#FF4E4E",
-      url: "https://youtube.com/@italian4u",
+      url: "https://www.youtube.com/@italian4u.italian4u",
     },
   ], []);
 
@@ -61,7 +71,7 @@ export default function SocialLinks() {
         </nav>
 
         {/* Desktop Layout - Horizontal */}
-        <nav className="hidden lg:grid lg:grid-cols-3 gap-6 max-w-6xl mx-auto" role="list">
+        <nav className="hidden lg:grid lg:grid-cols-2 gap-6 max-w-7xl mx-auto" role="list">
           {socials.map((social) => (
             <SocialCard
               key={social.platform}
