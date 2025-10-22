@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import Link from "next/link";
 import Image from "next/image";
 import { ShoppingCart, BookOpen, GraduationCap, CheckCircle } from "lucide-react";
 
@@ -37,8 +38,9 @@ export default function StorePackageCard({
 
   return (
     <article className="group h-full flex flex-col bg-white rounded-2xl border border-neutral-lighter shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden">
-      {/* Image Container */}
-      <div className="relative w-full aspect-[4/3] flex-shrink-0 overflow-hidden bg-gradient-to-br from-neutral-indigo to-white">
+      <Link href={`/store/${id}`} className="flex-1 flex flex-col">
+        {/* Image Container */}
+        <div className="relative w-full aspect-[4/3] flex-shrink-0 overflow-hidden bg-gradient-to-br from-neutral-indigo to-white">
         <Image
           src={image}
           alt={`پکیج ${title}`}
@@ -112,38 +114,43 @@ export default function StorePackageCard({
         {/* Spacer */}
         <div className="flex-grow"></div>
 
-        {/* Pricing Section */}
+        {/* Pricing Display */}
         <div className="mt-4 pt-4 border-t border-neutral-lighter">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex flex-col items-end">
-              {originalPrice && (
-                <span 
-                  className="text-xs text-text-light line-through mb-1"
-                  aria-label={`قیمت اصلی: ${originalPrice.toLocaleString('fa-IR')} تومان`}
-                >
-                  {originalPrice.toLocaleString('fa-IR')} تومان
-                </span>
-              )}
+          <div className="flex flex-col items-end">
+            {originalPrice && (
               <span 
-                className="text-xl font-bold text-primary"
-                aria-label={`قیمت: ${price.toLocaleString('fa-IR')} تومان`}
+                className="text-xs text-text-light line-through mb-1"
+                aria-label={`قیمت اصلی: ${originalPrice.toLocaleString('fa-IR')} تومان`}
               >
-                {price.toLocaleString('fa-IR')} تومان
+                {originalPrice.toLocaleString('fa-IR')} تومان
               </span>
-            </div>
+            )}
+            <span 
+              className="text-xl font-bold text-primary"
+              aria-label={`قیمت: ${price.toLocaleString('fa-IR')} تومان`}
+            >
+              {price.toLocaleString('fa-IR')} تومان
+            </span>
           </div>
-
-          {/* Add to Cart Button */}
-          <button
-            onClick={() => onAddToCart?.(id)}
-            className="w-full flex items-center justify-center gap-2 bg-primary text-white py-3 rounded-xl font-semibold hover:bg-primary/90 transition-colors duration-200 shadow-md hover:shadow-lg"
-            aria-label={`افزودن ${title} به سبد خرید`}
-            type="button"
-          >
-            <ShoppingCart className="w-5 h-5" aria-hidden="true" />
-            افزودن به سبد خرید
-          </button>
         </div>
+      </div>
+      </Link>
+
+      {/* Add to Cart Button - Outside Link */}
+      <div className="p-5 pt-0">
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onAddToCart?.(id);
+          }}
+          className="w-full flex items-center justify-center gap-2 bg-primary text-white py-3 rounded-xl font-semibold hover:bg-primary/90 transition-colors duration-200 shadow-md hover:shadow-lg"
+          aria-label={`افزودن ${title} به سبد خرید`}
+          type="button"
+        >
+          <ShoppingCart className="w-5 h-5" aria-hidden="true" />
+          افزودن به سبد خرید
+        </button>
       </div>
     </article>
   );

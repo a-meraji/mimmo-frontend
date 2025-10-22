@@ -45,28 +45,58 @@ export default function StoreFilters({
   }, []);
 
   return (
-    <div className="w-full space-y-6" role="search" aria-label="جستجو و فیلتر دوره‌ها">
+    <div className="w-full space-y-4" role="search" aria-label="جستجو و فیلتر دوره‌ها">
       {/* Search and Category Row */}
-      <div className="flex flex-col sm:flex-row gap-3">
+      <div className="flex flex-row flex-wrap gap-x-4 gap-y-6 sm:gap-x-6">
+        {/* Search Input */}
+        <div className="space-y-2">
+          <h3 className="text-xs font-medium text-text-gray pr-0.5">جستجو</h3>
+          <div className="relative group">
+            <Search 
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-light group-focus-within:text-primary transition-colors" 
+              aria-hidden="true" 
+            />
+            <input
+              type="search"
+              value={searchQuery}
+              onChange={(e) => onSearchChange(e.target.value)}
+              placeholder="جستجو..."
+              className="w-36 sm:w-52 pr-10 pl-10 py-2.5 rounded-xl border border-neutral-extralight bg-white text-text-charcoal placeholder:text-text-light focus:border-primary focus:ring-0 focus:outline-none transition-all duration-200 text-xs font-normal"
+              aria-label="جستجوی دوره"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => onSearchChange('')}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-text-light hover:text-primary transition-colors"
+                aria-label="پاک کردن جستجو"
+                type="button"
+              >
+                <X className="w-4 h-4" aria-hidden="true" />
+              </button>
+            )}
+          </div>
+        </div>
+
         {/* Category Dropdown */}
-        <div className="relative sm:w-64" ref={dropdownRef}>
+        <div className="relative w-36 sm:w-52 space-y-2" ref={dropdownRef}>
+          <h3 className="text-xs font-medium text-text-gray pr-0.5">دسته‌بندی</h3>
           <button
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            className="w-full flex items-center justify-between gap-3 px-4 py-3.5 rounded-2xl border-2 border-neutral-lighter bg-white text-text-charcoal hover:border-primary/30 focus:border-primary focus:outline-none transition-all duration-200"
+            className="w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl border border-neutral-extralight bg-white text-text-charcoal hover:border-primary/30 focus:border-primary focus:outline-none transition-all duration-200"
             aria-label="انتخاب دسته‌بندی"
             aria-expanded={isDropdownOpen}
             type="button"
           >
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               {activeCategoryData && (
                 <>
-                  <activeCategoryData.icon className="w-5 h-5 text-primary" aria-hidden="true" />
-                  <span className="text-sm font-medium">{activeCategoryData.label}</span>
+                  <activeCategoryData.icon className="w-4 h-4 text-primary" aria-hidden="true" />
+                  <span className="text-xs font-normal">{activeCategoryData.label}</span>
                 </>
               )}
             </div>
             <ChevronDown 
-              className={`w-5 h-5 text-text-light transition-transform duration-200 ${
+              className={`w-4 h-4 text-text-light transition-transform duration-200 ${
                 isDropdownOpen ? 'rotate-180' : ''
               }`}
               aria-hidden="true"
@@ -75,7 +105,7 @@ export default function StoreFilters({
 
           {/* Dropdown Menu */}
           {isDropdownOpen && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl border-2 border-neutral-lighter shadow-xl z-50 overflow-hidden">
+            <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl border border-neutral-extralight shadow-lg z-50 overflow-hidden">
               {categories.map((category) => {
                 const Icon = category.icon;
                 const isActive = activeCategory === category.id;
@@ -86,17 +116,17 @@ export default function StoreFilters({
                       onCategoryChange(category.id);
                       setIsDropdownOpen(false);
                     }}
-                    className={`w-full flex items-center gap-3 px-4 py-3 text-right transition-colors duration-200 ${
+                    className={`w-full flex items-center gap-2 px-3 py-2 text-right transition-colors duration-200 ${
                       isActive
-                        ? 'bg-primary/10 text-primary'
-                        : 'text-text-gray hover:bg-neutral-indigo'
+                        ? 'bg-primary/5 text-primary font-medium'
+                        : 'text-text-gray font-normal hover:bg-neutral-indigo'
                     }`}
                     type="button"
                   >
-                    <Icon className="w-5 h-5" aria-hidden="true" />
-                    <span className="text-sm font-medium">{category.label}</span>
+                    <Icon className={`w-4 h-4 ${isActive ? 'text-primary' : 'text-text-light'}`} aria-hidden="true" />
+                    <span className="text-xs">{category.label}</span>
                     {isActive && (
-                      <div className="mr-auto w-2 h-2 rounded-full bg-primary" aria-hidden="true" />
+                      <div className="mr-auto w-1.5 h-1.5 rounded-full bg-primary" aria-hidden="true" />
                     )}
                   </button>
                 );
@@ -105,106 +135,80 @@ export default function StoreFilters({
           )}
         </div>
 
-        {/* Search Input */}
-        <div className="flex-1 relative">
-          <div className="relative group">
-            <Search 
-              className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-light group-focus-within:text-primary transition-colors" 
-              aria-hidden="true" 
-            />
-            <input
-              type="search"
-              value={searchQuery}
-              onChange={(e) => onSearchChange(e.target.value)}
-              placeholder="جستجوی دوره..."
-              className="w-full pr-12 pl-12 py-3.5 rounded-2xl border-2 border-neutral-lighter bg-white text-text-charcoal placeholder:text-text-light focus:border-primary focus:ring-0 focus:outline-none transition-all duration-200 text-sm"
-              aria-label="جستجوی دوره"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => onSearchChange('')}
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-text-light hover:text-text-charcoal transition-colors"
-                aria-label="پاک کردن جستجو"
-                type="button"
-              >
-                <X className="w-5 h-5" aria-hidden="true" />
-              </button>
-            )}
+        {/* Level Filter - Only show for Italian category */}
+        {(activeCategory === 'italian' || activeCategory === 'all') && (
+          <div className=" space-y-2">
+            <h3 className="text-xs font-medium text-text-gray pr-0.5">سطح آموزشی</h3>
+            
+            {/* Mobile & Desktop: Same Layout */}
+            <div className="flex flex-wrap gap-1.5">
+              {levels.map((level) => {
+                const isActive = activeLevel === level.id;
+                return (
+                  <button
+                    key={level.id}
+                    onClick={() => onLevelChange(level.id)}
+                    className={`px-3.5 py-1.5 rounded-lg text-xs transition-all duration-200 border ${
+                      isActive
+                        ? 'bg-primary text-white border-primary shadow-md shadow-primary/20 font-medium'
+                        : 'bg-white text-text-gray border-neutral-extralight hover:border-primary/30 hover:shadow-sm font-normal'
+                    }`}
+                    aria-label={`سطح ${level.label}`}
+                    aria-current={isActive ? 'true' : undefined}
+                    type="button"
+                  >
+                    {level.label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
-      {/* Level Filter - Only show for Italian category */}
-      {(activeCategory === 'italian' || activeCategory === 'all') && (
-        <div className="space-y-3">
-          <h3 className="text-sm font-semibold text-text-charcoal pr-1">سطح آموزشی</h3>
-          
-          {/* Mobile & Desktop: Same Layout */}
-          <div className="flex flex-wrap gap-2">
-            {levels.map((level) => {
-              const isActive = activeLevel === level.id;
-              return (
-                <button
-                  key={level.id}
-                  onClick={() => onLevelChange(level.id)}
-                  className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 border-2 ${
-                    isActive
-                      ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20'
-                      : 'bg-white text-text-gray border-neutral-lighter hover:border-primary/30 hover:shadow-md'
-                  }`}
-                  aria-label={`سطح ${level.label}`}
-                  aria-current={isActive ? 'true' : undefined}
-                  type="button"
-                >
-                  {level.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
+     
 
       {/* Active Filters Summary */}
       {(activeCategory !== 'all' || activeLevel !== 'all' || searchQuery) && (
-        <div className="flex items-center gap-2 pt-2 border-t border-neutral-lighter">
-          <span className="text-xs text-text-gray">فیلترهای فعال:</span>
-          <div className="flex flex-wrap gap-2">
+        <div className="flex items-center gap-1.5 pt-2 border-t border-neutral-extralight">
+          <span className="text-[10px] text-text-light font-normal">فعال:</span>
+          <div className="flex flex-wrap gap-1">
             {activeCategory !== 'all' && (
-              <span className="inline-flex items-center gap-1 px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-medium">
+              <span className="inline-flex items-center gap-0.5 px-2 py-0.5 bg-primary/5 text-primary rounded-full text-[10px] font-normal border border-primary/20">
                 {categories.find(c => c.id === activeCategory)?.label}
                 <button
                   onClick={() => onCategoryChange('all')}
-                  className="hover:bg-primary/20 rounded-full p-0.5 transition-colors"
+                  className="hover:bg-primary/10 rounded-full p-0.5 transition-colors"
                   aria-label="حذف فیلتر دسته‌بندی"
                   type="button"
                 >
-                  <X className="w-3 h-3" aria-hidden="true" />
+                  <X className="w-2.5 h-2.5" aria-hidden="true" />
                 </button>
               </span>
             )}
             {activeLevel !== 'all' && (
-              <span className="inline-flex items-center gap-1 px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-medium">
+              <span className="inline-flex items-center gap-0.5 px-2 py-0.5 bg-primary/5 text-primary rounded-full text-[10px] font-normal border border-primary/20">
                 سطح {activeLevel}
                 <button
                   onClick={() => onLevelChange('all')}
-                  className="hover:bg-primary/20 rounded-full p-0.5 transition-colors"
+                  className="hover:bg-primary/10 rounded-full p-0.5 transition-colors"
                   aria-label="حذف فیلتر سطح"
                   type="button"
                 >
-                  <X className="w-3 h-3" aria-hidden="true" />
+                  <X className="w-2.5 h-2.5" aria-hidden="true" />
                 </button>
               </span>
             )}
             {searchQuery && (
-              <span className="inline-flex items-center gap-1 px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-medium">
+              <span className="inline-flex items-center gap-0.5 px-2 py-0.5 bg-primary/5 text-primary rounded-full text-[10px] font-normal border border-primary/20">
                 "{searchQuery}"
                 <button
                   onClick={() => onSearchChange('')}
-                  className="hover:bg-primary/20 rounded-full p-0.5 transition-colors"
+                  className="hover:bg-primary/10 rounded-full p-0.5 transition-colors"
                   aria-label="حذف جستجو"
                   type="button"
                 >
-                  <X className="w-3 h-3" aria-hidden="true" />
+                  <X className="w-2.5 h-2.5" aria-hidden="true" />
                 </button>
               </span>
             )}

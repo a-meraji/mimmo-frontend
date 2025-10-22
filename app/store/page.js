@@ -237,6 +237,9 @@ export default function StorePage() {
 
   return (
     <div className="min-h-screen bg-white">
+      {/* Decorative Elements */}
+      <div className="absolute top-10 left-10 w-32 h-32 bg-primary/10 rounded-full blur-3xl" aria-hidden="true" />
+      <div className="absolute bottom-10 right-10 w-40 h-40 bg-secondary/10 rounded-full blur-3xl" aria-hidden="true" />
       {/* Hero Section */}
       <StoreHero />
 

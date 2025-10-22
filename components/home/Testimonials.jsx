@@ -80,7 +80,7 @@ export default function Testimonials() {
     if (!isPaused) {
       intervalRef.current = setInterval(() => {
         setCurrentIndex((prev) => (prev + 1) % testimonials.length);
-      }, 3000); // Change every 3 seconds
+      }, 4000); // Change every 3 seconds
     }
 
     return () => {
@@ -119,8 +119,8 @@ export default function Testimonials() {
         {/* Testimonials Carousel */}
         <div
           className="relative h-[400px] flex items-center justify-center px-4 lg:px-0"
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
+          // onMouseEnter={handleMouseEnter}
+          // onMouseLeave={handleMouseLeave}
           role="region"
           aria-roledescription="carousel"
           aria-label="نظرات کاربران"
