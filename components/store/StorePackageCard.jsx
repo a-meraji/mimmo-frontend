@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ShoppingCart, BookOpenText, Clock, NotebookText  } from "lucide-react";
+import { useCart } from "@/contexts/CartContext";
 
 export default function StorePackageCard({ 
   id,
@@ -17,6 +18,8 @@ export default function StorePackageCard({
   badge,
   onAddToCart 
 }) {
+  const { addToCart } = useCart();
+
   const discount = useMemo(() => {
     if (!originalPrice) return null;
     return Math.round(((originalPrice - price) / originalPrice) * 100);
@@ -40,6 +43,25 @@ export default function StorePackageCard({
     BookOpenText,
     Clock,
     NotebookText,
+  };
+
+  const handleAddToCart = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    addToCart({
+      id,
+      title,
+      subtitle: subtitle || '',
+      image,
+      price,
+      originalPrice: originalPrice || null,
+    });
+
+    // Call the optional callback if provided
+    if (onAddToCart) {
+      onAddToCart(id);
+    }
   };
 
   return (
@@ -143,11 +165,7 @@ export default function StorePackageCard({
       {/* Add to Cart Button - Outside Link */}
       <div className="p-5 pt-0">
         <button
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            onAddToCart?.(id);
-          }}
+          onClick={handleAddToCart}
           className="w-full flex items-center justify-center gap-2 bg-primary text-white py-3 rounded-xl font-semibold hover:bg-primary/90 transition-colors duration-200 shadow-md hover:shadow-lg"
           aria-label={`افزودن ${title} به سبد خرید`}
           type="button"

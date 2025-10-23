@@ -178,10 +178,12 @@ export default function ProductPage({ params }) {
             description={product.description}
           />
           <ProductInfo
+            id={product.id}
             title={product.title}
             subtitle={product.subtitle}
             price={product.price}
             originalPrice={product.originalPrice}
+            image={product.image}
             rating={product.rating}
             reviewCount={product.reviewCount}
             specifications={product.specifications}
@@ -209,15 +211,17 @@ export default function ProductPage({ params }) {
           <div className="col-span-5">
             <div className="space-y-6">
               <ProductInfo
+                id={product.id}
                 title={product.title}
                 subtitle={product.subtitle}
                 price={product.price}
                 originalPrice={product.originalPrice}
-              rating={product.rating}
-              reviewCount={product.reviewCount}
-              specifications={product.specifications}
-              onAddToCart={handleAddToCart}
-            />
+                image={product.image}
+                rating={product.rating}
+                reviewCount={product.reviewCount}
+                specifications={product.specifications}
+                onAddToCart={handleAddToCart}
+              />
               <div ref={commentFormRef}>
                 <CommentForm onSubmit={handleCommentSubmit} />
               </div>
@@ -225,10 +229,12 @@ export default function ProductPage({ params }) {
             
             {/* Sticky Product Info - Uses CSS sticky positioning */}
             <StickyProductInfo
+              id={product.id}
               title={product.title}
               subtitle={product.subtitle}
               price={product.price}
               originalPrice={product.originalPrice}
+              image={product.image}
               rating={product.rating}
               reviewCount={product.reviewCount}
               onAddToCart={handleAddToCart}

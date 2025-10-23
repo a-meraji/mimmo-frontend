@@ -4,8 +4,11 @@ import { useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ShoppingCart } from "lucide-react";
+import { useCart } from "@/contexts/CartContext";
 
 export default function PackageCard({ package: pkg, priority = false }) {
+  const { addToCart } = useCart();
+
   const discount = useMemo(() => {
     if (!pkg.originalPrice) return null;
     return Math.round(((pkg.originalPrice - pkg.price) / pkg.originalPrice) * 100);
@@ -23,6 +26,20 @@ export default function PackageCard({ package: pkg, priority = false }) {
         return 'bg-primary/10 text-primary border-primary/40';
     }
   }, [pkg.level]);
+
+  const handleAddToCart = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    addToCart({
+      id: pkg.id,
+      title: pkg.title,
+      subtitle: pkg.subtitle || '',
+      image: pkg.image,
+      price: pkg.price,
+      originalPrice: pkg.originalPrice || null,
+    });
+  };
 
   return (
     <article className="group h-full flex flex-col bg-white rounded-2xl border border-neutral-lighter shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden">
@@ -106,12 +123,7 @@ export default function PackageCard({ package: pkg, priority = false }) {
       {/* Add to Cart Button - Outside Link */}
       <div className="p-5 pt-0">
         <button
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            // TODO: Implement cart logic
-            console.log('Added to cart:', pkg.id);
-          }}
+          onClick={handleAddToCart}
           className="w-full flex items-center justify-center gap-2 bg-primary text-white py-3 rounded-xl font-semibold hover:bg-primary/90 transition-colors duration-200 shadow-md hover:shadow-lg"
           aria-label={`افزودن ${pkg.title} به سبد خرید`}
           type="button"

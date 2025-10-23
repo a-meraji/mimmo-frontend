@@ -3,6 +3,10 @@ import "./globals.css";
 import Header from "@/components/Header";
 import BottomNav from "@/components/BottomNav";
 import Footer from "@/components/Footer";
+import { CartProvider } from "@/contexts/CartContext";
+import { ToastProvider } from "@/contexts/ToastContext";
+import CartModal from "@/components/cart/CartModal";
+import ToastContainer from "@/components/toast/ToastContainer";
 
 export const metadata = {
   metadataBase: new URL('https://mimmo.academy'),
@@ -75,12 +79,18 @@ export default function RootLayout({ children }) {
   return (
     <html lang="fa" dir="rtl">
       <body className={`${kalameh.variable} antialiased font-sans`}>
-        <Header />
-        <main className="pb-24" id="main-content">
-          {children}
-        </main>
-        <Footer />
-        <BottomNav />
+        <ToastProvider>
+          <CartProvider>
+            <Header />
+            <main className="pb-24" id="main-content">
+              {children}
+            </main>
+            <Footer />
+            <BottomNav />
+            <CartModal />
+            <ToastContainer />
+          </CartProvider>
+        </ToastProvider>
       </body>
     </html>
   );

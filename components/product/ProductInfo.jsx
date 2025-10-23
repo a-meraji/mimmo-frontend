@@ -1,17 +1,21 @@
 "use client";
 
 import { ShoppingCart, Star, Clock, BookOpenText, NotebookText } from "lucide-react";
+import { useCart } from "@/contexts/CartContext";
 
 export default function ProductInfo({ 
+  id,
   title, 
   subtitle,
   price, 
   originalPrice, 
+  image,
   rating = 4.9,
   reviewCount = 1237,
   specifications = [],
   onAddToCart 
 }) {
+  const { addToCart } = useCart();
   const discount = originalPrice ? Math.round(((originalPrice - price) / originalPrice) * 100) : null;
 
   // Icon mapping - same as StorePackageCard.jsx
@@ -28,6 +32,22 @@ export default function ProductInfo({
   ];
 
   const specs = specifications.length > 0 ? specifications : defaultSpecs;
+
+  const handleAddToCart = () => {
+    addToCart({
+      id,
+      title,
+      subtitle: subtitle || '',
+      image,
+      price,
+      originalPrice: originalPrice || null,
+    });
+
+    // Call the optional callback if provided
+    if (onAddToCart) {
+      onAddToCart();
+    }
+  };
 
   return (
     <div className="bg-white rounded-2xl border border-neutral-extralight p-6 space-y-6">
@@ -67,7 +87,7 @@ export default function ProductInfo({
         </div>
         
         <button
-          onClick={onAddToCart}
+          onClick={handleAddToCart}
           className="w-full flex items-center justify-center gap-2 bg-primary text-white py-3 rounded-xl font-semibold hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20"
           type="button"
         >

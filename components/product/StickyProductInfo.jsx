@@ -2,21 +2,42 @@
 
 import { ShoppingCart, Star } from "lucide-react";
 import { useMemo } from "react";
+import { useCart } from "@/contexts/CartContext";
 
 export default function StickyProductInfo({ 
+  id,
   title, 
   subtitle,
   price, 
   originalPrice, 
+  image,
   rating = 4.9,
   reviewCount = 1237,
   onAddToCart,
   isVisible = false
 }) {
+  const { addToCart } = useCart();
+  
   const discount = useMemo(() => 
     originalPrice ? Math.round(((originalPrice - price) / originalPrice) * 100) : null,
     [originalPrice, price]
   );
+
+  const handleAddToCart = () => {
+    addToCart({
+      id,
+      title,
+      subtitle: subtitle || '',
+      image,
+      price,
+      originalPrice: originalPrice || null,
+    });
+
+    // Call the optional callback if provided
+    if (onAddToCart) {
+      onAddToCart();
+    }
+  };
 
   return (
     <div 
@@ -70,7 +91,7 @@ export default function StickyProductInfo({
         </div>
         
         <button
-          onClick={onAddToCart}
+          onClick={handleAddToCart}
           className="w-full flex items-center justify-center gap-2 bg-primary text-white py-3 rounded-xl font-semibold hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20"
           type="button"
           aria-label="افزودن به سبد خرید"

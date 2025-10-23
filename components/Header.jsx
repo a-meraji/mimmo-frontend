@@ -6,9 +6,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { ShoppingBag, User } from "lucide-react";
 import { getCurrentRouteName } from "@/constants/routes";
+import { useCart } from "@/contexts/CartContext";
 
 export default function Header() {
   const pathname = usePathname();
+  const { itemCount, setIsModalOpen } = useCart();
   const [isVisible, setIsVisible] = useState(true);
   const [isAtTop, setIsAtTop] = useState(true);
   const lastScrollY = useRef(0);
@@ -101,17 +103,23 @@ export default function Header() {
             {/* Right: Icons */}
             <div className="flex items-center gap-4" role="navigation" aria-label="دسترسی سریع">
               {/* Shopping Bag Icon */}
-              <Link
-                href="/store"
+              <button
+                onClick={() => setIsModalOpen(true)}
                 className="relative p-2 rounded-full hover:bg-neutral-indigo/50 transition-colors"
-                aria-label="سبد خرید"
+                aria-label={`سبد خرید - ${itemCount} آیتم`}
+                type="button"
               >
                 <ShoppingBag className="w-6 h-6 text-text-charcoal" strokeWidth={1.5} aria-hidden="true" />
-                {/* Optional: Badge for cart items count */}
-                {/* <span className="absolute top-0 right-0 w-5 h-5 bg-secondary text-xs flex items-center justify-center rounded-full font-bold" role="status" aria-label="3 آیتم در سبد">
-                  3
-                </span> */}
-              </Link>
+                {itemCount > 0 && (
+                  <span 
+                    className="absolute top-0 right-0 w-5 h-5 bg-primary text-white text-xs flex items-center justify-center rounded-full font-bold animate-scale-in" 
+                    role="status" 
+                    aria-label={`${itemCount} آیتم در سبد`}
+                  >
+                    {itemCount}
+                  </span>
+                )}
+              </button>
 
               {/* Profile Icon */}
               <Link
