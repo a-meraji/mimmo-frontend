@@ -39,3 +39,4 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 # mimmo-frontend
 # mimmo-frontend
 # mimmo-frontend
+# planito-frontend
