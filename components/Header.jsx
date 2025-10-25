@@ -1,16 +1,19 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ShoppingBag, User } from "lucide-react";
 import { getCurrentRouteName } from "@/constants/routes";
 import { useCart } from "@/contexts/CartContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Header() {
   const pathname = usePathname();
+  const router = useRouter();
   const { itemCount, setIsModalOpen } = useCart();
+  const { isAuthenticated, isLoading } = useAuth();
   const [isVisible, setIsVisible] = useState(true);
   const [isAtTop, setIsAtTop] = useState(true);
   const lastScrollY = useRef(0);
@@ -58,6 +61,15 @@ export default function Header() {
   }, [handleScroll]);
 
   const routeName = useMemo(() => getCurrentRouteName(pathname), [pathname]);
+
+  // Handle profile icon click
+  const handleProfileClick = useCallback(() => {
+    if (isAuthenticated) {
+      router.push('/profile');
+    } else {
+      router.push('/auth');
+    }
+  }, [isAuthenticated, router]);
 
   return (
     <header 
@@ -122,13 +134,16 @@ export default function Header() {
               </button>
 
               {/* Profile Icon */}
-              <Link
-                href="/profile"
-                className="p-2 rounded-full hover:bg-neutral-indigo/50 transition-colors"
-                aria-label="پروفایل کاربری"
+              <button
+                onClick={handleProfileClick}
+                disabled={isLoading}
+                className="p-2 rounded-full hover:bg-neutral-indigo/50 transition-colors
+                  disabled:opacity-50 disabled:cursor-wait"
+                aria-label={isAuthenticated ? "پروفایل کاربری" : "ورود / ثبت‌نام"}
+                type="button"
               >
                 <User className="w-6 h-6 text-text-charcoal" strokeWidth={1.5} aria-hidden="true" />
-              </Link>
+              </button>
             </div>
           </div>
         </nav>

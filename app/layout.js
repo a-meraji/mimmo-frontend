@@ -3,6 +3,7 @@ import "./globals.css";
 import Header from "@/components/Header";
 import BottomNav from "@/components/BottomNav";
 import Footer from "@/components/Footer";
+import { AuthProvider } from "@/contexts/AuthContext";
 import { CartProvider } from "@/contexts/CartContext";
 import { ToastProvider } from "@/contexts/ToastContext";
 import CartModal from "@/components/cart/CartModal";
@@ -80,16 +81,18 @@ export default function RootLayout({ children }) {
     <html lang="fa" dir="rtl">
       <body className={`${kalameh.variable} antialiased font-sans`}>
         <ToastProvider>
-          <CartProvider>
-            <Header />
-            <main className="pb-24" id="main-content">
-              {children}
-            </main>
-            <Footer />
-            <BottomNav />
-            <CartModal />
-            <ToastContainer />
-          </CartProvider>
+          <AuthProvider>
+            <CartProvider>
+              <Header />
+              <main className="pb-24" id="main-content">
+                {children}
+              </main>
+              <Footer />
+              <BottomNav />
+              <CartModal />
+              <ToastContainer />
+            </CartProvider>
+          </AuthProvider>
         </ToastProvider>
       </body>
     </html>
