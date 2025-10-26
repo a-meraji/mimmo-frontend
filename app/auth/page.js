@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Phone, Mail, ArrowRight, Edit2, RefreshCw } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -23,11 +23,14 @@ export default function AuthPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [timer, setTimer] = useState(0);
   const [canResend, setCanResend] = useState(false);
+  
+  // Track if verification is in progress to prevent double submission
+  const isVerifyingRef = useRef(false);
 
   // Redirect URL after successful auth
   const redirectUrl = searchParams.get('redirect') || '/profile';
 
-  // Redirect if already authenticated
+  // Redirect if already authenticated (single source of truth for redirects)
   useEffect(() => {
     if (isAuthenticated) {
       router.push(redirectUrl);
@@ -138,10 +141,15 @@ export default function AuthPage() {
   // Handle verify OTP
   const handleVerifyOTP = useCallback(async () => {
     if (otp.length !== 4) {
-      toast.error('کد تأیید باید ۴ رقم باشد');
       return;
     }
 
+    // Prevent double submission
+    if (isVerifyingRef.current) {
+      return;
+    }
+
+    isVerifyingRef.current = true;
     setIsLoading(true);
 
     try {
@@ -151,15 +159,16 @@ export default function AuthPage() {
         await verifyEmailOTP(inputValue, otp);
       }
 
+      // Success! The useEffect will handle redirect when isAuthenticated becomes true
       toast.success('ورود موفقیت‌آمیز بود');
-      router.push(redirectUrl);
     } catch (error) {
       toast.error(error.message || 'کد تأیید نامعتبر است');
       setOtp('');
+      isVerifyingRef.current = false; // Reset on error to allow retry
     } finally {
       setIsLoading(false);
     }
-  }, [otp, inputType, inputValue, fullPhoneNumber, verifyPhoneOTP, verifyEmailOTP, toast, router, redirectUrl]);
+  }, [otp, inputType, inputValue, fullPhoneNumber, verifyPhoneOTP, verifyEmailOTP, toast]);
 
   // Handle edit input
   const handleEdit = useCallback(() => {
@@ -167,11 +176,12 @@ export default function AuthPage() {
     setOtp('');
     setTimer(0);
     setCanResend(false);
+    isVerifyingRef.current = false; // Reset verification flag
   }, []);
 
   // Auto-submit when OTP is complete
   useEffect(() => {
-    if (otp.length === 4 && !isLoading) {
+    if (otp.length === 4 && !isLoading && !isVerifyingRef.current) {
       handleVerifyOTP();
     }
   }, [otp, isLoading, handleVerifyOTP]);
@@ -331,7 +341,7 @@ export default function AuthPage() {
           ) : (
             <>
               {/* Display Input Value with Edit Button */}
-              <div className="mb-6 p-4 bg-neutral-indigo/5 rounded-xl flex items-center justify-between">
+              <div className="mb-6 p-4 bg-neutral-indigo/5 rounded-xl flex items-center justify-between ">
                 <div className="flex items-center gap-3">
                   {inputType === 'phone' ? (
                     <Phone className="w-5 h-5 text-primary" aria-hidden="true" />
@@ -355,7 +365,7 @@ export default function AuthPage() {
               </div>
 
               {/* OTP Input */}
-              <div className="mb-6">
+              <div dir='ltr' className="mb-6">
                 <label className="block text-sm font-medium text-text-charcoal mb-4 text-center">
                   کد ۴ رقمی را وارد کنید
                 </label>

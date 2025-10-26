@@ -159,15 +159,18 @@ class FetchInstance {
       // Return text for non-JSON responses
       return await response.text();
     } catch (error) {
-      // Re-throw with additional context if not already our custom error
-      if (!error.status) {
-        const networkError = new Error(
-          `Network request failed: ${error.message}`
-        );
-        networkError.originalError = error;
-        throw networkError;
+      // If it's already our custom error with status, re-throw as is
+      if (error.status) {
+        throw error;
       }
-      throw error;
+      
+      // Handle network errors (fetch failed, CORS, etc.)
+      const networkError = new Error(
+        error.message || 'Network request failed'
+      );
+      networkError.isNetworkError = true;
+      networkError.originalError = error;
+      throw networkError;
     }
   }
 

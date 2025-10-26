@@ -2,10 +2,9 @@
 
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { clientAPI } from '../utils/fetchInstance';
 
 const AuthContext = createContext(undefined);
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
 // Token refresh interval: 14 minutes (before 15-minute expiry)
 const TOKEN_REFRESH_INTERVAL = 14 * 60 * 1000;
@@ -20,24 +19,21 @@ export function AuthProvider({ children }) {
 
   // Fetch user profile with access token
   const fetchUserProfile = useCallback(async (token) => {
+    if (!token) {
+      console.warn('No token provided to fetchUserProfile');
+      return null;
+    }
+    
     try {
-      const response = await fetch(`${API_BASE_URL}/user/profile`, {
-        method: 'GET',
+      const userData = await clientAPI.get('/user/profile', {
         headers: {
           'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include', // Include cookies (refresh token)
+        }
       });
 
-      if (response.ok) {
-        const userData = await response.json();
-        setUser(userData);
-        setIsAuthenticated(true);
-        return userData;
-      }
-      
-      throw new Error('Failed to fetch user profile');
+      setUser(userData);
+      setIsAuthenticated(true);
+      return userData;
     } catch (error) {
       console.error('Error fetching user profile:', error);
       return null;
@@ -45,32 +41,36 @@ export function AuthProvider({ children }) {
   }, []);
 
   // Refresh access token using refresh token (HTTPOnly cookie)
-  const refreshAccessToken = useCallback(async () => {
+  const refreshAccessToken = useCallback(async (isInitializing = false) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
-        method: 'POST',
-        credentials: 'include', // Send HTTPOnly refresh token cookie
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      const data = await clientAPI.post('/auth/refresh', null);
 
-      if (response.ok) {
-        const data = await response.json();
-        const newAccessToken = data.accessToken || data.access_token;
-        
-        if (newAccessToken) {
-          setAccessToken(newAccessToken);
-          await fetchUserProfile(newAccessToken);
-          return newAccessToken;
-        }
+      const newAccessToken = data.data.accessToken || null;
+      
+      if (newAccessToken) {
+        setAccessToken(newAccessToken);
+        await fetchUserProfile(newAccessToken);
+        return newAccessToken;
       }
       
       throw new Error('Failed to refresh token');
     } catch (error) {
-      console.error('Error refreshing token:', error);
-      // If refresh fails, logout user
-      await logout();
+      // If this is during initialization, silently handle expected errors
+      if (isInitializing) {
+        // 401 = No refresh token (expected for non-authenticated users)
+        // Network errors = Server might not be running in dev mode
+        if (error.status === 401 || error.isNetworkError) {
+          return null;
+        }
+      }
+      
+      // For other errors or non-initialization cases, log and handle
+      if (!isInitializing) {
+        console.error('Error refreshing token:', error);
+        // If refresh fails, logout user
+        await logout();
+      }
+      
       return null;
     }
   }, [fetchUserProfile]);
@@ -91,19 +91,7 @@ export function AuthProvider({ children }) {
   // Send OTP to phone
   const sendPhoneOTP = useCallback(async (phoneNumber) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/send-otp`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ phoneNumber }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to send OTP');
-      }
-
+      await clientAPI.post('/auth/send-otp', { phoneNumber });
       return { success: true };
     } catch (error) {
       console.error('Error sending phone OTP:', error);
@@ -114,19 +102,7 @@ export function AuthProvider({ children }) {
   // Send OTP to email
   const sendEmailOTP = useCallback(async (email) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/send-email-otp`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to send OTP');
-      }
-
+      await clientAPI.post('/auth/send-email-otp', { email });
       return { success: true };
     } catch (error) {
       console.error('Error sending email OTP:', error);
@@ -137,22 +113,16 @@ export function AuthProvider({ children }) {
   // Verify phone OTP
   const verifyPhoneOTP = useCallback(async (phoneNumber, otp) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/verify-otp`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include', // Receive refresh token cookie
-        body: JSON.stringify({ phoneNumber, otp }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Invalid OTP');
+      const data = await clientAPI.post('/auth/verify-otp', 
+        { phoneNumber, otp }
+      );
+      
+      // Check if response has the expected structure
+      if (!data || !data.data) {
+        throw new Error(data?.message || 'Invalid response from server');
       }
-
-      const data = await response.json();
-      const newAccessToken = data.accessToken || data.access_token;
+      
+      const newAccessToken = data.data.accessToken || null;
       
       if (newAccessToken) {
         setAccessToken(newAccessToken);
@@ -171,22 +141,16 @@ export function AuthProvider({ children }) {
   // Verify email OTP
   const verifyEmailOTP = useCallback(async (email, otp) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/verify-email-otp`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include', // Receive refresh token cookie
-        body: JSON.stringify({ email, otp }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Invalid OTP');
+      const data = await clientAPI.post('/auth/verify-email-otp',
+        { email, otp }
+      );
+      
+      // Check if response has the expected structure
+      if (!data || !data.data) {
+        throw new Error(data?.message || 'Invalid response from server');
       }
-
-      const data = await response.json();
-      const newAccessToken = data.accessToken || data.access_token;
+      
+      const newAccessToken = data.data.accessToken || null;
       
       if (newAccessToken) {
         setAccessToken(newAccessToken);
@@ -212,13 +176,10 @@ export function AuthProvider({ children }) {
 
       // Call logout endpoint if we have an access token
       if (accessToken) {
-        await fetch(`${API_BASE_URL}/auth/logout`, {
-          method: 'POST',
+        await clientAPI.post('/auth/logout', null, {
           headers: {
             'Authorization': `Bearer ${accessToken}`,
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
+          }
         });
       }
 
@@ -244,13 +205,15 @@ export function AuthProvider({ children }) {
     const initAuth = async () => {
       try {
         // Try to refresh token (in case we have a valid refresh token cookie)
-        const token = await refreshAccessToken();
+        // Pass true to indicate this is during initialization
+        const token = await refreshAccessToken(true);
         
         if (token) {
           setupRefreshTimer();
         }
       } catch (error) {
-        console.error('Failed to initialize auth:', error);
+        // Silently fail - user is simply not authenticated
+        // This is expected for first-time visitors
       } finally {
         setIsLoading(false);
       }
@@ -267,40 +230,40 @@ export function AuthProvider({ children }) {
   }, [refreshAccessToken, setupRefreshTimer]);
 
   // Make authenticated API requests
-  const authenticatedFetch = useCallback(async (url, options = {}) => {
+  const authenticatedFetch = useCallback(async (endpoint, options = {}) => {
     if (!accessToken) {
       throw new Error('No access token available');
     }
 
-    const response = await fetch(url, {
-      ...options,
-      headers: {
-        ...options.headers,
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-    });
+    try {
+      const response = await clientAPI.request(endpoint, {
+        ...options,
+        headers: {
+          ...options.headers,
+          'Authorization': `Bearer ${accessToken}`,
+        }
+      });
 
-    // If unauthorized, try to refresh token
-    if (response.status === 401) {
-      const newToken = await refreshAccessToken();
-      
-      if (newToken) {
-        // Retry request with new token
-        return fetch(url, {
-          ...options,
-          headers: {
-            ...options.headers,
-            'Authorization': `Bearer ${newToken}`,
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
-        });
+      return response;
+    } catch (error) {
+      // If unauthorized, try to refresh token
+      if (error.status === 401) {
+        const newToken = await refreshAccessToken();
+        
+        if (newToken) {
+          // Retry request with new token
+          return clientAPI.request(endpoint, {
+            ...options,
+            headers: {
+              ...options.headers,
+              'Authorization': `Bearer ${newToken}`,
+            }
+          });
+        }
       }
+      
+      throw error;
     }
-
-    return response;
   }, [accessToken, refreshAccessToken]);
 
   const value = {

@@ -47,18 +47,16 @@ export default function ProfilePage() {
     setIsSaving(true);
 
     try {
-      const response = await authenticatedFetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/user/profile`, {
+      // authenticatedFetch now returns data directly and handles base URL
+      await authenticatedFetch('/user/profile', {
         method: 'POST',
         body: JSON.stringify(formData),
       });
 
-      if (response.ok) {
-        toast.success('اطلاعات با موفقیت به‌روزرسانی شد');
-        setIsEditing(false);
-      } else {
-        throw new Error('Failed to update profile');
-      }
+      toast.success('اطلاعات با موفقیت به‌روزرسانی شد');
+      setIsEditing(false);
     } catch (error) {
+      console.error('Error updating profile:', error);
       toast.error('خطا در به‌روزرسانی اطلاعات');
     } finally {
       setIsSaving(false);

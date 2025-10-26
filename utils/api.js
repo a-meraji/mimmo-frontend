@@ -1,23 +1,15 @@
 // API utility for making authenticated requests
-
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+import { clientAPI } from './fetchInstance';
 
 /**
  * Make an authenticated API request
  * This should be used with the authenticatedFetch from AuthContext
+ * The authenticatedFetch now returns data directly and throws errors
  */
-export async function apiRequest(url, options = {}, authenticatedFetch) {
-  const fullUrl = url.startsWith('http') ? url : `${API_BASE_URL}${url}`;
-  
+export async function apiRequest(endpoint, options = {}, authenticatedFetch) {
   try {
-    const response = await authenticatedFetch(fullUrl, options);
-    
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      throw new Error(error.message || `Request failed with status ${response.status}`);
-    }
-    
-    return await response.json();
+    // authenticatedFetch now handles base URL and returns data directly
+    return await authenticatedFetch(endpoint, options);
   } catch (error) {
     console.error('API Request Error:', error);
     throw error;
@@ -46,18 +38,8 @@ export async function updateUserProfile(data, authenticatedFetch) {
  */
 export async function getAllPackages() {
   try {
-    const response = await fetch(`${API_BASE_URL}/package/all`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    
-    if (!response.ok) {
-      throw new Error('Failed to fetch packages');
-    }
-    
-    return await response.json();
+    // Use clientAPI for public endpoints - it handles base URL and JSON parsing
+    return await clientAPI.get('/package/all');
   } catch (error) {
     console.error('Error fetching packages:', error);
     throw error;
