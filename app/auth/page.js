@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import OTPInput from '@/components/auth/OTPInput';
 import CountryCodeSelector from '@/components/auth/CountryCodeSelector';
+import { getPhoneCodeByISO } from '@/constants/countries';
 
 export default function AuthPage() {
   const router = useRouter();
@@ -16,7 +17,7 @@ export default function AuthPage() {
 
   const [step, setStep] = useState('input'); // 'input' or 'verify'
   const [inputType, setInputType] = useState('phone'); // 'phone' or 'email'
-  const [countryCode, setCountryCode] = useState('+98'); // Default to Iran
+  const [countryISO, setCountryISO] = useState('IR'); // Default to Iran (ISO code)
   const [inputValue, setInputValue] = useState('');
   const [otp, setOtp] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -61,10 +62,14 @@ export default function AuthPage() {
   const fullPhoneNumber = useMemo(() => {
     if (inputType !== 'phone') return inputValue;
     
+    // Get phone code from ISO code
+    const phoneCode = getPhoneCodeByISO(countryISO);
+    if (!phoneCode) return inputValue;
+    
     // Remove leading zero if present (for Iran: 09123456789 -> 9123456789)
     const cleanNumber = inputValue.startsWith('0') ? inputValue.slice(1) : inputValue;
-    return `${countryCode}${cleanNumber}`;
-  }, [inputType, countryCode, inputValue]);
+    return `${phoneCode}${cleanNumber}`;
+  }, [inputType, countryISO, inputValue]);
 
   // Validate input
   const isValidInput = useMemo(() => {
@@ -241,8 +246,8 @@ export default function AuthPage() {
                   <div dir="ltr" className="flex gap-2">
                     {/* Country Code Selector */}
                     <CountryCodeSelector
-                      value={countryCode}
-                      onChange={setCountryCode}
+                      value={countryISO}
+                      onChange={setCountryISO}
                       disabled={isLoading}
                     />
                     
@@ -253,7 +258,7 @@ export default function AuthPage() {
                       inputMode="numeric"
                       value={inputValue}
                       onChange={(e) => setInputValue(e.target.value)}
-                      placeholder={countryCode === '+98' ? '9123456789' : '1234567890'}
+                      placeholder={countryISO === 'IR' ? '9123456789' : '1234567890'}
                       disabled={isLoading}
                       className="flex-1 px-4 py-3 border-2 border-neutral-gray rounded-xl
                         focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none
