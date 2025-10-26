@@ -9,6 +9,57 @@ class FetchInstance {
     this.isServerSide = isServerSide;
     this.isDev = process.env.NODE_ENV === 'development';
     this.baseURL = this.getBaseURL();
+    this.validateEnvironment();
+  }
+
+  /**
+   * Validate that required environment variables are set
+   * Provides helpful error messages if configuration is missing
+   */
+  validateEnvironment() {
+    const requiredVars = this.getRequiredEnvVars();
+    const missing = [];
+
+    for (const [key, description] of Object.entries(requiredVars)) {
+      if (!process.env[key]) {
+        missing.push(`${key} (${description})`);
+      }
+    }
+
+    if (missing.length > 0 && !this.hasValidFallback()) {
+      console.warn(
+        '⚠️  Missing environment variables. Using fallback values.\n' +
+        'For production deployment, please set:\n' +
+        missing.map(v => `  - ${v}`).join('\n') +
+        '\n\nCopy .env.example to .env.local and configure your values.'
+      );
+    }
+  }
+
+  /**
+   * Get required environment variables based on context
+   * @returns {Object} Map of env var names to descriptions
+   */
+  getRequiredEnvVars() {
+    if (this.isServerSide) {
+      return this.isDev
+        ? { 'API_URL_SERVER_DEV': 'Server-side development API URL' }
+        : { 'API_URL_SERVER_PROD': 'Server-side production API URL' };
+    } else {
+      return this.isDev
+        ? { 'NEXT_PUBLIC_API_URL_DEV': 'Client-side development API URL' }
+        : { 'NEXT_PUBLIC_API_URL_PROD': 'Client-side production API URL' };
+    }
+  }
+
+  /**
+   * Check if fallback values are acceptable
+   * @returns {boolean}
+   */
+  hasValidFallback() {
+    // In development, localhost fallback is acceptable
+    // In production, we should warn but not crash
+    return this.isDev;
   }
 
   /**
@@ -19,21 +70,21 @@ class FetchInstance {
     // Server-side requests
     if (this.isServerSide) {
       if (this.isDev) {
-        // Dev mode: external server
-        return 'http://5.75.203.252:3000';
+        // Dev mode: Read from environment variable
+        return process.env.API_URL_SERVER_DEV || 'http://localhost:3000';
       } else {
-        // Production mode: internal call
-        return 'http://127.0.0.1:3000';
+        // Production mode: Internal call - Read from environment variable
+        return process.env.API_URL_SERVER_PROD || 'http://127.0.0.1:3000';
       }
     }
     
-    // Client-side requests
+    // Client-side requests (uses NEXT_PUBLIC_ prefix for browser access)
     if (this.isDev) {
-      // Dev mode: external server
-      return 'http://5.75.203.252:3000';
+      // Dev mode: Read from public environment variable
+      return process.env.NEXT_PUBLIC_API_URL_DEV || 'http://localhost:3000';
     } else {
-      // Production mode: external domain
-      return 'https://back.mimmoacademy.com';
+      // Production mode: External domain - Read from public environment variable
+      return process.env.NEXT_PUBLIC_API_URL_PROD || 'https://back.mimmoacademy.com';
     }
   }
 

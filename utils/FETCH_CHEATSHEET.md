@@ -2,6 +2,15 @@
 
 ## 🚀 Quick Start
 
+### 1. Setup Environment
+
+```bash
+cp .env.example .env.local
+# Edit .env.local with your values
+```
+
+### 2. Import and Use
+
 ```js
 // Client-side (React components)
 import { clientAPI } from '@/utils/fetchInstance';
@@ -13,12 +22,28 @@ import { createServerAPI } from '@/utils/fetchInstance';
 import { createAPI } from '@/utils/fetchInstance';
 ```
 
-## 📍 Base URLs
+## 📍 Environment Variables
 
-| Context | Dev | Production |
-|---------|-----|------------|
-| **Client** | `http://5.75.203.252:3000` | `https://back.mimmoacademy.com` |
-| **Server** | `http://5.75.203.252:3000` | `http://127.0.0.1:3000` |
+### Required Variables
+
+```env
+# Client-side (visible in browser)
+NEXT_PUBLIC_API_URL_DEV=http://5.75.203.252:3000
+NEXT_PUBLIC_API_URL_PROD=https://back.mimmoacademy.com
+
+# Server-side (private)
+API_URL_SERVER_DEV=http://5.75.203.252:3000
+API_URL_SERVER_PROD=http://127.0.0.1:3000
+```
+
+### Configuration Table
+
+| Variable | Context | When Used |
+|----------|---------|-----------|
+| `NEXT_PUBLIC_API_URL_DEV` | Client | Browser requests in dev mode |
+| `NEXT_PUBLIC_API_URL_PROD` | Client | Browser requests in production |
+| `API_URL_SERVER_DEV` | Server | Server requests in dev mode |
+| `API_URL_SERVER_PROD` | Server | Server requests in production |
 
 ## 🔧 Methods
 

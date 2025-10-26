@@ -396,19 +396,56 @@ try {
 
 ## ⚙️ Configuration
 
-### Environment Variables
+### Environment Variables (Required)
 
-The instance automatically uses `process.env.NODE_ENV` to determine development vs production mode.
+The instance reads from environment variables for maximum security and flexibility.
 
-**No additional environment variables are needed** - the base URLs are hardcoded based on the requirements:
+#### Setup Instructions
 
-- Development: `http://5.75.203.252:3000`
-- Production (client): `https://back.mimmoacademy.com`
-- Production (server): `http://127.0.0.1:3000`
+1. **Copy the template**:
+   ```bash
+   cp .env.example .env.local
+   ```
 
-### Custom Configuration (Optional)
+2. **Configure your values** in `.env.local`:
 
-If you need to override the base URL:
+```env
+# Client-side URLs (visible in browser)
+NEXT_PUBLIC_API_URL_DEV=http://5.75.203.252:3000
+NEXT_PUBLIC_API_URL_PROD=https://back.mimmoacademy.com
+
+# Server-side URLs (private, server only)
+API_URL_SERVER_DEV=http://5.75.203.252:3000
+API_URL_SERVER_PROD=http://127.0.0.1:3000
+```
+
+#### Environment Variable Reference
+
+| Variable | Context | Visibility | Purpose |
+|----------|---------|------------|---------|
+| `NEXT_PUBLIC_API_URL_DEV` | Client | Public | Browser requests in development |
+| `NEXT_PUBLIC_API_URL_PROD` | Client | Public | Browser requests in production |
+| `API_URL_SERVER_DEV` | Server | Private | Server requests in development |
+| `API_URL_SERVER_PROD` | Server | Private | Server requests in production |
+
+#### Security Notes
+
+- ✅ **Client vars** (`NEXT_PUBLIC_*`) are embedded in the browser bundle
+- ✅ **Server vars** (no prefix) remain server-side only and are more secure
+- ✅ Never commit `.env.local` to version control
+- ✅ `.env.example` provides a template for other developers
+- ✅ Fallback values are provided for development convenience
+
+#### Fallback Values
+
+If environment variables are not set, the instance uses safe fallback values:
+
+- Development: `http://localhost:3000` (safe for local dev)
+- Production: Shows a warning and uses hardcoded fallbacks
+
+### Custom Configuration (Advanced)
+
+If you need to override the base URL dynamically:
 
 ```js
 import FetchInstance from '@/utils/fetchInstance';
@@ -418,6 +455,18 @@ customAPI.baseURL = 'https://custom-api.com';
 
 const data = await customAPI.get('/endpoint');
 ```
+
+### Production Deployment
+
+When deploying to production, set environment variables via your hosting platform:
+
+**Vercel**:
+```bash
+vercel env add NEXT_PUBLIC_API_URL_PROD
+vercel env add API_URL_SERVER_PROD
+```
+
+**Environment variables are automatically loaded from your hosting platform's dashboard.**
 
 ## 🎯 Best Practices
 
