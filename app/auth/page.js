@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Phone, Mail, ArrowRight, Edit2, RefreshCw } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -9,26 +9,36 @@ import OTPInput from '@/components/auth/OTPInput';
 import CountryCodeSelector from '@/components/auth/CountryCodeSelector';
 import { getPhoneCodeByISO } from '@/constants/countries';
 
-export default function AuthPage() {
+// Constants
+const OTP_LENGTH = 4;
+const OTP_TIMER_SECONDS = 120;
+const DEFAULT_REDIRECT = '/profile';
+const DEFAULT_COUNTRY = 'IR';
+const PHONE_REGEX = /^\d{7,15}$/;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// Separate component that uses useSearchParams (must be wrapped in Suspense)
+function AuthForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { sendPhoneOTP, sendEmailOTP, verifyPhoneOTP, verifyEmailOTP, isAuthenticated } = useAuth();
   const { toast } = useToast();
 
+  // State
   const [step, setStep] = useState('input'); // 'input' or 'verify'
   const [inputType, setInputType] = useState('phone'); // 'phone' or 'email'
-  const [countryISO, setCountryISO] = useState('IR'); // Default to Iran (ISO code)
+  const [countryISO, setCountryISO] = useState(DEFAULT_COUNTRY);
   const [inputValue, setInputValue] = useState('');
   const [otp, setOtp] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [timer, setTimer] = useState(0);
   const [canResend, setCanResend] = useState(false);
   
-  // Track if verification is in progress to prevent double submission
+  // Refs
   const isVerifyingRef = useRef(false);
 
-  // Redirect URL after successful auth
-  const redirectUrl = searchParams.get('redirect') || '/profile';
+  // Redirect URL
+  const redirectUrl = searchParams.get('redirect') || DEFAULT_REDIRECT;
 
   // Redirect if already authenticated (single source of truth for redirects)
   useEffect(() => {
@@ -77,12 +87,10 @@ export default function AuthPage() {
   // Validate input
   const isValidInput = useMemo(() => {
     if (inputType === 'phone') {
-      // Basic phone number validation: must be digits only and between 7-15 characters
-      const cleanNumber = inputValue.replace(/^0+/, ''); // Remove leading zeros
-      return /^\d{7,15}$/.test(cleanNumber);
+      const cleanNumber = inputValue.replace(/^0+/, '');
+      return PHONE_REGEX.test(cleanNumber);
     }
-    // Email validation
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(inputValue);
+    return EMAIL_REGEX.test(inputValue);
   }, [inputType, inputValue]);
 
   // Handle send OTP
@@ -103,7 +111,7 @@ export default function AuthPage() {
 
       toast.success('کد تأیید ارسال شد');
       setStep('verify');
-      setTimer(120); // 2 minutes
+      setTimer(OTP_TIMER_SECONDS);
       setCanResend(false);
       setOtp('');
     } catch (error) {
@@ -128,7 +136,7 @@ export default function AuthPage() {
       }
 
       toast.success('کد تأیید مجدداً ارسال شد');
-      setTimer(120);
+      setTimer(OTP_TIMER_SECONDS);
       setOtp('');
     } catch (error) {
       toast.error(error.message || 'خطا در ارسال مجدد کد');
@@ -140,7 +148,7 @@ export default function AuthPage() {
 
   // Handle verify OTP
   const handleVerifyOTP = useCallback(async () => {
-    if (otp.length !== 4) {
+    if (otp.length !== OTP_LENGTH) {
       return;
     }
 
@@ -181,7 +189,7 @@ export default function AuthPage() {
 
   // Auto-submit when OTP is complete
   useEffect(() => {
-    if (otp.length === 4 && !isLoading && !isVerifyingRef.current) {
+    if (otp.length === OTP_LENGTH && !isLoading && !isVerifyingRef.current) {
       handleVerifyOTP();
     }
   }, [otp, isLoading, handleVerifyOTP]);
@@ -367,12 +375,12 @@ export default function AuthPage() {
               {/* OTP Input */}
               <div dir='ltr' className="mb-6">
                 <label className="block text-sm font-medium text-text-charcoal mb-4 text-center">
-                  کد ۴ رقمی را وارد کنید
+                  کد {OTP_LENGTH} رقمی را وارد کنید
                 </label>
                 <OTPInput
                   value={otp}
                   onChange={setOtp}
-                  length={4}
+                  length={OTP_LENGTH}
                   disabled={isLoading}
                 />
               </div>
@@ -401,7 +409,7 @@ export default function AuthPage() {
               <button
                 type="button"
                 onClick={handleVerifyOTP}
-                disabled={otp.length !== 4 || isLoading}
+                disabled={otp.length !== OTP_LENGTH || isLoading}
                 className="w-full bg-primary hover:bg-primary-dark text-white font-semibold
                   py-3 px-6 rounded-xl transition-all duration-200
                   disabled:bg-neutral-gray disabled:cursor-not-allowed
@@ -434,6 +442,27 @@ export default function AuthPage() {
         </p>
       </div>
     </main>
+  );
+}
+
+// Loading fallback for Suspense
+function AuthLoading() {
+  return (
+    <main className="min-h-screen bg-gradient-to-b from-neutral-indigo/10 to-white flex items-center justify-center px-4 py-12">
+      <div className="flex items-center gap-3">
+        <RefreshCw className="w-8 h-8 text-primary animate-spin" aria-hidden="true" />
+        <p className="text-lg font-medium text-text-gray">در حال بارگذاری...</p>
+      </div>
+    </main>
+  );
+}
+
+// Main page component with Suspense boundary
+export default function AuthPage() {
+  return (
+    <Suspense fallback={<AuthLoading />}>
+      <AuthForm />
+    </Suspense>
   );
 }
 
