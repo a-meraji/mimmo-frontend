@@ -46,7 +46,7 @@ export default function SocialLinks() {
   ], []);
 
   return (
-    <section className="w-full py-20 bg-white" aria-label="شبکه های اجتماعی">
+    <section className="w-full py-20 " aria-label="شبکه های اجتماعی">
       <div className="container mx-auto px-6">
         {/* Section Title */}
         <h2 className="text-3xl font-extrabold text-text-charcoal text-center mb-12">

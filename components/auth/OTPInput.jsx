@@ -120,8 +120,8 @@ export default function OTPInput({ value = '', onChange, length = 4, disabled = 
             border-2 rounded-xl
             transition-all duration-200
             ${disabled 
-              ? 'bg-neutral-lighter border-neutral-gray text-text-gray cursor-not-allowed' 
-              : 'bg-white border-neutral-gray hover:border-primary focus:border-primary focus:ring-2 focus:ring-primary/20'
+              ? 'bg-neutral-lighter border-neutral-extralight text-text-gray cursor-not-allowed' 
+              : 'bg-white border-neutral-extralight hover:border-primary focus:border-primary focus:ring-2 focus:ring-primary/20'
             }
             ${value[index] ? 'border-primary' : ''}
           `}

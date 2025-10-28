@@ -211,7 +211,7 @@ function AuthForm() {
         </div>
 
         {/* Card */}
-        <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 border border-neutral-lighter">
+        <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 border border-neutral-extralight">
           {step === 'input' ? (
             <>
               {/* Input Type Toggle */}
@@ -261,7 +261,7 @@ function AuthForm() {
                 </label>
                 
                 {inputType === 'phone' ? (
-                  <div dir="ltr" className="flex gap-2">
+                  <div dir="ltr" className="flex gap-2 relative">
                     {/* Country Code Selector */}
                     <CountryCodeSelector
                       value={countryISO}
@@ -278,7 +278,7 @@ function AuthForm() {
                       onChange={(e) => setInputValue(e.target.value)}
                       placeholder={countryISO === 'IR' ? '9123456789' : '1234567890'}
                       disabled={isLoading}
-                      className="flex-1 px-4 py-3 border-2 border-neutral-gray rounded-xl
+                      className="flex-1 px-2 py-3 border-2 border-neutral-extralight rounded-xl
                         focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none
                         transition-all duration-200 text-text-charcoal
                         disabled:bg-neutral-lighter disabled:cursor-not-allowed
@@ -299,7 +299,7 @@ function AuthForm() {
                     onChange={(e) => setInputValue(e.target.value)}
                     placeholder="example@email.com"
                     disabled={isLoading}
-                    className="w-full px-4 py-3 border-2 border-neutral-gray rounded-xl
+                    className="w-full px-4 py-3 border-2 border-neutral-extralight rounded-xl
                       focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none
                       transition-all duration-200 text-text-charcoal
                       disabled:bg-neutral-lighter disabled:cursor-not-allowed

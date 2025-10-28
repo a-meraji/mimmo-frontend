@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server';
 const PROTECTED_ROUTES = [
   '/profile',
   '/exam',
-  '/learn',
+  // '/learn',
 ];
 
 // Define public routes that should redirect to home if authenticated
