@@ -89,8 +89,8 @@ export default function DrivingLicenseHome() {
         <div className="hidden lg:flex items-start justify-center  max-w-7xl mx-auto">
           {/* Left Image */}
           <div className="flex-shrink-0 relative">
-            <div className="relative w-64 h-80 -ml-8  mt-10 transform rotate-[8deg] hover:rotate-[4deg] transition-transform duration-300">
-              <div className="absolute inset-0 bg-white rounded-2xl max-w-64 max-h-64">
+            <div className="relative w-64 h-80 -ml-8  mt-16 transform rotate-[8deg] hover:rotate-[4deg] transition-transform duration-300">
+              <div className="absolute inset-0 bg-white rounded-2xl ">
                 <Image
                   src="/license1.webp"
                   alt="گواهینامه رانندگی ایتالیا"

@@ -1,26 +1,26 @@
 import Image from "next/image";
-import { Award, Target, TrendingUp, Users } from "lucide-react";
+import { Target, Zap, Clock, Globe } from "lucide-react";
 
 export default function Roadmap() {
 
   const features = [
     {
-      icon: "🞋",
+      icon: Target,
       title: "هدفمند",
       description: "یادگیری تمرین محور",
     },
     {
-      icon: "🏎",
+      icon: Zap,
       title: "سریع و موثر",
       description: "آزمون ⤺ عیب یابی ⤺ تکرار",
     },
     {
-      icon: "🕑",
+      icon: Clock,
       title: "پشتیبانی ۲۴/۷",
       description: "همیشه در کنار شما",
     },
     {
-      icon: "🌎",
+      icon: Globe,
       title: "دسترسی همه جا",
       description: "در هر کجا که باشید",
     },
@@ -63,37 +63,43 @@ export default function Roadmap() {
 
           {/* Right Features - Hidden on mobile, visible on desktop */}
           <div className="hidden lg:grid lg:grid-cols-2 gap-4" role="list">
-            {features.map((feature, index) => (
-              <article
-                key={index}
-                className="text-[#583d01] flex flex-col justify-end aspect-square bg-gradient-to-br from-gradient-yellow to-white rounded-2xl p-6 border border-neutral-extralight shadow-sm hover:shadow-md transition-all duration-300"
-                role="listitem"
-              >
-                <div className="text-4xl mb-3" aria-hidden="true">{feature.icon}</div>
-                <h3 className="text-lg font-bold text-[#583d01] mb-2">
-                  {feature.title}
-                </h3>
-                <p className="text-sm text-[#583d01]">{feature.description}</p>
-              </article>
-            ))}
+            {features.map((feature, index) => {
+              const Icon = feature.icon;
+              return (
+                <article
+                  key={index}
+                  className="text-[#583d01] flex flex-col justify-end aspect-square bg-gradient-to-br from-gradient-yellow to-white rounded-2xl p-6 border border-neutral-extralight shadow-sm hover:shadow-md transition-all duration-300"
+                  role="listitem"
+                >
+                  <Icon className="w-10 h-10 mb-3 text-[#583d01]" aria-hidden="true" />
+                  <h3 className="text-lg font-bold text-[#583d01] mb-2">
+                    {feature.title}
+                  </h3>
+                  <p className="text-sm text-[#583d01]">{feature.description}</p>
+                </article>
+              );
+            })}
           </div>
         </div>
 
         {/* Mobile Features - Show only on mobile */}
         <div className="lg:hidden mt-4 grid grid-cols-2 gap-4" role="list">
-          {features.map((feature, index) => (
-            <article
-              key={index}
-              className="bg-gradient-to-br from-gradient-yellow to-white rounded-xl p-4 text-center border border-neutral-extralight shadow-sm"
-              role="listitem"
-            >
-              <div className="text-3xl mb-2" aria-hidden="true">{feature.icon}</div>
-              <h3 className="text-sm font-bold text-text-charcoal mb-1">
-                {feature.title}
-              </h3>
-              <p className="text-xs text-text-gray">{feature.description}</p>
-            </article>
-          ))}
+          {features.map((feature, index) => {
+            const Icon = feature.icon;
+            return (
+              <article
+                key={index}
+                className="bg-gradient-to-br from-gradient-yellow to-white rounded-xl p-4 text-center border border-neutral-extralight shadow-sm"
+                role="listitem"
+              >
+                <Icon className="w-8 h-8 mb-2 mx-auto text-[#583d01]" aria-hidden="true" />
+                <h3 className="text-sm font-bold text-text-charcoal mb-1">
+                  {feature.title}
+                </h3>
+                <p className="text-xs text-text-gray">{feature.description}</p>
+              </article>
+            );
+          })}
         </div>
       </div>
     </section>

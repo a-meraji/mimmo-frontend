@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import Link from 'next/link';
-import { ShoppingCart, ArrowRight, Tag, X, CheckCircle2, ShoppingBag } from 'lucide-react';
+import { ShoppingCart, ArrowRight, Tag, X, CheckCircle2, ShoppingBag, CreditCard, Euro } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import CartItem from '@/components/cart/CartItem';
 import EuroPaymentModal from '@/components/cart/EuroPaymentModal';
@@ -228,32 +228,47 @@ export default function CartPage() {
                 </div>
               </div>
 
-              {/* Checkout Button */}
-              <div className="flex items-center justify-between gap-2">
-
-              <button
-                type="button"
-                className="w-full flex items-center justify-center gap-2 bg-gradient-to-l from-primary to-indigo-950 text-white py-4 rounded-xl font-bold hover:shadow-xl hover:scale-[1.02] transition-all duration-200 shadow-lg shadow-primary/30"
-                >
-                پرداخت به تومان (از ایران)
-                <ArrowRight className="w-5 h-5" aria-hidden="true" />
-              </button>
-               <button
-                 type="button"
-                 onClick={() => setIsEuroPaymentModalOpen(true)}
-                 className="w-full flex items-center justify-center gap-2 bg-gradient-to-l from-amber-400 to-amber-500 text-white py-4 rounded-xl font-bold hover:shadow-xl hover:scale-[1.02] transition-all duration-200 shadow-lg shadow-primary/30"
-                 >
-                 پرداخت به یورو (€)
-                 <ArrowRight className="w-5 h-5" aria-hidden="true" />
-               </button>
+              {/* Checkout Buttons */}
+              <div className="space-y-3">
+                {/* Section Title */}
+                <div className="text-center py-2">
+                  <h3 className="text-sm font-semibold text-text-gray">انتخاب روش پرداخت</h3>
                 </div>
+
+                {/* Toman Payment Button */}
+                <button
+                  type="button"
+                  className="w-full group relative overflow-hidden bg-gradient-to-l from-primary to-primary/90 text-white py-4 rounded-xl font-bold hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 shadow-lg"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+                  <div className="relative flex items-center justify-center gap-2">
+                    <CreditCard className="w-5 h-5" aria-hidden="true" />
+                    <span>پرداخت تومانی (درگاه بانکی)</span>
+                  </div>
+                </button>
+
+                {/* Euro Payment Button */}
+                <button
+                  type="button"
+                  onClick={() => setIsEuroPaymentModalOpen(true)}
+                  className="w-full group relative overflow-hidden bg-gradient-to-l from-amber-400 to-amber-500 text-white py-4 rounded-xl font-bold hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 shadow-lg"
+                >
+                  <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+                  <div className="relative flex items-center justify-center gap-2">
+                    <Euro className="w-5 h-5" aria-hidden="true" />
+                    <span>پرداخت یورویی</span>
+                  </div>
+                </button>
+
+                
+              </div>
 
               {/* Continue Shopping */}
               <Link
                 href="/store"
                 className="block w-full text-center py-3 rounded-xl font-medium text-text-gray hover:bg-neutral-indigo transition-colors border border-neutral-extralight"
               >
-                ادامه خرید
+                بازگشت به فروشگاه
               </Link>
             </div>
           </div>
