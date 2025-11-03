@@ -41,7 +41,7 @@ export default function EuroPaymentModal({ isOpen, onClose, euroTotal }) {
     {
       title: "Revolut - ایبان",
       items: [
-        { label: "نام صاحب حساب", value: "Soudabeh Amini Khoraskani", copy: false },
+        { label: "نام صاحب حساب", value: "Soudabeh Amini Khoraskani"},
         { label: "Revolut ID", value: "soudiamini" },
         { label: "IBAN", value: "LT403250099043625613" },
       ]
@@ -49,7 +49,7 @@ export default function EuroPaymentModal({ isOpen, onClose, euroTotal }) {
     {
       title: "BBVA",
       items: [
-        { label: "نام صاحب حساب", value: "Soudabeh Amini Khoraskani", copy: false },
+        { label: "نام صاحب حساب", value: "Soudabeh Amini Khoraskani" },
         { label: "IBAN", value: "IT87Z0357601601010001150628" },
       ]
     }
@@ -164,7 +164,7 @@ export default function EuroPaymentModal({ isOpen, onClose, euroTotal }) {
                     </p>
                     
                     {/* Social Links */}
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="">
                       <a
                         href="https://www.instagram.com/italian4u.italian4u/"
                         target="_blank"
@@ -175,15 +175,6 @@ export default function EuroPaymentModal({ isOpen, onClose, euroTotal }) {
                         <ExternalLink className="w-3 h-3 group-hover:scale-110 transition-transform" aria-hidden="true" />
                       </a>
                       
-                      <a
-                        href="https://web.telegram.org/a/#italian4u"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center justify-center gap-1.5 bg-white p-2 rounded-lg hover:bg-gradient-to-r hover:from-blue-500 hover:to-blue-600 hover:text-white transition-all group border border-blue-200"
-                      >
-                        <span className="text-xs font-semibold">تلگرام</span>
-                        <ExternalLink className="w-3 h-3 group-hover:scale-110 transition-transform" aria-hidden="true" />
-                      </a>
                     </div>
                   </div>
                 </div>

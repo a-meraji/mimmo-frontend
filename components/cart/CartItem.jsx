@@ -23,17 +23,17 @@ export default function CartItem({ item }) {
       {/* Image */}
       <Link
         href={`/store/${item.id}`}
-        className="relative w-full sm:w-32 aspect-[4/3] sm:aspect-square flex-shrink-0 rounded-xl overflow-hidden bg-neutral-indigo group"
+        className="relative w-full sm:w-32 aspect-[4/3] sm:aspect-square flex-shrink-0 rounded-xl overflow-hidden bg-gray-50 group"
       >
         <Image
           src={item.image}
           alt={item.title}
           fill
-          className="object-cover group-hover:scale-105 transition-transform duration-300"
+          className="object-contain group-hover:scale-105 my-1 transition-transform duration-300 drop-shadow-lg"
           sizes="(max-width: 640px) 100vw, 128px"
         />
         {discount && (
-          <div className="absolute top-2 left-2 text-white px-2 py-1 rounded-full text-xs font-bold">
+          <div className="absolute top-2 left-2 bg-rose-600 text-white px-2 py-1 rounded-full text-xs font-bold">
             {discount}٪
           </div>
         )}
@@ -69,7 +69,7 @@ export default function CartItem({ item }) {
             </span>
           </div>
 
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center justify-end gap-2 flex-wrap">
             {item.originalPrice && (
               <span className="text-sm text-text-light line-through">
                 {item.originalPrice.toLocaleString('fa-IR')} تومان
@@ -86,11 +86,11 @@ export default function CartItem({ item }) {
         <div className="flex items-center justify-end mt-4 pt-4 border-t border-neutral-extralight">
           <button
             onClick={handleRemove}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-rose-50 text-rose-600 transition-colors group font-medium text-sm"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-rose-50 text-rose-600 transition-colors group font-medium text-xs"
             aria-label="حذف از سبد خرید"
             type="button"
           >
-            <Trash2 className="w-5 h-5 group-hover:scale-110 transition-transform" aria-hidden="true" />
+            <Trash2 className="w-4 h-4 group-hover:scale-110 transition-transform" aria-hidden="true" />
             حذف از سبد خرید
           </button>
         </div>

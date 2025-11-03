@@ -93,7 +93,7 @@ export default function CartModal() {
                 {previewItems.map((item) => (
                   <div
                     key={item.id}
-                    className="flex items-center gap-4 p-3 rounded-xl border border-neutral-extralight hover:border-primary/30 transition-colors"
+                    className="flex items-end gap-4 p-3 rounded-xl border border-neutral-extralight hover:border-primary/30 transition-colors"
                   >
                     {/* Image */}
                     <div className="relative w-16 h-16 flex-shrink-0 rounded-lg overflow-hidden bg-neutral-indigo">
@@ -101,8 +101,7 @@ export default function CartModal() {
                         src={item.image}
                         alt={item.title}
                         fill
-                        className="object-cover"
-                        sizes="64px"
+                        className="object-contain"
                       />
                     </div>
 
@@ -129,11 +128,11 @@ export default function CartModal() {
                     </div>
                     <button
             onClick={() => removeFromCart(item.id)}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-rose-50 text-rose-600 transition-colors group font-medium text-sm"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-rose-50 text-rose-600 transition-colors group font-medium text-xs"
             aria-label="حذف از سبد خرید"
             type="button"
           >
-            <Trash2 className="w-5 h-5 group-hover:scale-110 transition-transform" aria-hidden="true" />
+            <Trash2 className="w-3 h-3 group-hover:scale-110 transition-transform" aria-hidden="true" />
             حذف 
           </button>
                   </div>
