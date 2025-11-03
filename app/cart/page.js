@@ -5,13 +5,17 @@ import Link from 'next/link';
 import { ShoppingCart, ArrowRight, Tag, X, CheckCircle2, ShoppingBag } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import CartItem from '@/components/cart/CartItem';
+import EuroPaymentModal from '@/components/cart/EuroPaymentModal';
 
 export default function CartPage() {
   const {
     cart,
     subtotal,
+    euroSubtotal,
     discountValue,
+    euroDiscountValue,
     total,
+    euroTotal,
     itemCount,
     discountCode,
     applyDiscount,
@@ -21,6 +25,7 @@ export default function CartPage() {
   const [discountInput, setDiscountInput] = useState('');
   const [discountError, setDiscountError] = useState('');
   const [discountSuccess, setDiscountSuccess] = useState('');
+  const [isEuroPaymentModalOpen, setIsEuroPaymentModalOpen] = useState(false);
 
   const handleApplyDiscount = useCallback((e) => {
     e.preventDefault();
@@ -182,37 +187,66 @@ export default function CartPage() {
               <div className="space-y-3 py-4 border-y border-neutral-extralight">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-text-gray">جمع آیتم‌ها:</span>
-                  <span className="font-semibold text-text-charcoal">
-                    {subtotal.toLocaleString('fa-IR')} تومان
-                  </span>
+                  <div className="text-left">
+                    <div className="font-semibold text-text-charcoal">
+                      {euroSubtotal.toFixed(2)} €
+                    </div>
+                    <div className="text-xs text-text-gray">
+                      {subtotal.toLocaleString('fa-IR')} تومان
+                    </div>
+                  </div>
                 </div>
 
                 {discountValue > 0 && (
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-green-600">تخفیف:</span>
-                    <span className="font-semibold text-green-600">
-                      {discountValue.toLocaleString('fa-IR')}- تومان
-                    </span>
+                    <div className="text-left">
+                      <div className="font-semibold text-green-600">
+                        {euroDiscountValue.toFixed(2)}- €
+                      </div>
+                      <div className="text-xs text-green-600">
+                        {discountValue.toLocaleString('fa-IR')}- تومان
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
 
               {/* Total */}
-              <div className="flex items-center justify-between pt-2">
-                <span className="text-base font-semibold text-text-charcoal">مجموع:</span>
-                <span className="text-2xl font-bold text-primary">
-                  {total.toLocaleString('fa-IR')} تومان
-                </span>
+              <div className="space-y-2 pt-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-base font-semibold text-text-charcoal">مجموع:</span>
+                  <span className="text-2xl font-bold text-primary">
+                    {euroTotal.toFixed(2)} €
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-text-gray"></span>
+                  <span className="text-lg font-semibold text-text-charcoal">
+                    {total.toLocaleString('fa-IR')} تومان
+                  </span>
+                </div>
               </div>
 
               {/* Checkout Button */}
+              <div className="flex items-center justify-between gap-2">
+
               <button
                 type="button"
-                className="w-full flex items-center justify-center gap-2 bg-gradient-to-l from-primary to-secondary text-white py-4 rounded-xl font-bold hover:shadow-xl hover:scale-[1.02] transition-all duration-200 shadow-lg shadow-primary/30"
-              >
-                پرداخت در درگاه پرداخت
+                className="w-full flex items-center justify-center gap-2 bg-gradient-to-l from-primary to-indigo-950 text-white py-4 rounded-xl font-bold hover:shadow-xl hover:scale-[1.02] transition-all duration-200 shadow-lg shadow-primary/30"
+                >
+                پرداخت به تومان (از ایران)
                 <ArrowRight className="w-5 h-5" aria-hidden="true" />
               </button>
+               <button
+                 type="button"
+                 onClick={() => setIsEuroPaymentModalOpen(true)}
+                 className="w-full flex items-center justify-center gap-2 bg-gradient-to-l from-amber-400 to-amber-500 text-white py-4 rounded-xl font-bold hover:shadow-xl hover:scale-[1.02] transition-all duration-200 shadow-lg shadow-primary/30"
+                 >
+                 پرداخت به یورو (€)
+                 <ArrowRight className="w-5 h-5" aria-hidden="true" />
+               </button>
+                </div>
 
               {/* Continue Shopping */}
               <Link
@@ -224,6 +258,13 @@ export default function CartPage() {
             </div>
           </div>
         </div>
+
+        {/* Euro Payment Modal */}
+        <EuroPaymentModal
+          isOpen={isEuroPaymentModalOpen}
+          onClose={() => setIsEuroPaymentModalOpen(false)}
+          euroTotal={euroTotal}
+        />
       </div>
     </div>
   );

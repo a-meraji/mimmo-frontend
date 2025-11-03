@@ -15,7 +15,7 @@ export default function ProductImage({ image, title, description }) {
           src={image}
           alt={title}
           fill
-          className="object-contain p-4"
+          className="object-contain p-4 drop-shadow-lg"
           priority
           quality={90}
         />

@@ -33,7 +33,7 @@ export default function CartItem({ item }) {
           sizes="(max-width: 640px) 100vw, 128px"
         />
         {discount && (
-          <div className="absolute top-2 left-2 bg-rose-600 text-white px-2 py-1 rounded-full text-xs font-bold">
+          <div className="absolute top-2 left-2 text-white px-2 py-1 rounded-full text-xs font-bold">
             {discount}٪
           </div>
         )}
@@ -42,7 +42,9 @@ export default function CartItem({ item }) {
       {/* Content */}
       <div className="flex-1 flex flex-col justify-between min-w-0">
         {/* Title & Price */}
-        <div className="space-y-2">
+        <div className="flex justify-between items-end">
+          <div className='space-y-2'>
+
           <Link href={`/store/${item.id}`} className="group">
             <h3 className="text-base sm:text-lg font-bold text-text-charcoal group-hover:text-primary transition-colors line-clamp-2">
               {item.title}
@@ -53,6 +55,19 @@ export default function CartItem({ item }) {
               {item.subtitle}
             </p>
           )}
+          </div>
+          <div className="flex flex-col justify-between items-end">
+
+          <div className="flex items-center gap-2 flex-wrap">
+            {item.originalEuroPrice && (
+              <span className="text-sm text-text-light line-through">
+                {item.originalEuroPrice} €
+              </span>
+            )}
+            <span className="text-lg font-bold text-primary">
+              {item.euroPrice} €
+            </span>
+          </div>
 
           <div className="flex items-center gap-2 flex-wrap">
             {item.originalPrice && (
@@ -65,6 +80,7 @@ export default function CartItem({ item }) {
             </span>
           </div>
         </div>
+            </div>
 
         {/* Remove Button */}
         <div className="flex items-center justify-end mt-4 pt-4 border-t border-neutral-extralight">

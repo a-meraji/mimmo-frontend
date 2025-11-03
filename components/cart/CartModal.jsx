@@ -3,11 +3,11 @@
 import { useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { X, ShoppingCart, ArrowLeft } from 'lucide-react';
+import { X, ShoppingCart, ArrowLeft, Trash2 } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 
 export default function CartModal() {
-  const { cart, isModalOpen, setIsModalOpen, total, itemCount } = useCart();
+  const { cart, isModalOpen, setIsModalOpen, total, euroTotal, itemCount, removeFromCart } = useCart();
 
   // Close modal on escape key
   useEffect(() => {
@@ -32,6 +32,7 @@ export default function CartModal() {
   const previewItems = useMemo(() => {
     return cart.slice(-3).reverse();
   }, [cart]);
+
 
   if (!isModalOpen) return null;
 
@@ -115,12 +116,26 @@ export default function CartModal() {
                           {item.subtitle}
                         </p>
                       )}
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-sm font-bold text-primary">
+                      <div className="flex flex-col gap-1 mt-1">
+                        {item.euroPrice && (
+                          <span className="text-sm font-bold text-primary">
+                            {item.euroPrice} €
+                          </span>
+                        )}
+                        <span className="text-xs font-semibold text-text-charcoal">
                           {item.price.toLocaleString('fa-IR')} تومان
                         </span>
                       </div>
                     </div>
+                    <button
+            onClick={() => removeFromCart(item.id)}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-rose-50 text-rose-600 transition-colors group font-medium text-sm"
+            aria-label="حذف از سبد خرید"
+            type="button"
+          >
+            <Trash2 className="w-5 h-5 group-hover:scale-110 transition-transform" aria-hidden="true" />
+            حذف 
+          </button>
                   </div>
                 ))}
 
@@ -137,11 +152,19 @@ export default function CartModal() {
           {cart.length > 0 && (
             <div className="border-t border-neutral-extralight p-6 bg-neutral-indigo/30 space-y-4">
               {/* Total */}
-              <div className="flex items-center justify-between pb-4 border-b border-neutral-extralight">
-                <span className="text-sm text-text-gray">جمع کل:</span>
-                <span className="text-2xl font-bold text-primary">
-                  {total.toLocaleString('fa-IR')} تومان
-                </span>
+              <div className="space-y-3 pb-4 border-b border-neutral-extralight">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-text-gray">جمع کل:</span>
+                  <span className="text-2xl font-bold text-primary">
+                    {euroTotal.toFixed(2)} €
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-text-gray"></span>
+                  <span className="text-lg font-semibold text-text-charcoal">
+                    {total.toLocaleString('fa-IR')} تومان
+                  </span>
+                </div>
               </div>
 
               {/* Actions */}

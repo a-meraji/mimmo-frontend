@@ -23,12 +23,12 @@ export default function CourseCard({ course, priority = false }) {
     <article className="group h-full flex flex-col bg-white rounded-2xl border border-neutral-lighter shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden">
       <Link href={`/store/${course?.id || course?.slug || '#'}`} className="flex-1 flex flex-col">
         {/* Image Container */}
-        <div className="relative w-full aspect-[4/3] flex-shrink-0 overflow-hidden">
+        <div className="relative w-full aspect-[4/3] flex-shrink-0 overflow-hidden bg-[#fcfcfc]">
           <Image
             src={course?.image || "/es1.webp"}
             alt={`دوره ${course?.title || "آموزشی"}`}
             fill
-            className="object-contain group-hover:scale-105 transition-transform duration-500"
+            className="object-contain group-hover:scale-105 transition-transform duration-500 drop-shadow-lg"
             loading={priority ? "eager" : "lazy"}
             quality={80}
           />

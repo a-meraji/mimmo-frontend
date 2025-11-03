@@ -10,6 +10,8 @@ export default function StickyProductInfo({
   subtitle,
   price, 
   originalPrice, 
+  euroPrice,
+  originalEuroPrice,
   image,
   rating = 4.9,
   reviewCount = 1237,
@@ -31,6 +33,8 @@ export default function StickyProductInfo({
       image,
       price,
       originalPrice: originalPrice || null,
+      euroPrice: euroPrice || null,
+      originalEuroPrice: originalEuroPrice || null,
     });
 
     // Call the optional callback if provided
@@ -74,21 +78,34 @@ export default function StickyProductInfo({
 
       {/* Price & Add to Cart */}
       <div className="space-y-3">
-        <div className="flex items-center gap-3">
-          {originalPrice && (
+        <div className="flex justify-between items-end">
+
+        <div className="flex flex-col items-start">
+          {originalEuroPrice && (
             <span className="text-sm text-text-light line-through">
-              {originalPrice.toLocaleString('fa-IR')} تومان
+              {originalEuroPrice} €
             </span>
           )}
+          <span className="text-xl font-bold text-primary">
+            {euroPrice} €
+          </span>
+        </div>
+        <div className="flex flex-col items-end gap-3">
           {discount && (
             <span className="px-2 py-0.5 bg-rose-600 text-white rounded-full text-xs font-bold">
               {discount}٪ تخفیف
             </span>
           )}
-        </div>
+          {originalPrice && (
+            <span className="text-sm text-text-light line-through">
+              {originalPrice.toLocaleString('fa-IR')} تومان
+            </span>
+          )}
         <div className="text-xl font-bold text-primary">
           {price.toLocaleString('fa-IR')} تومان
         </div>
+        </div>
+          </div>
         
         <button
           onClick={handleAddToCart}

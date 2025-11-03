@@ -117,20 +117,35 @@ export function CartProvider({ children }) {
     localStorage.removeItem('mimmo_discount');
   }, []);
 
-  // Calculate subtotal
+  // Calculate subtotal (Toman)
   const subtotal = useMemo(() => {
     return cart.reduce((total, item) => total + item.price, 0);
   }, [cart]);
 
-  // Calculate discount value
+  // Calculate subtotal (Euro)
+  const euroSubtotal = useMemo(() => {
+    return cart.reduce((total, item) => total + (item.euroPrice || 0), 0);
+  }, [cart]);
+
+  // Calculate discount value (Toman)
   const discountValue = useMemo(() => {
     return Math.round((subtotal * discountAmount) / 100);
   }, [subtotal, discountAmount]);
 
-  // Calculate total
+  // Calculate discount value (Euro)
+  const euroDiscountValue = useMemo(() => {
+    return Math.round((euroSubtotal * discountAmount) / 100);
+  }, [euroSubtotal, discountAmount]);
+
+  // Calculate total (Toman)
   const total = useMemo(() => {
     return subtotal - discountValue;
   }, [subtotal, discountValue]);
+
+  // Calculate total (Euro)
+  const euroTotal = useMemo(() => {
+    return euroSubtotal - euroDiscountValue;
+  }, [euroSubtotal, euroDiscountValue]);
 
   // Total items count (number of unique items)
   const itemCount = useMemo(() => {
@@ -149,8 +164,11 @@ export function CartProvider({ children }) {
     discountCode,
     discountAmount,
     subtotal,
+    euroSubtotal,
     discountValue,
+    euroDiscountValue,
     total,
+    euroTotal,
     itemCount,
   };
 

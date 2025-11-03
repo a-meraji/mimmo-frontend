@@ -14,6 +14,7 @@ export default function DrivingLicenseHome() {
     level: null,
     price: 650000,
     originalPrice: 900000,
+    euroPrice: 259,
     image: "/license2.webp",
     badge: "پرفروش",
   }), []);

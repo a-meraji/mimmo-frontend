@@ -21,6 +21,8 @@ export default function StorePage() {
       level: "A1",
       price: 450000,
       originalPrice: 600000,
+      euroPrice: 25,
+      originalEuroPrice: 30,
       image: "/es1.webp",
       category: "italian",
       specifications: [
@@ -35,6 +37,7 @@ export default function StorePage() {
       subtitle: "ادامه سطح مقدماتی",
       level: "A1",
       price: 450000,
+      euroPrice: 25,
       image: "/es1.webp",
       category: "italian",
       specifications: [
@@ -51,6 +54,8 @@ export default function StorePage() {
       level: "A1",
       price: 750000,
       originalPrice: 1200000,
+      euroPrice: 25,
+      originalEuroPrice: 30,
       image: "/es1.webp",
       category: "italian",
       badge: "پرفروش",
@@ -67,6 +72,7 @@ export default function StorePage() {
       subtitle: "ارتقا به سطح متوسط",
       level: "A2",
       price: 500000,
+      euroPrice: 25,
       image: "/es2.webp",
       category: "italian",
       specifications: [
@@ -82,6 +88,7 @@ export default function StorePage() {
       subtitle: "تکمیل سطح A2",
       level: "A2",
       price: 500000,
+      euroPrice: 25,
       image: "/es2.webp",
       category: "italian",
       specifications: [
@@ -98,6 +105,8 @@ export default function StorePage() {
       level: "A2",
       price: 850000,
       originalPrice: 1300000,
+      euroPrice: 25,
+      originalEuroPrice: 30,
       image: "/es2.webp",
       category: "italian",
       badge: "پرفروش",
@@ -114,6 +123,7 @@ export default function StorePage() {
       subtitle: "سطح پیشرفته",
       level: "B1",
       price: 550000,
+      euroPrice: 25,
       image: "/es3.webp",
       category: "italian",
       specifications: [
@@ -129,6 +139,7 @@ export default function StorePage() {
       subtitle: "تکمیل سطح B1",
       level: "B1",
       price: 550000,
+      euroPrice: 25,
       image: "/es3.webp",
       category: "italian",
       specifications: [
@@ -145,6 +156,8 @@ export default function StorePage() {
       level: "B1",
       price: 950000,
       originalPrice: 1400000,
+      euroPrice: 25,
+      originalEuroPrice: 30,
       image: "/es3.webp",
       category: "italian",
       badge: "پرفروش",
@@ -162,6 +175,8 @@ export default function StorePage() {
       level: null,
       price: 650000,
       originalPrice: 900000,
+      euroPrice: 300,
+      originalEuroPrice: 259,
       image: "/license2.webp",
       category: "license",
       badge: "پرفروش",
@@ -276,6 +291,8 @@ export default function StorePage() {
             level={pkg.level}
             price={pkg.price}
             originalPrice={pkg.originalPrice}
+            euroPrice={pkg.euroPrice}
+            originalEuroPrice={pkg.originalEuroPrice}
             image={pkg.image}
             specifications={pkg.specifications}
             badge={pkg.badge}

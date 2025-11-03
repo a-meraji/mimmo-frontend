@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ShoppingCart, BookOpenText, Clock, NotebookText  } from "lucide-react";
+import { ShoppingCart, BookOpenText, Clock, NotebookText, Eye } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 
 export default function StorePackageCard({ 
@@ -13,6 +13,8 @@ export default function StorePackageCard({
   level,
   price, 
   originalPrice,
+  euroPrice,
+  originalEuroPrice,
   image,
   specifications = [],
   badge,
@@ -56,6 +58,8 @@ export default function StorePackageCard({
       image,
       price,
       originalPrice: originalPrice || null,
+      euroPrice: euroPrice || null,
+      originalEuroPrice: originalEuroPrice || null,
     });
 
     // Call the optional callback if provided
@@ -68,12 +72,12 @@ export default function StorePackageCard({
     <article className="group h-full flex flex-col bg-white rounded-2xl border border-neutral-lighter shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden">
       <Link href={`/store/${id}`} className="flex-1 flex flex-col">
         {/* Image Container */}
-        <div className="relative w-full aspect-[4/3] flex-shrink-0 overflow-hidden ">
+        <div className="relative w-full aspect-[4/3] flex-shrink-0 overflow-hidden bg-[#fcfcfc]">
         <Image
           src={image}
           alt={`پکیج ${title}`}
           fill
-          className="object-contain group-hover:scale-105 transition-transform duration-500"
+          className="object-contain group-hover:scale-105 transition-transform duration-500 drop-shadow-lg"
           loading="lazy"
           quality={80}
         />
@@ -141,7 +145,11 @@ export default function StorePackageCard({
         <div className="flex-grow"></div>
 
         {/* Pricing Display */}
-        <div className="mt-4 pt-4 border-t border-neutral-lighter">
+        <div className="mt-4 pt-4 border-t border-neutral-lighter flex justify-between items-end">
+          <div className="flex flex-col items-start">
+            {originalEuroPrice && (<span className="text-xs text-text-light line-through mb-1">{originalEuroPrice} €</span>)}
+            <span className="text-xl font-bold text-primary">{euroPrice} €</span>
+          </div>
           <div className="flex flex-col items-end">
             {originalPrice && discount && (
               <span 
@@ -162,17 +170,29 @@ export default function StorePackageCard({
       </div>
       </Link>
 
-      {/* Add to Cart Button - Outside Link */}
+      {/* Action Buttons - Outside Link */}
       <div className="p-5 pt-0">
-        <button
-          onClick={handleAddToCart}
-          className="w-full flex items-center justify-center gap-2 bg-primary text-white py-3 rounded-xl font-semibold hover:bg-primary/90 transition-colors duration-200 shadow-md hover:shadow-lg"
-          aria-label={`افزودن ${title} به سبد خرید`}
-          type="button"
-        >
-          <ShoppingCart className="w-5 h-5" aria-hidden="true" />
-          افزودن به سبد خرید
-        </button>
+        <div className="flex gap-2">
+          {/* View Course Button */}
+          <Link
+            href={`/store/${id}`}
+            className="flex-1 flex items-center justify-center gap-2 bg-white border-2 border-primary text-primary py-3 rounded-xl font-semibold hover:bg-primary hover:text-white transition-all duration-200"
+            aria-label={`مشاهده ${title}`}
+          >
+            <Eye className="w-5 h-5" aria-hidden="true" />
+            <span>مشاهده دوره</span>
+          </Link>
+
+          {/* Add to Cart Button - Icon Only */}
+          <button
+            onClick={handleAddToCart}
+            className="flex items-center justify-center bg-primary text-white p-3 rounded-xl hover:bg-primary/90 transition-colors duration-200 shadow-md hover:shadow-lg"
+            aria-label={`افزودن ${title} به سبد خرید`}
+            type="button"
+          >
+            <ShoppingCart className="w-5 h-5" aria-hidden="true" />
+          </button>
+        </div>
       </div>
     </article>
   );

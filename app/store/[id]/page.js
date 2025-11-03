@@ -18,6 +18,8 @@ const getProductData = (id) => {
     image: "/es1.webp",
     price: 750000,
     originalPrice: 1200000,
+    euroPrice: 25,
+    originalEuroPrice: 30,
     rating: 4.9,
     reviewCount: 1237,
     description: `دوره Nuovo Espresso 1 یکی از کامل‌ترین و جامع‌ترین دوره‌های آموزش زبان ایتالیایی در سطح A1 است که با رویکرد علمی و کاربردی طراحی شده است. این دوره شامل ۱۰ فصل آموزشی است که هر فصل به طور دقیق و اصولی مهارت‌های چهارگانه زبان (خواندن، نوشتن، گفتن و شنیدن) را پوشش می‌دهد.
@@ -183,6 +185,8 @@ export default function ProductPage({ params }) {
             subtitle={product.subtitle}
             price={product.price}
             originalPrice={product.originalPrice}
+            euroPrice={product.euroPrice}
+            originalEuroPrice={product.originalEuroPrice}
             image={product.image}
             rating={product.rating}
             reviewCount={product.reviewCount}
@@ -216,6 +220,8 @@ export default function ProductPage({ params }) {
                 subtitle={product.subtitle}
                 price={product.price}
                 originalPrice={product.originalPrice}
+                euroPrice={product.euroPrice}
+                originalEuroPrice={product.originalEuroPrice}
                 image={product.image}
                 rating={product.rating}
                 reviewCount={product.reviewCount}
@@ -234,6 +240,8 @@ export default function ProductPage({ params }) {
               subtitle={product.subtitle}
               price={product.price}
               originalPrice={product.originalPrice}
+              euroPrice={product.euroPrice}
+              originalEuroPrice={product.originalEuroPrice}
               image={product.image}
               rating={product.rating}
               reviewCount={product.reviewCount}

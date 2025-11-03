@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
-import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Play, Lock } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp, NotebookText, Lock } from "lucide-react";
 
 export default function CourseChapters({ seasons = [] }) {
   const [activeSeason, setActiveSeason] = useState(0);
@@ -119,11 +119,11 @@ export default function CourseChapters({ seasons = [] }) {
                       className="flex items-center justify-between px-4 py-3 hover:bg-white/50 transition-colors border-b border-neutral-extralight/50 last:border-0"
                     >
                       <div className="flex items-center gap-3 flex-1">
-                        <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center flex-shrink-0">
+                        <div className="w-6 h-6 rounded-full bg-neutral-indigo/30 p-1 flex items-center justify-center flex-shrink-0">
                           {lesson.isFree ? (
-                            <Play className="w-3 h-3 text-primary" aria-hidden="true" />
+                            <NotebookText className="w-4 h-4 text-primary" aria-hidden="true" />
                           ) : (
-                            <Lock className="w-3 h-3 text-text-light" aria-hidden="true" />
+                            <Lock className="w-4 h-4 text-text-light" aria-hidden="true" />
                           )}
                         </div>
                         <span className="text-xs text-text-charcoal">{lesson.title}</span>

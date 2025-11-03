@@ -5,7 +5,7 @@ export default function Home() {
     <div className="min-h-screen">
       <Hero />
       <Stats />
-      <PackageConteiner title={"دوره های آموزشی"} />
+      <PackageConteiner title={"دوره های آموزشی زبان ایتالیای"} />
       <Roadmap />
       <DrivingLicenseHome />
       <Testimonials />
