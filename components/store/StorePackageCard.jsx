@@ -151,14 +151,21 @@ export default function StorePackageCard({
             <span className="text-xl font-bold text-primary">{euroPrice} €</span>
           </div>
           <div className="flex flex-col items-end">
-            {originalPrice && discount && (
+            {originalPrice && discount ? (
               <span 
                 className="text-xs text-text-light line-through mb-1"
                 aria-label={`قیمت اصلی: ${originalPrice.toLocaleString('fa-IR')} تومان`}
               >
                 {originalPrice.toLocaleString('fa-IR')} تومان
               </span>
-            )}
+            ):
+           ( <span 
+                className="text-xs text-text-light line-through mb-1 opacity-0"
+                aria-label={`قیمت اصلی: ${price.toLocaleString('fa-IR')} تومان`}
+              >
+               ${price.toLocaleString('fa-IR')} تومان
+              </span>)
+            }
             <span 
               className="text-xl font-bold text-primary"
               aria-label={`قیمت: ${price.toLocaleString('fa-IR')} تومان`}
