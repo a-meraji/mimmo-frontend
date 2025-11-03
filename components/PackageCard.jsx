@@ -107,12 +107,19 @@ export default function PackageCard({ package: pkg, priority = false }) {
               <span className="text-xl font-bold text-primary">{pkg.euroPrice} €</span>
             </div>
             <div className="flex flex-col items-end">
-              {pkg.originalPrice && discount && (
+              {pkg.originalPrice && discount ? (
                 <span 
                   className="text-xs text-text-light line-through mb-1"
                   aria-label={`قیمت اصلی: ${pkg.originalPrice.toLocaleString('fa-IR')} تومان`}
                 >
                   {pkg.originalPrice.toLocaleString('fa-IR')} تومان
+                </span>
+              ):(
+                <span 
+                  className="text-xs text-text-light line-through mb-1 opacity-0"
+                  aria-label={`قیمت اصلی: ${pkg.price.toLocaleString('fa-IR')} تومان`}
+                >
+                  ${pkg.price.toLocaleString('fa-IR')}تومان
                 </span>
               )}
               <span 
