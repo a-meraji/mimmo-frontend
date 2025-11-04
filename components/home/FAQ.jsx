@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useMemo } from "react";
+import { HelpCircle } from "lucide-react";
 import FAQItem from "./FAQItem";
 import Image from "next/image";
 
@@ -43,12 +44,17 @@ export default function FAQ() {
       <div className="container w-fit mx-auto px-6 gap-x-4 lg:grid lg:grid-cols-3 justify-center">
         {/* Section Title */}
         <div>
-          <h2 className="text-3xl font-extrabold text-text-charcoal text-center lg:text-right mb-4">
-            پاسخ به سوالات متداول شما
-          </h2>
-          <p className="text-text-gray text-lg font-medium text-center lg:text-right mb-12">
-            شاید جواب سوالتون اینجا باشه!
-          </p>
+          <div className="text-center lg:text-right mb-12 max-w-2xl mx-auto lg:mx-0">
+            <div className="flex items-center justify-center lg:justify-start gap-3 mb-4">
+              <HelpCircle className="w-8 h-8 text-primary" aria-hidden="true" />
+              <h2 className="text-4xl font-black text-text-charcoal">
+                پاسخ به سوالات متداول شما
+              </h2>
+            </div>
+            <p className="text-text-gray text-lg">
+              شاید جواب سوالتون اینجا باشه!
+            </p>
+          </div>
           <Image 
             src="/questions.webp"
             className="hidden lg:block"

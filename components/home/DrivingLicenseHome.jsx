@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useCallback, useMemo } from "react";
 import Image from "next/image";
+import { Car } from "lucide-react";
 import PackageCard from "../PackageCard";
 
 export default function DrivingLicenseHome() {
@@ -80,10 +81,18 @@ export default function DrivingLicenseHome() {
 
       {/* Content Layer */}
       <div className="container mx-auto px-6 relative z-10">
-        {/* Title */}
-        <h2 className="font-extrabold text-[#583d01] text-3xl text-center mb-12">
-          دوره گواهینامه رانندگی در ایتالیا
-        </h2>
+        {/* Section Title */}
+        <div className="text-center mb-16 max-w-2xl mx-auto">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <Car className="w-8 h-8 text-[#583d01]" aria-hidden="true" />
+            <h2 className="text-4xl font-black text-[#583d01]">
+              دوره گواهینامه رانندگی در ایتالیا
+            </h2>
+          </div>
+          <p className="text-[#583d01] text-lg">
+            آموزش جامع آیین‌نامه و تست‌های واقعی برای اخذ گواهینامه
+          </p>
+        </div>
 
         {/* Desktop Layout with Side Images */}
         <div className="hidden lg:flex items-start justify-center  max-w-7xl mx-auto">

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { Star } from "lucide-react";
 import TestimonialCard from "./TestimonialCard";
 
 export default function Testimonials() {
@@ -112,9 +113,17 @@ export default function Testimonials() {
     <section className="w-full py-20 bg-gradient-to-b from-white to-neutral-indigo overflow-hidden" aria-label="نظرات دانشجویان">
       <div className="container mx-auto px-6">
         {/* Section Title */}
-        <h2 className="text-3xl font-extrabold text-text-charcoal text-center mb-16">
-         داستان موفقیت دانشجویان میمو
-        </h2>
+        <div className="text-center mb-16 max-w-2xl mx-auto">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <Star className="w-8 h-8 text-primary" aria-hidden="true" />
+            <h2 className="text-4xl font-black text-text-charcoal">
+              داستان موفقیت دانشجویان میمو
+            </h2>
+          </div>
+          <p className="text-text-gray text-lg">
+            تجربه واقعی دانشجویان از یادگیری در میمو آکادمی
+          </p>
+        </div>
 
         {/* Testimonials Carousel */}
         <div
