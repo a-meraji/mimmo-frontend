@@ -12,7 +12,7 @@ export default function PackageConteiner({title}){
                     </h2>
                 </div>
                 <p className="text-text-gray text-lg">
-                    با بهترین متد و اساتید حرفه‌ای، زبان ایتالیایی را بیاموزید
+                    با بهترین و به‌روزترین متد های آموزشی ، زبان ایتالیایی را بیاموزید
                 </p>
             </div>
             <PackagesCarousel />
