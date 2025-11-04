@@ -84,12 +84,13 @@ export default function DrivingLicenseHome() {
         {/* Section Title */}
         <div className="text-center mb-16 max-w-2xl mx-auto">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <Car className="w-8 h-8 text-[#583d01]" aria-hidden="true" />
+            <Car className="w-8 h-8 text-[#583d01] hidden md:block" aria-hidden="true" />
             <h2 className="text-4xl font-black text-[#583d01]">
               دوره گواهینامه رانندگی در ایتالیا
             </h2>
           </div>
-          <p className="text-[#583d01] text-lg">
+          <p className="flex justify-center text-[#583d01] text-lg px-2">
+            <Car className="w-8 h-8 ml-1 md:hidden" aria-hidden="true" />
             آموزش جامع آیین‌نامه و تست‌های واقعی برای اخذ گواهینامه
           </p>
         </div>

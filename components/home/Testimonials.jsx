@@ -115,12 +115,13 @@ export default function Testimonials() {
         {/* Section Title */}
         <div className="text-center mb-16 max-w-2xl mx-auto">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <Star className="w-8 h-8 text-primary" aria-hidden="true" />
+            <Star className="w-8 h-8 text-primary hidden md:block" aria-hidden="true" />
             <h2 className="text-4xl font-black text-text-charcoal">
               داستان موفقیت دانشجویان میمو
             </h2>
           </div>
-          <p className="text-text-gray text-lg">
+          <p className="flex justify-center text-text-gray text-lg px-2">
+            <Star className="w-8 h-8 ml-1 text-primary md:hidden" aria-hidden="true" />
             تجربه واقعی دانشجویان از یادگیری در میمو آکادمی
           </p>
         </div>

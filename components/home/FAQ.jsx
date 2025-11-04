@@ -46,12 +46,13 @@ export default function FAQ() {
         <div>
           <div className="text-center lg:text-right mb-12 max-w-2xl mx-auto lg:mx-0">
             <div className="flex items-center justify-center lg:justify-start gap-3 mb-4">
-              <HelpCircle className="w-8 h-8 text-primary" aria-hidden="true" />
+              <HelpCircle className="w-8 h-8 text-primary hidden md:block" aria-hidden="true" />
               <h2 className="text-4xl font-black text-text-charcoal">
                 پاسخ به سوالات متداول شما
               </h2>
             </div>
-            <p className="text-text-gray text-lg">
+            <p className="flex justify-center text-text-gray text-lg px-2">
+              <HelpCircle className="w-8 h-8 ml-1 text-primary md:hidden" aria-hidden="true" />
               شاید جواب سوالتون اینجا باشه!
             </p>
           </div>
