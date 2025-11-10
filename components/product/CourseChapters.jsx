@@ -1,12 +1,100 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
-import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp, NotebookText, Lock } from "lucide-react";
+import { useState, useRef, useCallback, useMemo } from "react";
+import Link from "next/link";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronDown,
+  ChevronUp,
+  NotebookText,
+  Lock,
+  CheckCircle2,
+  Clock3,
+  Circle,
+} from "lucide-react";
 
-export default function CourseChapters({ seasons = [] }) {
+const PROGRESS_STYLES = {
+  completed: {
+    label: "تکمیل شده",
+    text: "text-emerald-600",
+    dot: "bg-emerald-500",
+    icon: CheckCircle2,
+    badge: "bg-emerald-500/10 text-emerald-600",
+    iconWrap: "bg-emerald-500/10 border border-emerald-500/20",
+    iconColor: "text-emerald-600",
+  },
+  "in-progress": {
+    label: "در حال یادگیری",
+    text: "text-amber-600",
+    dot: "bg-amber-500",
+    icon: Clock3,
+    badge: "bg-amber-500/10 text-amber-600",
+    iconWrap: "bg-amber-500/10 border border-amber-500/20",
+    iconColor: "text-amber-600",
+  },
+  locked: {
+    label: "شروع نشده",
+    text: "text-text-light",
+    dot: "bg-neutral-300",
+    icon: Lock,
+    badge: "bg-neutral-indigo text-text-gray",
+    iconWrap: "bg-neutral-indigo/40 border border-neutral-extralight",
+    iconColor: "text-text-light",
+  },
+};
+
+const resolveStatus = (status, fallbacks = {}) => {
+  if (!status && fallbacks) {
+    const { isCompleted, hasProgress } = fallbacks;
+    if (isCompleted) return "completed";
+    if (hasProgress) return "in-progress";
+  }
+
+  if (!status) return "locked";
+
+  const normalized = typeof status === "string" ? status.toLowerCase() : status;
+
+  if (["done", "completed", "finish", "finished", true].includes(normalized)) {
+    return "completed";
+  }
+
+  if (["progress", "in-progress", "ongoing", "active", "current"].includes(normalized)) {
+    return "in-progress";
+  }
+
+  if (["not-started", "pending", false].includes(normalized)) {
+    return "locked";
+  }
+
+  return "locked";
+};
+
+const getStatusStyles = (statusKey) => PROGRESS_STYLES[statusKey] || PROGRESS_STYLES.locked;
+
+export default function CourseChapters({ seasons = [], showProgress = false }) {
   const [activeSeason, setActiveSeason] = useState(0);
   const [openChapters, setOpenChapters] = useState([0]); // First chapter open by default
   const scrollRef = useRef(null);
+
+  const seasonsWithMeta = useMemo(
+    () =>
+      seasons.map((season) => {
+        if (!showProgress) return { ...season };
+
+        const statusKey = resolveStatus(season.status, {
+          isCompleted: season.isCompleted,
+          hasProgress: season.completedLessons > 0,
+        });
+
+        return {
+          ...season,
+          __status: statusKey,
+          __styles: getStatusStyles(statusKey),
+        };
+      }),
+    [seasons, showProgress]
+  );
 
   const scroll = useCallback((direction) => {
     if (scrollRef.current) {
@@ -26,7 +114,7 @@ export default function CourseChapters({ seasons = [] }) {
     );
   }, []);
 
-  const currentSeason = seasons[activeSeason] || { chapters: [] };
+  const currentSeason = seasonsWithMeta[activeSeason] || { chapters: [] };
 
   return (
     <div className="bg-white rounded-2xl border border-neutral-extralight p-6 space-y-6">
@@ -55,20 +143,33 @@ export default function CourseChapters({ seasons = [] }) {
           ref={scrollRef}
           className="flex gap-2 overflow-x-auto scrollbar-hide px-10 py-1"
         >
-          {seasons.map((season, index) => (
-            <button
-              key={index}
-              onClick={() => setActiveSeason(index)}
-              className={`flex-shrink-0 px-4 py-2 rounded-lg text-xs font-medium transition-all duration-200 whitespace-nowrap ${
-                activeSeason === index
-                  ? 'bg-primary text-white shadow-md'
-                  : 'bg-neutral-indigo text-text-gray hover:bg-neutral-indigo/70'
-              }`}
-              type="button"
-            >
-              {season.title}
-            </button>
-          ))}
+          {seasonsWithMeta.map((season, index) => {
+            const isActive = activeSeason === index;
+            const statusStyles = showProgress ? season.__styles : null;
+            const StatusIcon = statusStyles?.icon || Circle;
+
+            return (
+              <button
+                key={index}
+                onClick={() => setActiveSeason(index)}
+                className={`flex-shrink-0 px-4 py-2 rounded-lg text-xs font-medium transition-all duration-200 whitespace-nowrap flex items-center gap-2 ${
+                  isActive
+                    ? 'bg-primary text-white shadow-md'
+                    : 'bg-neutral-indigo text-text-gray hover:bg-neutral-indigo/70'
+                }`}
+                type="button"
+              >
+                <span>{season.title}</span>
+                {showProgress && (
+                  <span
+                    className={`inline-flex items-center justify-center w-5 h-5 rounded-full ${statusStyles.dot}`}
+                  >
+                    <StatusIcon className={`w-3 h-3 ${statusStyles.iconColor || 'text-white'}`} aria-hidden="true" />
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
 
         {/* Right Arrow */}
@@ -86,6 +187,15 @@ export default function CourseChapters({ seasons = [] }) {
       <div className="space-y-2">
         {currentSeason.chapters?.map((chapter, chapterIndex) => {
           const isOpen = openChapters.includes(chapterIndex);
+          const statusKey = showProgress
+            ? resolveStatus(chapter.status, {
+                isCompleted: chapter.isCompleted,
+                hasProgress: chapter.completedLessons > 0,
+              })
+            : null;
+          const statusStyles = showProgress ? getStatusStyles(statusKey) : null;
+          const StatusIcon = statusStyles?.icon || Circle;
+
           return (
             <div key={chapterIndex} className="border border-neutral-extralight rounded-xl overflow-hidden">
               {/* Chapter Header */}
@@ -103,6 +213,12 @@ export default function CourseChapters({ seasons = [] }) {
                     <p className="text-xs text-text-light">{chapter.lessons?.length} درس</p>
                   </div>
                 </div>
+                {showProgress && (
+                  <span className={`flex items-center gap-2 text-xs font-medium ${statusStyles.text}`}>
+                    <StatusIcon className="w-4 h-4" aria-hidden="true" />
+                    {statusStyles.label}
+                  </span>
+                )}
                 {isOpen ? (
                   <ChevronUp className="w-5 h-5 text-text-gray flex-shrink-0" aria-hidden="true" />
                 ) : (
@@ -113,24 +229,58 @@ export default function CourseChapters({ seasons = [] }) {
               {/* Lessons List */}
               {isOpen && (
                 <div className="border-t border-neutral-extralight bg-neutral-indigo/10">
-                  {chapter.lessons?.map((lesson, lessonIndex) => (
-                    <div
-                      key={lessonIndex}
-                      className="flex items-center justify-between px-4 py-3 hover:bg-white/50 transition-colors border-b border-neutral-extralight/50 last:border-0"
-                    >
-                      <div className="flex items-center gap-3 flex-1">
-                        <div className="w-6 h-6 rounded-full bg-neutral-indigo/30 p-1 flex items-center justify-center flex-shrink-0">
-                          {lesson.isFree ? (
-                            <NotebookText className="w-4 h-4 text-primary" aria-hidden="true" />
+                  {chapter.lessons?.map((lesson, lessonIndex) => {
+                    const lessonStatusKey = showProgress
+                      ? resolveStatus(lesson.status, {
+                          isCompleted: lesson.isCompleted,
+                          hasProgress: lesson.progress > 0,
+                        })
+                      : null;
+                    const lessonStyles = showProgress ? getStatusStyles(lessonStatusKey) : null;
+                    const LessonStatusIcon = lessonStyles?.icon || NotebookText;
+
+                    const lessonLink = lesson.id ? `/lesson/${lesson.id}/content` : null;
+                    const LessonWrapper = lessonLink ? Link : 'div';
+                    const wrapperProps = lessonLink ? { href: lessonLink } : {};
+
+                    return (
+                      <LessonWrapper
+                        key={lessonIndex}
+                        {...wrapperProps}
+                        className={`flex items-center justify-between px-4 py-3 transition-colors border-b border-neutral-extralight/50 last:border-0 ${
+                          lessonLink ? 'hover:bg-primary/5 cursor-pointer' : 'hover:bg-white/50'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3 flex-1">
+                          {showProgress ? (
+                            <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${lessonStyles.iconWrap}`}>
+                              <LessonStatusIcon className={`w-4 h-4 ${lessonStyles.iconColor}`} aria-hidden="true" />
+                            </div>
                           ) : (
-                            <Lock className="w-4 h-4 text-text-light" aria-hidden="true" />
+                            <div className="w-6 h-6 rounded-full bg-neutral-indigo/30 p-1 flex items-center justify-center flex-shrink-0">
+                              {lesson.isFree ? (
+                                <NotebookText className="w-4 h-4 text-primary" aria-hidden="true" />
+                              ) : (
+                                <Lock className="w-4 h-4 text-text-light" aria-hidden="true" />
+                              )}
+                            </div>
                           )}
+                          <div className="flex flex-col gap-1">
+                            <span className={`text-xs ${lessonLink ? 'text-text-charcoal font-medium' : 'text-text-charcoal'}`}>
+                              {lesson.title}
+                            </span>
+                            {showProgress && (
+                              <span className={`inline-flex items-center gap-1 text-[11px] font-medium ${lessonStyles.text}`}>
+                                <LessonStatusIcon className="w-3 h-3" aria-hidden="true" />
+                                {lessonStyles.label}
+                              </span>
+                            )}
+                          </div>
                         </div>
-                        <span className="text-xs text-text-charcoal">{lesson.title}</span>
-                      </div>
-                      <span className="text-xs text-text-light flex-shrink-0">{lesson.duration}</span>
-                    </div>
-                  ))}
+                        <span className="text-xs text-text-light flex-shrink-0">{lesson.duration}</span>
+                      </LessonWrapper>
+                    );
+                  })}
                 </div>
               )}
             </div>

@@ -16,18 +16,28 @@ export default function CoursesCarousel({ courses = [] }) {
     // Sample default courses - matching package structure
     return [
       {
-        id: 1,
-        title: "پکیج گواهی نامه",
-        subtitle: "پکیج کامل سطح مقدماتی",
+        id: "espresso-1",
+        learnPath: "espresso-1",
+        title: "اسپرسو ۱ (دروس ۱ تا ۵)",
+        subtitle: "سطح مقدماتی A1",
         level: "A1",
-        image: "/es1.webp"
+        image: "/es1.webp",
       },
       {
-        id: 2,
-        title: "پکیج A",
-        subtitle: "پکیج کامل سطح متوسط",
+        id: "espresso-2",
+        learnPath: "espresso-2",
+        title: "اسپرسو ۲ (دروس ۶ تا ۱۰)",
+        subtitle: "سطح متوسط A2",
         level: "A2",
         image: "/es2.webp",
+      },
+      {
+        id: "driving-license",
+        learnPath: "driving-license",
+        title: "دوره قبولی گواهینامه ایتالیا",
+        subtitle: "پکیج کامل آزمون تئوری",
+        level: "B1",
+        image: "/es3.webp",
       },
     ];
   }, [courses]);

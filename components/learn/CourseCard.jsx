@@ -6,6 +6,8 @@ import Image from "next/image";
 import { PlayCircle } from "lucide-react";
 
 export default function CourseCard({ course, priority = false }) {
+  const coursePath = course?.learnPath || course?.slug || course?.id;
+  const courseHref = coursePath ? `/learn/${coursePath}` : '#';
   const levelColor = useMemo(() => {
     switch (course?.level) {
       case 'A1':
@@ -21,7 +23,7 @@ export default function CourseCard({ course, priority = false }) {
 
   return (
     <article className="group h-full flex flex-col bg-white rounded-2xl border border-neutral-lighter shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden">
-      <Link href={`/store/${course?.id || course?.slug || '#'}`} className="flex-1 flex flex-col">
+      <Link href={courseHref} className="flex-1 flex flex-col" prefetch={!!coursePath}>
         {/* Image Container */}
         <div className="relative w-full aspect-[4/3] flex-shrink-0 overflow-hidden bg-[#fcfcfc]">
           <Image
@@ -70,9 +72,10 @@ export default function CourseCard({ course, priority = false }) {
       {/* View Course Button - Outside Link */}
       <div className="p-5 pt-0">
         <Link
-          href={`/store/${course?.id || course?.slug || '#'}`}
+          href={courseHref}
           className="w-full flex items-center justify-center gap-2 bg-primary text-white py-3 rounded-xl font-semibold hover:bg-primary/90 transition-colors duration-200 shadow-md hover:shadow-lg"
           aria-label={`مشاهده ${course?.title || "دوره"}`}
+          prefetch={!!coursePath}
         >
           <PlayCircle className="w-5 h-5" aria-hidden="true" />
           مشاهده دوره و یادگیری

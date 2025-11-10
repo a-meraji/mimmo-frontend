@@ -8,13 +8,40 @@ import { useToast } from '@/contexts/ToastContext';
 import { ProfileCard, StatsGrid, CoursesCarousel, Achievements } from '@/components/learn';
 import { SocialLinks } from '@/components/home';
 
+const MOCK_USER_COURSES = [
+  {
+    id: 'espresso-1',
+    learnPath: 'espresso-1',
+    title: 'اسپرسو ۱ - مکالمه روزمره',
+    subtitle: 'دروس ۱ تا ۵ | سطح A1',
+    level: 'A1',
+    image: '/es1.webp',
+  },
+  {
+    id: 'espresso-2',
+    learnPath: 'espresso-2',
+    title: 'اسپرسو ۲ - مکالمه پیشرفته',
+    subtitle: 'دروس ۶ تا ۱۰ | سطح A2',
+    level: 'A2',
+    image: '/es2.webp',
+  },
+  {
+    id: 'driving-license',
+    learnPath: 'driving-license',
+    title: 'دوره جامع گواهینامه ایتالیا',
+    subtitle: 'آزمون تئوری با تمرین تعاملی',
+    level: 'B1',
+    image: '/license0.webp',
+  },
+];
+
 export default function LearnPage() {
   const router = useRouter();
   const { user, isAuthenticated, isLoading, logout, authenticatedFetch } = useAuth();
   const { toast } = useToast();
 
   const [userStats, setUserStats] = useState(null);
-  const [userCourses, setUserCourses] = useState([]);
+  const [userCourses, setUserCourses] = useState(MOCK_USER_COURSES);
   const [isLoadingData, setIsLoadingData] = useState(true);
 
   // Fetch user stats and courses
@@ -41,7 +68,22 @@ export default function LearnPage() {
 
         // Set courses if available
         if (coursesResponse.status === 'fulfilled' && coursesResponse.value) {
-          setUserCourses(coursesResponse.value.courses || coursesResponse.value || []);
+          const extractedCourses = coursesResponse.value.courses || coursesResponse.value || [];
+
+          const normalisedCourses = Array.isArray(extractedCourses)
+            ? extractedCourses.map((course) => ({
+                id: course.id || course.slug || course.courseId || course.learnPath,
+                learnPath: course.learnPath || course.slug || course.id || course.courseId,
+                title: course.title || course.name,
+                subtitle: course.subtitle || course.description || '',
+                level: course.level || course.courseLevel || '',
+                image: course.image || course.coverImage || '/es1.webp',
+              }))
+            : [];
+
+          setUserCourses(normalisedCourses.length ? normalisedCourses : MOCK_USER_COURSES);
+        } else {
+          setUserCourses(MOCK_USER_COURSES);
         }
       } catch (error) {
         console.error('Error fetching user data:', error);
