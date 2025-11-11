@@ -124,18 +124,18 @@ export default function ContentRenderer({ content, vocabulary = [], onWordClick 
   }
 
   return (
-    <div className="prose prose-sm sm:prose-base max-w-none">
+    <div className="prose max-w-none">
       {parsedContent.map((item, index) => {
         if (item.type === 'paragraph') {
           return (
-            <p key={index} className="mb-4 text-text-charcoal leading-8 text-justify">
+            <p key={index} className="mb-5 lg:mb-6 text-base lg:text-base text-text-charcoal leading-8 lg:leading-9 text-justify">
               {item.segments.map((segment, segIndex) => {
                 if (segment.type === 'word') {
                   return (
                     <button
                       key={segIndex}
                       onClick={() => handleWordClick(segment.word)}
-                      className="font-bold text-primary hover:text-primary/80 hover:underline cursor-pointer transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-primary/30 rounded px-0.5"
+                      className="font-bold text-primary hover:text-primary/80 hover:underline cursor-pointer transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-primary/30 rounded px-0.5 text-base lg:text-base"
                       type="button"
                       title={`کلیک کنید برای مشاهده تعریف "${segment.content}"`}
                     >
@@ -151,7 +151,7 @@ export default function ContentRenderer({ content, vocabulary = [], onWordClick 
 
         if (item.type === 'text') {
           return (
-            <p key={index} className="mb-4 text-text-charcoal leading-8 text-justify">
+            <p key={index} className="mb-5 lg:mb-6 text-base lg:text-base text-text-charcoal leading-8 lg:leading-9 text-justify">
               {item.content}
             </p>
           );

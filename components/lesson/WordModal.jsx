@@ -85,16 +85,16 @@ export default function WordModal({ word, isOpen, onClose }) {
   return (
     <div
       ref={modalRef}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-0 lg:p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200"
       onClick={handleBackdropClick}
       role="dialog"
       aria-modal="true"
       aria-labelledby="word-modal-title"
     >
-      <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200">
+      <div className="bg-white lg:rounded-2xl shadow-2xl max-w-2xl w-full h-full lg:h-auto lg:max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200">
         {/* Header */}
-        <div className="sticky top-0 bg-white border-b border-neutral-extralight px-6 py-4 flex items-center justify-between z-10">
-          <h2 id="word-modal-title" className="text-xl font-bold text-text-charcoal">
+        <div className="sticky top-0 bg-white border-b border-neutral-extralight px-4 lg:px-6 py-3 lg:py-4 flex items-center justify-between z-10">
+          <h2 id="word-modal-title" className="text-lg lg:text-xl font-bold text-text-charcoal">
             {word.title}
           </h2>
           <button
@@ -108,7 +108,7 @@ export default function WordModal({ word, isOpen, onClose }) {
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-6">
+        <div className="p-4 lg:p-6 space-y-4 lg:space-y-6">
           {/* Word Image */}
           <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-neutral-indigo/20">
             <Image
@@ -128,9 +128,9 @@ export default function WordModal({ word, isOpen, onClose }) {
           </div>
 
           {/* Definition */}
-          <div className="bg-neutral-indigo/30 rounded-xl p-4">
-            <h3 className="text-sm font-semibold text-text-gray mb-2">تعریف</h3>
-            <p className="text-sm text-text-charcoal leading-7">
+          <div className="bg-neutral-indigo/30 rounded-xl p-3 lg:p-4">
+            <h3 className="text-xs lg:text-sm font-semibold text-text-gray mb-2">تعریف</h3>
+            <p className="text-sm lg:text-base text-text-charcoal leading-7">
               {word.definition}
             </p>
           </div>
@@ -147,7 +147,7 @@ export default function WordModal({ word, isOpen, onClose }) {
               onChange={(e) => setNote(e.target.value)}
               onBlur={handleBlur}
               placeholder="یادداشت‌های خود را اینجا بنویسید..."
-              className="w-full px-4 py-3 border-2 border-neutral-extralight rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all duration-200 resize-none text-sm"
+              className="w-full px-3 lg:px-4 py-2.5 lg:py-3 border-2 border-neutral-extralight rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all duration-200 resize-none text-sm"
               rows={4}
             />
             <div className="flex items-center justify-between mt-2">

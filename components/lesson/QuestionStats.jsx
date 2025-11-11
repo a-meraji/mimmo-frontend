@@ -12,48 +12,48 @@ export default function QuestionStats({ stats }) {
 
   if (totalAttempts === 0) {
     return (
-      <div className="bg-neutral-indigo/20 rounded-xl p-4 text-center">
-        <p className="text-sm text-text-gray">هنوز این سوال را تمرین نکرده‌اید</p>
+      <div className="bg-neutral-indigo/20 rounded-xl p-3 text-center">
+        <p className="text-xs lg:text-sm text-text-gray">هنوز این سوال را تمرین نکرده‌اید</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white border border-neutral-extralight rounded-xl p-4 space-y-4">
+    <div className="bg-white border border-neutral-extralight rounded-xl p-3 lg:p-4 space-y-3 lg:space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-text-charcoal">آمار عملکرد شما</h3>
+        <h3 className="text-xs lg:text-sm font-semibold text-text-charcoal">آمار عملکرد شما</h3>
         <div className="flex items-center gap-1 text-xs text-text-gray">
-          <Target className="w-4 h-4" aria-hidden="true" />
+          <Target className="w-3.5 h-3.5 lg:w-4 lg:h-4" aria-hidden="true" />
           <span>{totalAttempts} تلاش</span>
         </div>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-2 lg:gap-3">
         {/* Correct */}
-        <div className="flex flex-col items-center gap-2 p-3 bg-emerald-50 rounded-lg">
-          <CheckCircle2 className="w-5 h-5 text-emerald-600" aria-hidden="true" />
+        <div className="flex flex-col items-center gap-1.5 lg:gap-2 p-2 lg:p-3 bg-emerald-50 rounded-lg">
+          <CheckCircle2 className="w-4 h-4 lg:w-5 lg:h-5 text-emerald-600" aria-hidden="true" />
           <div className="text-center">
-            <p className="text-lg font-bold text-emerald-700">{correct}</p>
-            <p className="text-xs text-emerald-600">{correctPercent}% درست</p>
+            <p className="text-base lg:text-lg font-bold text-emerald-700">{correct}</p>
+            <p className="text-[10px] lg:text-xs text-emerald-600">{correctPercent}% درست</p>
           </div>
         </div>
 
         {/* Wrong */}
-        <div className="flex flex-col items-center gap-2 p-3 bg-rose-50 rounded-lg">
-          <XCircle className="w-5 h-5 text-rose-600" aria-hidden="true" />
+        <div className="flex flex-col items-center gap-1.5 lg:gap-2 p-2 lg:p-3 bg-rose-50 rounded-lg">
+          <XCircle className="w-4 h-4 lg:w-5 lg:h-5 text-rose-600" aria-hidden="true" />
           <div className="text-center">
-            <p className="text-lg font-bold text-rose-700">{wrong}</p>
-            <p className="text-xs text-rose-600">{wrongPercent}% غلط</p>
+            <p className="text-base lg:text-lg font-bold text-rose-700">{wrong}</p>
+            <p className="text-[10px] lg:text-xs text-rose-600">{wrongPercent}% غلط</p>
           </div>
         </div>
 
         {/* Doubt */}
-        <div className="flex flex-col items-center gap-2 p-3 bg-amber-50 rounded-lg">
-          <HelpCircle className="w-5 h-5 text-amber-600" aria-hidden="true" />
+        <div className="flex flex-col items-center gap-1.5 lg:gap-2 p-2 lg:p-3 bg-amber-50 rounded-lg">
+          <HelpCircle className="w-4 h-4 lg:w-5 lg:h-5 text-amber-600" aria-hidden="true" />
           <div className="text-center">
-            <p className="text-lg font-bold text-amber-700">{doubt}</p>
-            <p className="text-xs text-amber-600">{doubtPercent}% شک</p>
+            <p className="text-base lg:text-lg font-bold text-amber-700">{doubt}</p>
+            <p className="text-[10px] lg:text-xs text-amber-600">{doubtPercent}% شک</p>
           </div>
         </div>
       </div>

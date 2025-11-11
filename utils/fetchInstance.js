@@ -124,10 +124,12 @@ class FetchInstance {
       ...options.headers,
     };
 
-    // Build fetch options
+    // Build fetch options with timeout (default 10 seconds)
+    const timeout = options.timeout || 10000;
     const fetchOptions = {
       ...options,
       headers,
+      signal: options.signal || AbortSignal.timeout(timeout),
     };
 
     try {
@@ -162,6 +164,15 @@ class FetchInstance {
       // If it's already our custom error with status, re-throw as is
       if (error.status) {
         throw error;
+      }
+      
+      // Handle timeout errors
+      if (error.name === 'AbortError' || error.name === 'TimeoutError') {
+        const timeoutError = new Error('Request timeout - server is not responding');
+        timeoutError.isNetworkError = true;
+        timeoutError.isTimeout = true;
+        timeoutError.originalError = error;
+        throw timeoutError;
       }
       
       // Handle network errors (fetch failed, CORS, etc.)

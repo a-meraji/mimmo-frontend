@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState, useMemo, useCallback, useEffect } from 'react';
+import { use, useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -8,6 +8,7 @@ import { ArrowRight, HelpCircle, CheckCircle2, XCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { getLessonById, getAllLessonsForCourse, getQuestionsForTest } from '@/utils/lessonData';
 import { getTestPreferences, saveTestPreferences, getAllQuestionStats, batchUpdateQuestionStats, saveTestResult } from '@/utils/lessonStorage';
+import LessonNavTabs from '@/components/lesson/LessonNavTabs';
 import TestConfigForm from '@/components/lesson/TestConfigForm';
 import TestTimer from '@/components/lesson/TestTimer';
 import TestProgress from '@/components/lesson/TestProgress';
@@ -221,54 +222,56 @@ export default function LessonTestPage({ params }) {
   const isCorrect = hasAnswered && selectedAnswer === currentQuestion?.correctIndex;
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-gradient-purple via-white to-gradient-yellow py-16 lg:py-24">
-      <div className="container mx-auto px-4 lg:px-8 max-w-4xl">
-        {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-sm text-text-gray mb-8" aria-label="مسیر صفحه">
-          <Link href="/learn" className="hover:text-primary transition-colors">
-            یادگیری
-          </Link>
-          <ArrowRight className="w-3.5 h-3.5 text-text-light" aria-hidden="true" />
-          <Link href={`/learn/${lesson.courseId}`} className="hover:text-primary transition-colors">
-            دوره
-          </Link>
-          <ArrowRight className="w-3.5 h-3.5 text-text-light" aria-hidden="true" />
-          <span className="text-text-charcoal font-medium">{lesson.title}</span>
-        </nav>
+    <main className="min-h-screen bg-gradient-to-br from-gradient-purple via-white to-gradient-yellow">
+      {/* Sticky Navigation Tabs (only in config phase) */}
+      {phase === 'config' && <LessonNavTabs lessonId={lessonId} activeTab="test" />}
 
-        {/* Page Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-black text-text-charcoal mb-2">{lesson.title}</h1>
-          <p className="text-text-gray">
+      {/* Sticky Page Header (Mobile - All Phases) */}
+      <div className="lg:hidden sticky top-[60px] z-30 bg-white/95 backdrop-blur-md border-b border-neutral-extralight">
+        <div className="container mx-auto px-4 py-2">
+          <h1 className="text-base font-bold text-text-charcoal">{lesson.title}</h1>
+          <p className="text-xs text-text-gray">
             {phase === 'config' && 'تنظیمات آزمون'}
             {phase === 'execution' && 'در حال آزمون'}
             {phase === 'results' && 'نتایج آزمون'}
           </p>
         </div>
+      </div>
 
-        {/* Navigation Tabs (only in config phase) */}
-        {phase === 'config' && (
-          <div className="flex items-center gap-2 mb-8 overflow-x-auto scrollbar-hide">
-            <Link
-              href={`/lesson/${lessonId}/content`}
-              className="flex-shrink-0 px-6 py-3 bg-white text-text-charcoal rounded-xl font-semibold hover:bg-neutral-indigo transition-colors border border-neutral-extralight"
-            >
-              محتوا
+      <div className="container mx-auto px-4 lg:px-8 max-w-4xl py-4 lg:py-8">
+        {/* Back Button (Mobile) / Breadcrumb (Desktop) */}
+        <div className="mb-4 lg:mb-6">
+          <button
+            onClick={() => router.back()}
+            className="lg:hidden inline-flex items-center gap-2 text-text-gray hover:text-primary transition-colors p-2 -ml-2"
+            aria-label="بازگشت"
+          >
+            <ArrowRight className="w-5 h-5" aria-hidden="true" />
+            <span className="text-sm font-medium">بازگشت</span>
+          </button>
+
+          <nav className="hidden lg:flex items-center gap-1.5 text-xs text-text-gray" aria-label="مسیر صفحه">
+            <Link href="/learn" className="hover:text-primary transition-colors">
+              یادگیری
             </Link>
-            <Link
-              href={`/lesson/${lessonId}/practice`}
-              className="flex-shrink-0 px-6 py-3 bg-white text-text-charcoal rounded-xl font-semibold hover:bg-neutral-indigo transition-colors border border-neutral-extralight"
-            >
-              تمرین
+            <ArrowRight className="w-3 h-3 text-text-light" aria-hidden="true" />
+            <Link href={`/learn/${lesson.courseId}`} className="hover:text-primary transition-colors">
+              دوره
             </Link>
-            <Link
-              href={`/lesson/${lessonId}/test`}
-              className="flex-shrink-0 px-6 py-3 bg-primary text-white rounded-xl font-semibold shadow-md"
-            >
-              آزمون
-            </Link>
-          </div>
-        )}
+            <ArrowRight className="w-3 h-3 text-text-light" aria-hidden="true" />
+            <span className="text-text-charcoal font-medium">{lesson.title}</span>
+          </nav>
+        </div>
+
+        {/* Page Header (Desktop) */}
+        <div className="hidden lg:block mb-6">
+          <h1 className="text-2xl font-black text-text-charcoal mb-1">{lesson.title}</h1>
+          <p className="text-sm text-text-gray">
+            {phase === 'config' && 'تنظیمات آزمون'}
+            {phase === 'execution' && 'در حال آزمون'}
+            {phase === 'results' && 'نتایج آزمون'}
+          </p>
+        </div>
 
         {/* Configuration Phase */}
         {phase === 'config' && (
@@ -282,9 +285,9 @@ export default function LessonTestPage({ params }) {
 
         {/* Execution Phase */}
         {phase === 'execution' && currentQuestion && (
-          <div className="space-y-6">
+          <div className="space-y-4 lg:space-y-6">
             {/* Timer and Progress */}
-            <div className="grid lg:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-4">
               {testConfig.timeLimit && (
                 <TestTimer
                   duration={50}
@@ -308,14 +311,14 @@ export default function LessonTestPage({ params }) {
                     src={currentQuestion.image}
                     alt="تصویر سوال"
                     fill
-                    className="object-contain p-6"
+                    className="object-contain p-4 lg:p-6"
                     sizes="(max-width: 768px) 100vw, 600px"
                   />
                 </div>
               )}
 
               {/* Question Content */}
-              <div className="p-6 space-y-6">
+              <div className="p-4 lg:p-6 space-y-4 lg:space-y-6">
                 {/* Question Text */}
                 <div>
                   <h3 className="text-lg font-bold text-text-charcoal mb-4 leading-8">
@@ -410,12 +413,12 @@ export default function LessonTestPage({ params }) {
                   </div>
                 )}
 
-                {/* Action Buttons */}
-                <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                {/* Action Buttons - Full width on mobile */}
+                <div className="flex flex-col gap-3 pt-2">
                   {!hasAnswered && (
                     <button
                       onClick={handleDoubtToggle}
-                      className={`flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all duration-200 ${
+                      className={`w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all duration-200 ${
                         isDoubt
                           ? 'bg-amber-500 text-white'
                           : 'bg-white border-2 border-amber-500 text-amber-600 hover:bg-amber-50'
@@ -430,7 +433,7 @@ export default function LessonTestPage({ params }) {
                   {hasAnswered && (
                     <button
                       onClick={handleNextQuestion}
-                      className="flex-1 bg-primary text-white px-6 py-3 rounded-xl font-semibold hover:bg-primary/90 transition-colors"
+                      className="w-full bg-primary text-white px-6 py-3 rounded-xl font-semibold hover:bg-primary/90 transition-colors"
                       type="button"
                     >
                       {currentQuestionIndex < testQuestions.length - 1 ? 'سوال بعدی' : 'اتمام آزمون'}

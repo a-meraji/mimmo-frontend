@@ -71,15 +71,15 @@ export default function TestConfigForm({
   }, []);
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-4 lg:space-y-6">
       {/* Question Count */}
-      <div className="bg-white border border-neutral-extralight rounded-xl p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-            <FileQuestion className="w-5 h-5 text-primary" aria-hidden="true" />
+      <div className="bg-white border border-neutral-extralight rounded-xl p-4 lg:p-6">
+        <div className="flex items-center gap-3 mb-3 lg:mb-4">
+          <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+            <FileQuestion className="w-4 h-4 lg:w-5 lg:h-5 text-primary" aria-hidden="true" />
           </div>
-          <div>
-            <h3 className="font-semibold text-text-charcoal">تعداد سوالات</h3>
+          <div className="min-w-0">
+            <h3 className="font-semibold text-sm lg:text-base text-text-charcoal">تعداد سوالات</h3>
             <p className="text-xs text-text-gray">چند سوال می‌خواهید تمرین کنید؟</p>
           </div>
         </div>
@@ -89,7 +89,7 @@ export default function TestConfigForm({
           max="50"
           value={config.questionCount}
           onChange={(e) => setConfig(prev => ({ ...prev, questionCount: parseInt(e.target.value) || 1 }))}
-          className="w-full px-4 py-3 border-2 border-neutral-extralight rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all duration-200"
+          className="w-full px-4 py-2.5 lg:py-3 border-2 border-neutral-extralight rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all duration-200 text-sm lg:text-base"
         />
         {errors.questionCount && (
           <p className="text-sm text-rose-600 mt-2">{errors.questionCount}</p>
@@ -97,13 +97,13 @@ export default function TestConfigForm({
       </div>
 
       {/* Source Scope */}
-      <div className="bg-white border border-neutral-extralight rounded-xl p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-            <Settings className="w-5 h-5 text-primary" aria-hidden="true" />
+      <div className="bg-white border border-neutral-extralight rounded-xl p-4 lg:p-6">
+        <div className="flex items-center gap-3 mb-3 lg:mb-4">
+          <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+            <Settings className="w-4 h-4 lg:w-5 lg:h-5 text-primary" aria-hidden="true" />
           </div>
-          <div>
-            <h3 className="font-semibold text-text-charcoal">محدوده سوالات</h3>
+          <div className="min-w-0">
+            <h3 className="font-semibold text-sm lg:text-base text-text-charcoal">محدوده سوالات</h3>
             <p className="text-xs text-text-gray">از کدام دروس سوال بیاید؟</p>
           </div>
         </div>
@@ -157,13 +157,13 @@ export default function TestConfigForm({
       </div>
 
       {/* Question Mixture */}
-      <div className="bg-white border border-neutral-extralight rounded-xl p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-            <Filter className="w-5 h-5 text-primary" aria-hidden="true" />
+      <div className="bg-white border border-neutral-extralight rounded-xl p-4 lg:p-6">
+        <div className="flex items-center gap-3 mb-3 lg:mb-4">
+          <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+            <Filter className="w-4 h-4 lg:w-5 lg:h-5 text-primary" aria-hidden="true" />
           </div>
-          <div>
-            <h3 className="font-semibold text-text-charcoal">نوع سوالات</h3>
+          <div className="min-w-0">
+            <h3 className="font-semibold text-sm lg:text-base text-text-charcoal">نوع سوالات</h3>
             <p className="text-xs text-text-gray">چه سوالاتی نمایش داده شود؟</p>
           </div>
         </div>
@@ -171,7 +171,7 @@ export default function TestConfigForm({
         <select
           value={config.questionMixture}
           onChange={(e) => setConfig(prev => ({ ...prev, questionMixture: e.target.value }))}
-          className="w-full px-4 py-3 border-2 border-neutral-extralight rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all duration-200 bg-white"
+          className="w-full px-4 py-2.5 lg:py-3 border-2 border-neutral-extralight rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all duration-200 bg-white text-sm lg:text-base"
         >
           <option value="all">همه سوالات</option>
           <option value="wrong">فقط سوالات اشتباه قبلی</option>
@@ -182,14 +182,14 @@ export default function TestConfigForm({
       </div>
 
       {/* Time Limit */}
-      <div className="bg-white border border-neutral-extralight rounded-xl p-6">
+      <div className="bg-white border border-neutral-extralight rounded-xl p-4 lg:p-6">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-              <Clock className="w-5 h-5 text-primary" aria-hidden="true" />
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <Clock className="w-4 h-4 lg:w-5 lg:h-5 text-primary" aria-hidden="true" />
             </div>
-            <div>
-              <h3 className="font-semibold text-text-charcoal">محدودیت زمانی</h3>
+            <div className="min-w-0">
+              <h3 className="font-semibold text-sm lg:text-base text-text-charcoal">محدودیت زمانی</h3>
               <p className="text-xs text-text-gray">۵۰ ثانیه برای هر سوال</p>
             </div>
           </div>
@@ -206,13 +206,13 @@ export default function TestConfigForm({
       </div>
 
       {/* Feedback Mode */}
-      <div className="bg-white border border-neutral-extralight rounded-xl p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-            <MessageSquare className="w-5 h-5 text-primary" aria-hidden="true" />
+      <div className="bg-white border border-neutral-extralight rounded-xl p-4 lg:p-6">
+        <div className="flex items-center gap-3 mb-3 lg:mb-4">
+          <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+            <MessageSquare className="w-4 h-4 lg:w-5 lg:h-5 text-primary" aria-hidden="true" />
           </div>
-          <div>
-            <h3 className="font-semibold text-text-charcoal">نمایش پاسخ صحیح</h3>
+          <div className="min-w-0">
+            <h3 className="font-semibold text-sm lg:text-base text-text-charcoal">نمایش پاسخ صحیح</h3>
             <p className="text-xs text-text-gray">چه زمانی پاسخ صحیح نمایش داده شود؟</p>
           </div>
         </div>

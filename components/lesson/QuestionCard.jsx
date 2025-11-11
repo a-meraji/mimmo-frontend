@@ -23,19 +23,19 @@ export default function QuestionCard({ question, stats, showStats = true }) {
     <div className="bg-white border border-neutral-extralight rounded-2xl overflow-hidden shadow-sm">
       {/* Question Image */}
       {question.image && (
-        <div className="relative w-full aspect-video bg-neutral-indigo/10">
+        <div className="relative w-full aspect-video bg-neutral-indigo/10 max-h-[250px] lg:max-h-none">
           <Image
             src={question.image}
             alt="تصویر سوال"
             fill
-            className="object-contain p-6"
+            className="object-contain p-4 lg:p-6"
             sizes="(max-width: 768px) 100vw, 600px"
           />
         </div>
       )}
 
       {/* Question Content */}
-      <div className="p-6 space-y-6">
+      <div className="p-4 lg:p-6 space-y-4 lg:space-y-6">
         {/* Question Text */}
         <div>
           <h3 className="text-lg font-bold text-text-charcoal mb-4 leading-8">
@@ -44,7 +44,7 @@ export default function QuestionCard({ question, stats, showStats = true }) {
         </div>
 
         {/* Answer Options */}
-        <div className="space-y-3">
+        <div className="space-y-2 lg:space-y-3">
           {question.options.map((option, index) => {
             const isSelected = selectedAnswer === index;
             const isCorrectOption = index === question.correctIndex;
@@ -56,7 +56,7 @@ export default function QuestionCard({ question, stats, showStats = true }) {
                 key={index}
                 onClick={() => handleAnswerSelect(index)}
                 disabled={hasAnswered}
-                className={`w-full flex items-center gap-3 p-4 rounded-xl border-2 transition-all duration-200 text-right ${
+                className={`w-full flex items-center gap-3 p-3 lg:p-4 rounded-xl border-2 transition-all duration-200 text-right min-h-[56px] ${
                   hasAnswered
                     ? isCorrectOption
                       ? 'bg-emerald-50 border-emerald-500 cursor-default'

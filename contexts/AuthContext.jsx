@@ -204,17 +204,27 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const initAuth = async () => {
       try {
+        // Add a timeout to prevent infinite loading if backend is down
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Auth initialization timeout')), 5000);
+        });
+
         // Try to refresh token (in case we have a valid refresh token cookie)
         // Pass true to indicate this is during initialization
-        const token = await refreshAccessToken(true);
+        const token = await Promise.race([
+          refreshAccessToken(true),
+          timeoutPromise
+        ]);
         
         if (token) {
           setupRefreshTimer();
         }
       } catch (error) {
         // Silently fail - user is simply not authenticated
-        // This is expected for first-time visitors
+        // This is expected for first-time visitors or when backend is unavailable
+        console.log('Auth initialization failed (this is normal if not logged in or backend is unavailable)');
       } finally {
+        // ALWAYS set loading to false, even if there's an error
         setIsLoading(false);
       }
     };
