@@ -8,7 +8,6 @@ import {
   BookOpenCheck,
   Clock3,
   Flame,
-  Layers3,
   Trophy,
 } from "lucide-react";
 
@@ -30,12 +29,11 @@ const LEARN_COURSES = {
       totalLessons: 36,
       completedLessons: 18,
       streakDays: 6,
-      practiceMinutes: 540,
+      practiceMinutes: 660,
       lastPracticed: "۲ روز پیش",
     },
     nextLesson: {
       title: "درس ۱۹ - سفارش قهوه در کافه",
-      duration: "۱۴ دقیقه",
       link: "/learn/espresso-1/lesson/19",
     },
     milestones: [
@@ -54,17 +52,16 @@ const LEARN_COURSES = {
         status: "completed",
         completedLessons: 12,
         totalLessons: 12,
-        totalDuration: "۶ ساعت",
         chapters: [
           {
             title: "معرفی و سلام و احوالپرسی",
             status: "completed",
             completedLessons: 6,
             lessons: [
-              { id: "lesson-1", title: "سلام و آشنایی", duration: "۱۲ دقیقه", status: "completed" },
-              { id: "lesson-2", title: "معرفی خود", duration: "۱۰ دقیقه", status: "completed" },
-              { id: "lesson-3", title: "پرسیدن احوال", duration: "۱۳ دقیقه", status: "completed" },
-              { title: "تمرین تلفظ", duration: "۸ دقیقه", status: "completed" },
+              { id: "lesson-1", title: "سلام و آشنایی",  status: "completed" },
+              { id: "lesson-2", title: "معرفی خود", status: "completed" },
+              { id: "lesson-3", title: "پرسیدن احوال",  status: "completed" },
+              { title: "تمرین تلفظ", status: "completed" },
             ],
           },
           {
@@ -72,9 +69,9 @@ const LEARN_COURSES = {
             status: "completed",
             completedLessons: 6,
             lessons: [
-              { title: "اعداد و زمان", duration: "۱۱ دقیقه", status: "completed" },
-              { title: "واژگان روزمره", duration: "۱۵ دقیقه", status: "completed" },
-              { title: "کاربرد فعل بودن", duration: "۹ دقیقه", status: "completed" },
+              { title: "اعداد و زمان", status: "completed" },
+              { title: "واژگان روزمره", status: "completed" },
+              { title: "کاربرد فعل بودن", status: "completed" },
             ],
           },
         ],
@@ -84,16 +81,15 @@ const LEARN_COURSES = {
         status: "in-progress",
         completedLessons: 6,
         totalLessons: 12,
-        totalDuration: "۷ ساعت",
         chapters: [
           {
             title: "در مسیر شهر",
             status: "in-progress",
             completedLessons: 3,
             lessons: [
-              { title: "پرسیدن آدرس", duration: "۱۳ دقیقه", status: "completed" },
-              { title: "گرفتن تاکسی", duration: "۱۲ دقیقه", status: "in-progress" },
-              { title: "راهنمایی مسیر", duration: "۱۶ دقیقه", status: "locked" },
+              { title: "پرسیدن آدرس", status: "completed" },
+              { title: "گرفتن تاکسی", status: "in-progress" },
+              { title: "راهنمایی مسیر", status: "locked" },
             ],
           },
           {
@@ -101,9 +97,9 @@ const LEARN_COURSES = {
             status: "in-progress",
             completedLessons: 3,
             lessons: [
-              { title: "سفارش نوشیدنی", duration: "۱۵ دقیقه", status: "in-progress" },
-              { title: "رزرو میز", duration: "۱۲ دقیقه", status: "locked" },
-              { title: "پرداخت و انعام", duration: "۱۴ دقیقه", status: "locked" },
+              { title: "سفارش نوشیدنی", status: "in-progress" },
+              { title: "رزرو میز", status: "locked" },
+              { title: "پرداخت و انعام", status: "locked" },
             ],
           },
         ],
@@ -113,22 +109,21 @@ const LEARN_COURSES = {
         status: "locked",
         completedLessons: 0,
         totalLessons: 12,
-        totalDuration: "۸ ساعت",
         chapters: [
           {
             title: "رزرو هتل",
             status: "locked",
             lessons: [
-              { title: "تماس با هتل", duration: "۱۱ دقیقه", status: "locked" },
-              { title: "درخواست امکانات", duration: "۱۶ دقیقه", status: "locked" },
+              { title: "تماس با هتل", status: "locked" },
+              { title: "درخواست امکانات", status: "locked" },
             ],
           },
           {
             title: "برنامه سفر روزانه",
             status: "locked",
             lessons: [
-              { title: "خرید بلیت", duration: "۱۸ دقیقه", status: "locked" },
-              { title: "سوال درباره ساعت حرکت", duration: "۱۳ دقیقه", status: "locked" },
+              { title: "خرید بلیت", status: "locked" },
+              { title: "سوال درباره ساعت حرکت", status: "locked" },
             ],
           },
         ],
@@ -157,7 +152,6 @@ const LEARN_COURSES = {
     },
     nextLesson: {
       title: "درس ۷ - صحبت درباره برنامه روزانه",
-      duration: "۱۲ دقیقه",
       link: "/learn/espresso-2/lesson/7",
     },
     milestones: [
@@ -176,23 +170,22 @@ const LEARN_COURSES = {
         status: "in-progress",
         completedLessons: 4,
         totalLessons: 12,
-        totalDuration: "۵ ساعت",
         chapters: [
           {
             title: "روایت داستان",
             status: "in-progress",
             completedLessons: 2,
             lessons: [
-              { title: "تعریف اتفاقات گذشته", duration: "۱۲ دقیقه", status: "in-progress" },
-              { title: "گفتگو درباره برنامه فردا", duration: "۱۴ دقیقه", status: "locked" },
+              { title: "تعریف اتفاقات گذشته", status: "in-progress" },
+              { title: "گفتگو درباره برنامه فردا", status: "locked" },
             ],
           },
           {
             title: "بیان احساسات",
             status: "locked",
             lessons: [
-              { title: "توصیف حالات روحی", duration: "۱۳ دقیقه", status: "locked" },
-              { title: "صحبت درباره علایق", duration: "۱۶ دقیقه", status: "locked" },
+              { title: "توصیف حالات روحی",  status: "locked" },
+              { title: "صحبت درباره علایق", status: "locked" },
             ],
           },
         ],
@@ -202,14 +195,13 @@ const LEARN_COURSES = {
         status: "locked",
         completedLessons: 0,
         totalLessons: 12,
-        totalDuration: "۶ ساعت",
         chapters: [
           {
             title: "آشنایی در محیط کار",
             status: "locked",
             lessons: [
-              { title: "جلسه کاری اول", duration: "۱۵ دقیقه", status: "locked" },
-              { title: "نوشتن ایمیل رسمی", duration: "۱۲ دقیقه", status: "locked" },
+              { title: "جلسه کاری اول",  status: "locked" },
+              { title: "نوشتن ایمیل رسمی", status: "locked" },
             ],
           },
         ],
@@ -238,7 +230,6 @@ const LEARN_COURSES = {
     },
     nextLesson: {
       title: "بخش ۲۱ - علائم راهنمایی جزء دوم",
-      duration: "۱۸ دقیقه",
       link: "/learn/driving-license/lesson/21",
     },
     milestones: [
@@ -257,22 +248,21 @@ const LEARN_COURSES = {
         status: "completed",
         completedLessons: 12,
         totalLessons: 12,
-        totalDuration: "۷ ساعت",
         chapters: [
           {
             title: "مبانی رانندگی",
             status: "completed",
             lessons: [
-              { title: "دانش پایه", duration: "۱۵ دقیقه", status: "completed" },
-              { title: "شناخت داشبورد", duration: "۱۳ دقیقه", status: "completed" },
+              { title: "دانش پایه", status: "completed" },
+              { title: "شناخت داشبورد", status: "completed" },
             ],
           },
           {
             title: "قوانین عمومی",
             status: "completed",
             lessons: [
-              { title: "قوانین سرعت", duration: "۱۸ دقیقه", status: "completed" },
-              { title: "تقدم عبور", duration: "۱۹ دقیقه", status: "completed" },
+              { title: "قوانین سرعت", status: "completed" },
+              { title: "تقدم عبور", status: "completed" },
             ],
           },
         ],
@@ -282,22 +272,21 @@ const LEARN_COURSES = {
         status: "in-progress",
         completedLessons: 8,
         totalLessons: 14,
-        totalDuration: "۸ ساعت",
         chapters: [
           {
             title: "علائم هشدار",
             status: "completed",
             lessons: [
-              { title: "علائم خطر", duration: "۱۶ دقیقه", status: "completed" },
-              { title: "علائم بازدارنده", duration: "۱۴ دقیقه", status: "completed" },
+              { title: "علائم خطر", status: "completed" },
+              { title: "علائم بازدارنده", status: "completed" },
             ],
           },
           {
             title: "علائم راهنما",
             status: "in-progress",
             lessons: [
-              { title: "شناسایی مسیر", duration: "۱۵ دقیقه", status: "in-progress" },
-              { title: "علائم خدماتی", duration: "۱۳ دقیقه", status: "locked" },
+              { title: "شناسایی مسیر", status: "in-progress" },
+              { title: "علائم خدماتی", status: "locked" },
             ],
           },
         ],
@@ -307,14 +296,13 @@ const LEARN_COURSES = {
         status: "locked",
         completedLessons: 0,
         totalLessons: 10,
-        totalDuration: "۶ ساعت",
         chapters: [
           {
             title: "رانندگی در شرایط جوی",
             status: "locked",
             lessons: [
-              { title: "باران و برف", duration: "۱۴ دقیقه", status: "locked" },
-              { title: "مه و یخ زدگی", duration: "۱۲ دقیقه", status: "locked" },
+              { title: "باران و برف", status: "locked" },
+              { title: "مه و یخ زدگی", status: "locked" },
             ],
           },
         ],
@@ -355,13 +343,6 @@ export default function LearnCoursePage({ params }) {
       percent: completionPercent,
     },
     {
-      id: "chapters",
-      icon: Layers3,
-      label: "فصل‌های فعال",
-      value: `${course.progress.completedChapters} از ${course.progress.totalChapters}`,
-      percent: chapterPercent,
-    },
-    {
       id: "streak",
       icon: Flame,
       label: "رکورد پیوستگی",
@@ -394,12 +375,12 @@ export default function LearnCoursePage({ params }) {
               <span className="absolute top-6 right-6 inline-flex items-center gap-2 bg-primary text-white text-xs font-medium px-4 py-1.5 rounded-full shadow-lg">
                 سطح {course.level}
               </span>
-              <div className="absolute bottom-6 right-6 left-6 bg-white/95 border border-neutral-extralight rounded-2xl shadow-lg px-5 py-4 flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-text-light">پیشرفت کلی</p>
+              <div className="absolute bottom-6 right-6 left-6 gap-x-4 bg-white/95 border border-neutral-extralight rounded-2xl shadow-lg px-5 py-4 flex items-center justify-between">
+                <div className="w-fit">
+                  <p className="text-xs text-text-light whitespace-nowrap">پیشرفت کلی</p>
                   <p className="text-lg font-bold text-text-charcoal">{completionPercent}%</p>
                 </div>
-                <div className="flex flex-col gap-2 w-32">
+                <div className="flex flex-col gap-2 w-full max-w-96">
                   <ProgressBar percent={completionPercent} />
                   <span className="text-[11px] text-text-gray">
                     {course.progress.completedLessons} از {course.progress.totalLessons} درس
@@ -418,17 +399,6 @@ export default function LearnCoursePage({ params }) {
                 {course.description}
               </p>
 
-              <div className="flex flex-wrap items-center gap-2 pt-2">
-                {course.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="inline-flex items-center bg-neutral-indigo/40 text-text-gray text-xs font-medium px-3 py-1.5 rounded-full"
-                  >
-                    #{tag}
-                  </span>
-                ))}
-              </div>
-
               <div className="grid sm:grid-cols-3 gap-4 pt-4">
                 <StatBadge
                   icon={BookOpenCheck}
@@ -437,12 +407,12 @@ export default function LearnCoursePage({ params }) {
                 />
                 <StatBadge
                   icon={Clock3}
-                  title="زمان تمرین"
+                  title="مدت زمان آموزش"
                   value={`${Math.round(course.progress.practiceMinutes / 60)} ساعت`}
                 />
                 <StatBadge
                   icon={Flame}
-                  title="رکورد متوالی"
+                  title="پیوستگی در تمرین"
                   value={`${course.progress.streakDays} روز`}
                 />
               </div>
@@ -464,11 +434,11 @@ export default function LearnCoursePage({ params }) {
           </div>
         </header>
 
-        <div className="grid lg:grid-cols-12 gap-8">
-          <div className="lg:col-span-8 space-y-8">
+        <div className="grid lg:grid-cols-12 gap-4 lg:gap-8">
+          <div className="lg:col-span-8 space-y-6 lg:space-y-8 min-w-0">
             <CourseChapters seasons={course.seasons} showProgress />
 
-            <section className="bg-white border border-neutral-extralight rounded-2xl p-6 space-y-4">
+            <section className="bg-white border border-neutral-extralight rounded-2xl p-4 sm:p-6 space-y-4">
               <h2 className="text-lg font-bold text-text-charcoal flex items-center gap-2">
                 <Trophy className="w-5 h-5 text-primary" aria-hidden="true" />
                 اهداف و پیشنهادها
@@ -484,8 +454,8 @@ export default function LearnCoursePage({ params }) {
             </section>
           </div>
 
-          <aside className="lg:col-span-4 space-y-6">
-            <section className="bg-white border border-neutral-extralight rounded-2xl p-6">
+          <aside className="lg:col-span-4 space-y-4 lg:space-y-6 min-w-0">
+            <section className="bg-white border border-neutral-extralight rounded-2xl p-4 sm:p-6">
               <h2 className="text-base font-semibold text-text-charcoal mb-4">نمای کلی پیشرفت</h2>
               <div className="space-y-4">
                 {progressStats.map((stat) => (
@@ -494,11 +464,10 @@ export default function LearnCoursePage({ params }) {
               </div>
             </section>
 
-            <section className="bg-gradient-to-br from-primary/10 via-white to-secondary/10 border border-primary/10 rounded-2xl p-6">
-              <h2 className="text-base font-semibold text-text-charcoal mb-2">درس بعدی آماده است</h2>
+            <section className="bg-gradient-to-br from-primary/10 via-white to-secondary/10 border border-primary/10 rounded-2xl p-4 sm:p-6">
+              <h2 className="text-base font-semibold text-text-charcoal mb-2">درس بعدی را شروع کنید</h2>
               <p className="text-sm text-text-gray mb-4">{course.nextLesson.title}</p>
               <div className="flex items-center justify-between text-xs text-text-light mb-4">
-                <span>زمان: {course.nextLesson.duration}</span>
                 <span>پیشرفت: {completionPercent}%</span>
               </div>
               <Link
@@ -510,30 +479,6 @@ export default function LearnCoursePage({ params }) {
               </Link>
             </section>
 
-            <section className="bg-white border border-neutral-extralight rounded-2xl p-6 space-y-3">
-              <h2 className="text-base font-semibold text-text-charcoal flex items-center gap-2">
-                <Layers3 className="w-5 h-5 text-primary" aria-hidden="true" />
-                خلاصه فصول
-              </h2>
-              <div className="space-y-3 text-sm text-text-gray">
-                <div className="flex items-center justify-between">
-                  <span>فصل‌های تکمیل شده</span>
-                  <span className="font-medium text-text-charcoal">
-                    {course.progress.completedSeasons} از {course.progress.totalSeasons}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span>زمان کل تمرین</span>
-                  <span className="font-medium text-text-charcoal">
-                    {Math.round(course.progress.practiceMinutes / 60)} ساعت
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span>آخرین فعالیت</span>
-                  <span className="font-medium text-text-charcoal">{course.progress.lastPracticed}</span>
-                </div>
-              </div>
-            </section>
           </aside>
         </div>
       </div>
@@ -543,7 +488,7 @@ export default function LearnCoursePage({ params }) {
 
 function ProgressBar({ percent }) {
   return (
-    <div className="w-full h-2 rounded-full bg-neutral-indigo/40 overflow-hidden">
+    <div className="w-full h-2 rounded-full bg-neutral-indigo/90 overflow-hidden">
       <div
         className="h-full bg-primary rounded-full transition-all duration-500"
         style={{ width: `${percent}%` }}

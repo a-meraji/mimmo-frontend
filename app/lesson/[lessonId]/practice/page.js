@@ -112,7 +112,7 @@ export default function LessonPracticePage({ params }) {
       <LessonNavTabs lessonId={lessonId} activeTab="practice" />
 
       {/* Sticky Page Header (Mobile) */}
-      <div className="lg:hidden sticky top-[60px] z-30 bg-white/95 backdrop-blur-md border-b border-neutral-extralight">
+      <div className="lg:hidden">
         <div className="container mx-auto px-4 py-2">
           <div className="flex items-center justify-between">
             <div>

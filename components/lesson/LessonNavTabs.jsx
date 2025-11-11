@@ -16,14 +16,14 @@ export default function LessonNavTabs({ lessonId, activeTab }) {
 
   return (
     <nav 
-      className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-neutral-extralight"
+      className="sticky top-0 z-50  backdrop-blur-md"
       aria-label="ناوبری درس"
     >
       <div className="container mx-auto px-4">
-        <div className="relative flex items-center justify-between py-4">
+        <div className="relative flex items-center justify-between py-4 max-w-4xl mx-auto">
           {/* Dashed connecting line */}
           <div 
-            className="absolute top-[22px] left-0 right-0 h-[2px] border-t-2 border-dashed border-neutral-extralight/60"
+            className="absolute top-9 left-0 right-0 h-[2px] border-t-2 border-dashed border-neutral-darker"
             aria-hidden="true"
             style={{ zIndex: 0 }}
           />
@@ -36,7 +36,7 @@ export default function LessonNavTabs({ lessonId, activeTab }) {
               <Link
                 key={tab.id}
                 href={tab.href}
-                className="relative flex flex-col items-center gap-2 flex-1 group"
+                className={`relative flex flex-col gap-2 flex-1 group ${index==0?"items-start":index==2?"items-end":"items-center"}`}
                 style={{ zIndex: 1 }}
               >
                 {/* Icon/Indicator Circle */}
@@ -63,13 +63,7 @@ export default function LessonNavTabs({ lessonId, activeTab }) {
                   {tab.label}
                 </span>
 
-                {/* Active indicator dot (optional, for extra emphasis) */}
-                {isActive && (
-                  <div 
-                    className="absolute -bottom-1 w-1.5 h-1.5 rounded-full bg-primary"
-                    aria-hidden="true"
-                  />
-                )}
+              
               </Link>
             );
           })}

@@ -117,7 +117,7 @@ export default function CourseChapters({ seasons = [], showProgress = false }) {
   const currentSeason = seasonsWithMeta[activeSeason] || { chapters: [] };
 
   return (
-    <div className="bg-white rounded-2xl border border-neutral-extralight p-6 space-y-6">
+    <div className="bg-white rounded-2xl border border-neutral-extralight p-4 sm:p-6 space-y-6 overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-bold text-text-charcoal">سرفصل‌های دوره</h2>
@@ -141,7 +141,7 @@ export default function CourseChapters({ seasons = [], showProgress = false }) {
         {/* Seasons */}
         <div
           ref={scrollRef}
-          className="flex gap-2 overflow-x-auto scrollbar-hide px-10 py-1"
+          className="flex gap-2 overflow-x-auto scrollbar-hide px-8 sm:px-10 py-1"
         >
           {seasonsWithMeta.map((season, index) => {
             const isActive = activeSeason === index;
@@ -155,17 +155,15 @@ export default function CourseChapters({ seasons = [], showProgress = false }) {
                 className={`flex-shrink-0 px-4 py-2 rounded-lg text-xs font-medium transition-all duration-200 whitespace-nowrap flex items-center gap-2 ${
                   isActive
                     ? 'bg-primary text-white shadow-md'
-                    : 'bg-neutral-indigo text-text-gray hover:bg-neutral-indigo/70'
+                    : 'bg-white border border-neutral-extralight text-text-gray hover:border-primary/30 hover:bg-neutral-indigo/30'
                 }`}
                 type="button"
               >
-                <span>{season.title}</span>
+                <span className={`${isActive ? 'text-white' : 'text-text-charcoal'}`}>
+                  {season.title}
+                </span>
                 {showProgress && (
-                  <span
-                    className={`inline-flex items-center justify-center w-5 h-5 rounded-full ${statusStyles.dot}`}
-                  >
-                    <StatusIcon className={`w-3 h-3 ${statusStyles.iconColor || 'text-white'}`} aria-hidden="true" />
-                  </span>
+                  <StatusIcon className={`w-4 h-4 ${isActive ? 'text-white' : statusStyles.iconColor}`} aria-hidden="true" />
                 )}
               </button>
             );
@@ -196,39 +194,103 @@ export default function CourseChapters({ seasons = [], showProgress = false }) {
           const statusStyles = showProgress ? getStatusStyles(statusKey) : null;
           const StatusIcon = statusStyles?.icon || Circle;
 
+          const chapterCompletionPercent = showProgress && chapter.lessons?.length
+            ? Math.round(((chapter.completedLessons || 0) / chapter.lessons.length) * 100)
+            : 0;
+
           return (
-            <div key={chapterIndex} className="border border-neutral-extralight rounded-xl overflow-hidden">
+            <div key={chapterIndex} className={`border rounded-xl overflow-hidden transition-all duration-300 ${
+              statusKey === 'completed' 
+                ? 'border-emerald-500/30 bg-emerald-50/30' 
+                : statusKey === 'in-progress'
+                ? 'border-amber-500/30 bg-amber-50/30'
+                : 'border-neutral-extralight bg-white'
+            }`}>
               {/* Chapter Header */}
               <button
                 onClick={() => toggleChapter(chapterIndex)}
-                className="w-full flex items-center justify-between p-4 hover:bg-neutral-indigo/30 transition-colors text-right"
+                className="w-full flex items-center justify-between p-4 hover:bg-white/50 transition-all duration-200 text-right group"
                 type="button"
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <span className="text-xs font-bold text-primary">{chapterIndex + 1}</span>
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-all duration-200 ${
+                    statusKey === 'completed'
+                      ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-md'
+                      : statusKey === 'in-progress'
+                      ? 'bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-md'
+                      : 'bg-neutral-indigo text-text-gray group-hover:bg-neutral-indigo/70'
+                  }`}>
+                    {statusKey === 'completed' ? (
+                      <CheckCircle2 className="w-5 h-5" aria-hidden="true" />
+                    ) : (
+                      <span className="text-xs font-bold">{chapterIndex + 1}</span>
+                    )}
                   </div>
-                  <div className="text-right">
-                    <h4 className="text-sm font-semibold text-text-charcoal">{chapter.title}</h4>
-                    <p className="text-xs text-text-light">{chapter.lessons?.length} درس</p>
+                  <div className="text-right flex-1 min-w-0">
+                    <h4 className="text-sm font-semibold text-text-charcoal mb-1 truncate">{chapter.title}</h4>
+                    <div className="flex items-center gap-2">
+                      {showProgress && (
+                        <>
+                          <span className={`inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full ${statusStyles.badge}`}>
+                            <StatusIcon className="w-3 h-3" aria-hidden="true" />
+                            {statusStyles.label}
+                          </span>
+                          <span className="text-[11px] text-text-light">
+                            {chapter.completedLessons || 0}/{chapter.lessons?.length} درس
+                          </span>
+                        </>
+                      )}
+                      {!showProgress && (
+                        <p className="text-xs text-text-light">{chapter.lessons?.length} درس</p>
+                      )}
+                    </div>
+                    {showProgress && chapter.lessons?.length > 0 && (
+                      <div className="mt-2 w-full max-w-[200px]">
+                        <div className="w-full h-1 rounded-full bg-neutral-indigo overflow-hidden">
+                          <div 
+                            className={`h-full rounded-full transition-all duration-500 ${
+                              statusKey === 'completed' 
+                                ? 'bg-gradient-to-r from-emerald-500 to-emerald-600' 
+                                : statusKey === 'in-progress'
+                                ? 'bg-gradient-to-r from-amber-500 to-amber-600'
+                                : 'bg-neutral-gray'
+                            }`}
+                            style={{ width: `${chapterCompletionPercent}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
-                {showProgress && (
-                  <span className={`flex items-center gap-2 text-xs font-medium ${statusStyles.text}`}>
-                    <StatusIcon className="w-4 h-4" aria-hidden="true" />
-                    {statusStyles.label}
-                  </span>
-                )}
-                {isOpen ? (
-                  <ChevronUp className="w-5 h-5 text-text-gray flex-shrink-0" aria-hidden="true" />
-                ) : (
-                  <ChevronDown className="w-5 h-5 text-text-gray flex-shrink-0" aria-hidden="true" />
-                )}
+                <div className="flex items-center gap-3 flex-shrink-0">
+                  {showProgress && (
+                    <span className={`text-sm font-bold ${
+                      statusKey === 'completed' 
+                        ? 'text-emerald-600' 
+                        : statusKey === 'in-progress'
+                        ? 'text-amber-600'
+                        : 'text-text-light'
+                    }`}>
+                      {chapterCompletionPercent}%
+                    </span>
+                  )}
+                  {isOpen ? (
+                    <ChevronUp className="w-5 h-5 text-text-gray group-hover:text-primary transition-colors flex-shrink-0" aria-hidden="true" />
+                  ) : (
+                    <ChevronDown className="w-5 h-5 text-text-gray group-hover:text-primary transition-colors flex-shrink-0" aria-hidden="true" />
+                  )}
+                </div>
               </button>
 
               {/* Lessons List */}
               {isOpen && (
-                <div className="border-t border-neutral-extralight bg-neutral-indigo/10">
+                <div className={`border-t transition-all duration-300 ${
+                  statusKey === 'completed' 
+                    ? 'border-emerald-500/20 bg-gradient-to-b from-emerald-50/30 to-white' 
+                    : statusKey === 'in-progress'
+                    ? 'border-amber-500/20 bg-gradient-to-b from-amber-50/30 to-white'
+                    : 'border-neutral-extralight bg-gradient-to-b from-neutral-indigo/10 to-white'
+                }`}>
                   {chapter.lessons?.map((lesson, lessonIndex) => {
                     const lessonStatusKey = showProgress
                       ? resolveStatus(lesson.status, {
@@ -247,17 +309,49 @@ export default function CourseChapters({ seasons = [], showProgress = false }) {
                       <LessonWrapper
                         key={lessonIndex}
                         {...wrapperProps}
-                        className={`flex items-center justify-between px-4 py-3 transition-colors border-b border-neutral-extralight/50 last:border-0 ${
-                          lessonLink ? 'hover:bg-primary/5 cursor-pointer' : 'hover:bg-white/50'
+                        className={`group flex items-center justify-between px-4 py-3 transition-all duration-200 border-b border-neutral-extralight/50 last:border-0 relative ${
+                          lessonLink ? 'hover:bg-white cursor-pointer hover:shadow-sm' : 'hover:bg-white/50'
+                        } ${
+                          lessonStatusKey === 'completed' ? 'bg-emerald-50/20' : 
+                          lessonStatusKey === 'in-progress' ? 'bg-amber-50/20' : 
+                          'bg-transparent'
                         }`}
                       >
-                        <div className="flex items-center gap-3 flex-1">
+                        {/* Status indicator bar on right */}
+                        {showProgress && (
+                          <div className={`absolute right-0 top-0 bottom-0 w-1 transition-all duration-200 ${
+                            lessonStatusKey === 'completed' ? 'bg-emerald-500' :
+                            lessonStatusKey === 'in-progress' ? 'bg-amber-500' :
+                            'bg-transparent'
+                          }`} />
+                        )}
+                        
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
                           {showProgress ? (
-                            <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${lessonStyles.iconWrap}`}>
-                              <LessonStatusIcon className={`w-4 h-4 ${lessonStyles.iconColor}`} aria-hidden="true" />
+                            <div className={`relative w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-200 ${
+                              lessonStatusKey === 'completed'
+                                ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-sm'
+                                : lessonStatusKey === 'in-progress'
+                                ? 'bg-gradient-to-br from-amber-500 to-amber-600 shadow-sm'
+                                : lessonStyles.iconWrap
+                            }`}>
+                              <LessonStatusIcon className={`w-4 h-4 ${
+                                lessonStatusKey === 'completed' || lessonStatusKey === 'in-progress' 
+                                  ? 'text-white' 
+                                  : lessonStyles.iconColor
+                              }`} aria-hidden="true" />
+                              {lessonStatusKey === 'completed' && (
+                                <div className="absolute -top-1 -right-1 w-3 h-3 bg-white rounded-full flex items-center justify-center">
+                                  <div className="w-2 h-2 bg-emerald-500 rounded-full" />
+                                </div>
+                              )}
                             </div>
                           ) : (
-                            <div className="w-6 h-6 rounded-full bg-neutral-indigo/30 p-1 flex items-center justify-center flex-shrink-0">
+                            <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-200 ${
+                              lesson.isFree 
+                                ? 'bg-primary/10 group-hover:bg-primary/20' 
+                                : 'bg-neutral-indigo/30 group-hover:bg-neutral-indigo/50'
+                            }`}>
                               {lesson.isFree ? (
                                 <NotebookText className="w-4 h-4 text-primary" aria-hidden="true" />
                               ) : (
@@ -265,19 +359,30 @@ export default function CourseChapters({ seasons = [], showProgress = false }) {
                               )}
                             </div>
                           )}
-                          <div className="flex flex-col gap-1">
-                            <span className={`text-xs ${lessonLink ? 'text-text-charcoal font-medium' : 'text-text-charcoal'}`}>
+                          <div className="flex flex-col gap-1 flex-1 min-w-0">
+                            <span className={`text-xs truncate ${
+                              lessonLink ? 'text-text-charcoal font-medium group-hover:text-primary' : 'text-text-charcoal'
+                            } ${lessonStatusKey === 'locked' ? 'opacity-60' : ''}`}>
                               {lesson.title}
                             </span>
                             {showProgress && (
-                              <span className={`inline-flex items-center gap-1 text-[11px] font-medium ${lessonStyles.text}`}>
+                              <span className={`inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-md w-fit ${
+                                lessonStatusKey === 'completed' ? 'bg-emerald-500/10 text-emerald-600' :
+                                lessonStatusKey === 'in-progress' ? 'bg-amber-500/10 text-amber-600' :
+                                'bg-neutral-indigo/30 text-text-light'
+                              }`}>
                                 <LessonStatusIcon className="w-3 h-3" aria-hidden="true" />
                                 {lessonStyles.label}
                               </span>
                             )}
                           </div>
                         </div>
-                        <span className="text-xs text-text-light flex-shrink-0">{lesson.duration}</span>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <span className="text-xs text-text-light font-medium">{lesson.duration}</span>
+                          {lessonLink && (
+                            <ChevronLeft className="w-4 h-4 text-text-light group-hover:text-primary transition-colors opacity-0 group-hover:opacity-100" aria-hidden="true" />
+                          )}
+                        </div>
                       </LessonWrapper>
                     );
                   })}

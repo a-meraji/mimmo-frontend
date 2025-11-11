@@ -4,7 +4,7 @@ import { use, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, BookOpen, Sparkles, Clock } from 'lucide-react';
+import { ArrowRight, BookOpen, Sparkles, Clock, ArrowLeft } from 'lucide-react';
 import { getLessonById } from '@/utils/lessonData';
 import ContentRenderer from '@/components/lesson/ContentRenderer';
 import WordModal from '@/components/lesson/WordModal';
@@ -51,7 +51,7 @@ export default function LessonContentPage({ params }) {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-gradient-purple via-white to-gradient-yellow">
+    <main className="min-h-screen bg-gradient-to-br from-gradient-purple via-white to-gradient-yellow pt-20 lg:pt-28">
       {/* Sticky Navigation Tabs */}
       <LessonNavTabs lessonId={lessonId} activeTab="content" />
 
@@ -73,11 +73,11 @@ export default function LessonContentPage({ params }) {
             <Link href="/learn" className="hover:text-primary transition-colors">
               یادگیری
             </Link>
-            <ArrowRight className="w-3 h-3 text-text-light" aria-hidden="true" />
+            <ArrowLeft className="w-3 h-3 text-text-light" aria-hidden="true" />
             <Link href={`/learn/${lesson.courseId}`} className="hover:text-primary transition-colors">
               دوره
             </Link>
-            <ArrowRight className="w-3 h-3 text-text-light" aria-hidden="true" />
+            <ArrowLeft className="w-3 h-3 text-text-light" aria-hidden="true" />
             <span className="text-text-charcoal font-medium">{lesson.title}</span>
           </nav>
         </div>
