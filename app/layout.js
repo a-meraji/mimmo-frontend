@@ -77,6 +77,33 @@ export const viewport = {
 };
 
 export default function RootLayout({ children }) {
+  // If NEXT_PUBLIC_IS_DEVELOPING is set (string 'true'), render a single
+  // "Under development" page and do not render the rest of the app.
+  // Using process.env here is fine because Next injects NEXT_PUBLIC_* vars
+  // into both server and client environments. We treat any truthy value of
+  // the env var (commonly 'true') as enabling the development banner.
+  if (process.env.NEXT_PUBLIC_IS_DEVELOPING === 'true' || process.env.NEXT_PUBLIC_IS_DEVELOPING === '1') {
+    return (
+      <html lang="fa" dir="rtl">
+        <body className={`${kalameh.variable} antialiased font-sans bg-gray-50 text-gray-900 flex items-center justify-center h-screen`}> 
+          <div className="max-w-xl text-center p-6">
+            {/* Lucid-style alert SVG */}
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-yellow-100 mx-auto mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#b45309" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+              </svg>
+            </div>
+
+            <h1 className="text-2xl font-semibold mb-2">در حال توسعه</h1>
+            <p className="text-gray-600">این سایت در حال حاضر در دست توسعه است. لطفاً بعداً بازگردید.</p>
+            <p className="text-gray-600 mt-۲">تغییرات زیادی در راه است ...</p>
+          </div>
+        </body>
+      </html>
+    );
+  }
   return (
     <html lang="fa" dir="rtl">
       <body className={`${kalameh.variable} antialiased font-sans`}>
