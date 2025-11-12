@@ -4,17 +4,27 @@ import { use, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, BookOpen, Sparkles, Clock, ArrowLeft } from 'lucide-react';
+import { ArrowRight, BookOpen, Sparkles, Clock, ArrowLeft, FilePenLine, Plus } from 'lucide-react';
 import { getLessonById } from '@/utils/lessonData';
 import ContentRenderer from '@/components/lesson/ContentRenderer';
 import WordModal from '@/components/lesson/WordModal';
 import LessonNavTabs from '@/components/lesson/LessonNavTabs';
+import AddFlashcardModal from '@/components/leitner/AddFlashcardModal';
+import LeitnerAccessibilityButton from '@/components/leitner/LeitnerAccessibilityButton';
+import useTextSelection from '@/hooks/useTextSelection';
+import { useToast } from '@/contexts/ToastContext';
 
 export default function LessonContentPage({ params }) {
   const { lessonId } = use(params);
   const router = useRouter();
+  const { toast } = useToast();
   const [selectedWord, setSelectedWord] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAddFlashcardModalOpen, setIsAddFlashcardModalOpen] = useState(false);
+  const [flashcardInitialText, setFlashcardInitialText] = useState('');
+  
+  // Text selection hook
+  const { selectedText, isActive, position, clearSelection } = useTextSelection();
 
   // Get lesson data
   const lesson = useMemo(() => getLessonById(lessonId), [lessonId]);
@@ -29,6 +39,22 @@ export default function LessonContentPage({ params }) {
   const closeModal = () => {
     setIsModalOpen(false);
     setTimeout(() => setSelectedWord(null), 200);
+  };
+
+  // Handle adding text selection to Leitner
+  const handleAddToLeitner = () => {
+    if (selectedText) {
+      setFlashcardInitialText(selectedText);
+      setIsAddFlashcardModalOpen(true);
+      clearSelection();
+    } else {
+      setFlashcardInitialText('');
+      setIsAddFlashcardModalOpen(true);
+    }
+  };
+
+  const handleFlashcardSuccess = () => {
+    toast.success('کارت به لایتنر اضافه شد');
   };
 
   // Handle 404
@@ -84,13 +110,16 @@ export default function LessonContentPage({ params }) {
 
         {/* Lesson Header - Compact */}
         <header className="bg-white/80 backdrop-blur-md border border-neutral-extralight rounded-2xl shadow-lg overflow-hidden mb-6 lg:mb-8">
-          {/* Mobile: Collapsed (no image) */}
-          <div className="lg:hidden p-4 space-y-3">
-            <h1 className="text-xl font-black text-text-charcoal">
+          <div className="p-4 lg:p-6 space-y-3">
+            <div className="flex items-center gap-2">
+              <BookOpen className="w-4 h-4 text-primary" aria-hidden="true" />
+              <span className="text-xs text-text-gray">محتوای درس</span>
+            </div>
+            <h1 className="text-xl lg:text-2xl font-black text-text-charcoal">
               {lesson.title}
             </h1>
             
-            <div className="flex items-center gap-4 flex-wrap">
+            <div className="flex items-center gap-3 flex-wrap">
               {/* Duration Badge */}
               <div className="inline-flex items-center gap-1.5 bg-neutral-indigo/50 px-3 py-1.5 rounded-full">
                 <Clock className="w-3.5 h-3.5 text-text-gray" aria-hidden="true" />
@@ -106,49 +135,21 @@ export default function LessonContentPage({ params }) {
               )}
             </div>
           </div>
-
-          {/* Desktop: Compact with image */}
-          <div className="hidden lg:grid lg:grid-cols-5 gap-0">
-            {/* Lesson Image */}
-            <div className="lg:col-span-2 relative min-h-[200px] bg-neutral-indigo/10">
-              <Image
-                src={lesson.image}
-                alt={lesson.title}
-                fill
-                className="object-contain p-4"
-                priority
-              />
-            </div>
-
-            {/* Lesson Info */}
-            <div className="lg:col-span-3 p-4 lg:p-6 flex flex-col justify-center space-y-3">
-              <div className="flex items-center gap-2">
-                <BookOpen className="w-4 h-4 text-primary" aria-hidden="true" />
-                <span className="text-xs text-text-gray">محتوای درس</span>
-              </div>
-              <h1 className="text-xl lg:text-2xl font-black text-text-charcoal">
-                {lesson.title}
-              </h1>
-              
-              <div className="flex items-center gap-3 flex-wrap">
-                <div className="inline-flex items-center gap-1.5 bg-neutral-indigo/50 px-3 py-1.5 rounded-full">
-                  <Clock className="w-3.5 h-3.5 text-text-gray" aria-hidden="true" />
-                  <span className="text-xs font-medium text-text-gray">{lesson.duration}</span>
-                </div>
-
-                {lesson.vocabulary && lesson.vocabulary.length > 0 && (
-                  <div className="inline-flex items-center gap-1.5 bg-primary/10 text-primary px-3 py-1.5 rounded-full">
-                    <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
-                    <span className="text-xs font-medium">{lesson.vocabulary.length} واژه کلیدی</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
         </header>
 
         {/* Content Section - Enhanced for readability */}
-        <section className="bg-white border border-neutral-extralight rounded-2xl p-4 lg:p-8 shadow-sm">
+        <section className="bg-white border border-neutral-extralight rounded-2xl p-4 lg:p-8 shadow-sm overflow-hidden">
+          {/* Lesson Image - Always visible on top */}
+          <div className="relative w-full min-h-[200px] lg:min-h-[300px] bg-neutral-indigo/10 rounded-xl mb-6 lg:mb-8 overflow-hidden">
+            <Image
+              src={lesson.image}
+              alt={lesson.title}
+              fill
+              className="object-contain p-4 lg:p-8"
+              priority
+            />
+          </div>
+
           <div className="mb-4 lg:mb-6">
             <h2 className="text-lg lg:text-xl font-bold text-text-charcoal mb-2">محتوای درس</h2>
             {lesson.vocabulary && lesson.vocabulary.length > 0 && (
@@ -198,6 +199,31 @@ export default function LessonContentPage({ params }) {
             </div>
           </section>
         )}
+
+        {/* Navigation to Practice */}
+        <Link
+          href={`/lesson/${lessonId}/practice`}
+          className="mt-8 lg:mt-10 group relative overflow-hidden bg-gradient-to-br from-primary/10 via-primary/5 to-secondary-accent/10 border-2 border-primary/20 rounded-2xl p-6 lg:p-8 hover:border-primary/40 hover:shadow-xl transition-all duration-300 block"
+        >
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4 flex-1">
+              <div className="w-14 h-14 lg:w-16 lg:h-16 rounded-2xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                <FilePenLine className="w-7 h-7 lg:w-8 lg:h-8 text-white" aria-hidden="true" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg lg:text-xl font-bold text-text-charcoal mb-1 group-hover:text-primary transition-colors">
+                  بریم برای تمرین
+                </h3>
+                <p className="text-sm text-text-gray">
+                با حل تمرین، برای آزمون آمادگی کسب کنید
+                </p>
+              </div>
+            </div>
+            <ArrowLeft className="w-6 h-6 text-primary group-hover:translate-x-[-4px] transition-transform duration-300 flex-shrink-0" aria-hidden="true" />
+          </div>
+          {/* Decorative gradient overlay on hover */}
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/5 to-primary/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+        </Link>
       </div>
 
       {/* Word Modal */}
@@ -205,6 +231,39 @@ export default function LessonContentPage({ params }) {
         word={selectedWord}
         isOpen={isModalOpen}
         onClose={closeModal}
+      />
+
+      {/* Floating Add to Leitner Button (on text selection) */}
+      {isActive && selectedText && (
+        <button
+          onClick={handleAddToLeitner}
+          className="fixed z-50 px-4 py-2 bg-gradient-to-r from-primary to-primary/80 text-white rounded-lg shadow-lg hover:shadow-xl transition-all text-sm font-semibold flex items-center gap-2 animate-in fade-in zoom-in duration-200"
+          style={{
+            left: `${position.x}px`,
+            top: `${position.y}px`,
+            transform: 'translate(-50%, -100%)',
+          }}
+        >
+          <Plus className="w-4 h-4" aria-hidden="true" />
+          افزودن به لایتنر
+        </button>
+      )}
+
+      {/* Leitner Accessibility Button */}
+      <LeitnerAccessibilityButton onAddFlashcard={handleAddToLeitner} />
+
+      {/* Add Flashcard Modal */}
+      <AddFlashcardModal
+        isOpen={isAddFlashcardModalOpen}
+        onClose={() => {
+          setIsAddFlashcardModalOpen(false);
+          setFlashcardInitialText('');
+        }}
+        initialFront={flashcardInitialText}
+        courseId={lesson?.courseId}
+        lessonId={lessonId}
+        sourcePage="content"
+        onSuccess={handleFlashcardSuccess}
       />
     </main>
   );

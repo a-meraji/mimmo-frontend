@@ -3,18 +3,28 @@
 import { use, useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowRight, BookOpen, ArrowUp } from 'lucide-react';
+import { ArrowRight, ArrowLeft, BookOpen, ArrowUp, ClipboardCheck, Plus } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { getLessonById, getQuestionsForLesson } from '@/utils/lessonData';
 import { getQuestionStats } from '@/utils/lessonStorage';
 import QuestionCard from '@/components/lesson/QuestionCard';
 import LessonNavTabs from '@/components/lesson/LessonNavTabs';
+import AddFlashcardModal from '@/components/leitner/AddFlashcardModal';
+import LeitnerAccessibilityButton from '@/components/leitner/LeitnerAccessibilityButton';
+import useTextSelection from '@/hooks/useTextSelection';
+import { useToast } from '@/contexts/ToastContext';
 
 export default function LessonPracticePage({ params }) {
   const { lessonId } = use(params);
   const router = useRouter();
   const { user } = useAuth();
+  const { toast } = useToast();
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [isAddFlashcardModalOpen, setIsAddFlashcardModalOpen] = useState(false);
+  const [flashcardInitialText, setFlashcardInitialText] = useState('');
+  
+  // Text selection hook
+  const { selectedText, isActive, position, clearSelection } = useTextSelection();
 
   // Get lesson and questions data
   const lesson = useMemo(() => getLessonById(lessonId), [lessonId]);
@@ -50,6 +60,22 @@ export default function LessonPracticePage({ params }) {
   // Scroll to top handler
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Handle adding text selection to Leitner
+  const handleAddToLeitner = () => {
+    if (selectedText) {
+      setFlashcardInitialText(selectedText);
+      setIsAddFlashcardModalOpen(true);
+      clearSelection();
+    } else {
+      setFlashcardInitialText('');
+      setIsAddFlashcardModalOpen(true);
+    }
+  };
+
+  const handleFlashcardSuccess = () => {
+    toast.success('کارت به لایتنر اضافه شد');
   };
 
   // Handle 404
@@ -207,14 +233,39 @@ export default function LessonPracticePage({ params }) {
         </div>
 
         {/* Completion Message */}
-        <div className="mt-8 bg-primary/5 border border-primary/20 rounded-2xl p-6 text-center">
+        <div className="mt-8 bg-neutral-extralight border border-neutral-indigo/20 rounded-2xl p-6 text-center">
           <p className="text-sm text-text-gray mb-2">
             تمام {totalQuestions} سوال را مرور کردید
           </p>
-          <p className="text-lg font-bold text-primary">
+          <p className="text-lg font-bold text-text-dark">
             {answeredQuestions} سوال پاسخ داده شده ({progressPercent}%)
           </p>
         </div>
+
+        {/* Navigation to Test */}
+        <Link
+          href={`/lesson/${lessonId}/test`}
+          className="mt-8 lg:mt-10 group relative overflow-hidden bg-gradient-to-br from-primary/10 via-primary/5 to-secondary-accent/10 border-2 border-primary/20  rounded-2xl p-6 lg:p-8 hover:border-primary/40 hover:shadow-xl transition-all duration-300 block"
+        >
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4 flex-1">
+              <div className="w-14 h-14 lg:w-16 lg:h-16 rounded-2xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                <ClipboardCheck className="w-7 h-7 lg:w-8 lg:h-8 text-white" aria-hidden="true" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg lg:text-xl font-bold text-text-charcoal mb-1 group-hover:text-primary transition-colors">
+                  بریم برای آزمون
+                </h3>
+                <p className="text-sm text-text-gray">
+                  با آزمون، آمادگی خود را بسنجید
+                </p>
+              </div>
+            </div>
+            <ArrowLeft className="w-6 h-6 text-primary group-hover:translate-x-[-4px] transition-transform duration-300 flex-shrink-0" aria-hidden="true" />
+          </div>
+          {/* Decorative gradient overlay on hover */}
+          <div className="absolute inset-0 bg-gradient-to-r from-amber-500/0 via-amber-500/5 to-amber-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+        </Link>
       </div>
 
       {/* Scroll to Top Button */}
@@ -227,6 +278,39 @@ export default function LessonPracticePage({ params }) {
           <ArrowUp className="w-5 h-5" aria-hidden="true" />
         </button>
       )}
+
+      {/* Floating Add to Leitner Button (on text selection) */}
+      {isActive && selectedText && (
+        <button
+          onClick={handleAddToLeitner}
+          className="fixed z-50 px-4 py-2 bg-gradient-to-r from-primary to-primary/80 text-white rounded-lg shadow-lg hover:shadow-xl transition-all text-sm font-semibold flex items-center gap-2 animate-in fade-in zoom-in duration-200"
+          style={{
+            left: `${position.x}px`,
+            top: `${position.y}px`,
+            transform: 'translate(-50%, -100%)',
+          }}
+        >
+          <Plus className="w-4 h-4" aria-hidden="true" />
+          افزودن به لایتنر
+        </button>
+      )}
+
+      {/* Leitner Accessibility Button */}
+      <LeitnerAccessibilityButton onAddFlashcard={handleAddToLeitner} />
+
+      {/* Add Flashcard Modal */}
+      <AddFlashcardModal
+        isOpen={isAddFlashcardModalOpen}
+        onClose={() => {
+          setIsAddFlashcardModalOpen(false);
+          setFlashcardInitialText('');
+        }}
+        initialFront={flashcardInitialText}
+        courseId={lesson?.courseId}
+        lessonId={lessonId}
+        sourcePage="practice"
+        onSuccess={handleFlashcardSuccess}
+      />
     </main>
   );
 }

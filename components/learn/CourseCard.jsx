@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { PlayCircle } from "lucide-react";
+import { BookOpenText } from "lucide-react";
 
 export default function CourseCard({ course, priority = false }) {
   const coursePath = course?.learnPath || course?.slug || course?.id;
@@ -73,11 +73,11 @@ export default function CourseCard({ course, priority = false }) {
       <div className="p-5 pt-0">
         <Link
           href={courseHref}
-          className="w-full flex items-center justify-center gap-2 bg-primary text-white py-3 rounded-xl font-semibold hover:bg-primary/90 transition-colors duration-200 shadow-md hover:shadow-lg"
+          className="w-full flex whitespace-nowrap items-center justify-center gap-2 bg-primary text-white py-3 rounded-xl font-semibold hover:bg-primary/90 transition-colors duration-200 shadow-md hover:shadow-lg"
           aria-label={`مشاهده ${course?.title || "دوره"}`}
           prefetch={!!coursePath}
         >
-          <PlayCircle className="w-5 h-5" aria-hidden="true" />
+          <BookOpenText className="w-5 h-5" aria-hidden="true" />
           مشاهده دوره و یادگیری
         </Link>
       </div>

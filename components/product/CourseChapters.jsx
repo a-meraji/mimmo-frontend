@@ -11,6 +11,7 @@ import {
   Lock,
   CheckCircle2,
   Clock3,
+  LockKeyholeOpen,
   Circle,
 } from "lucide-react";
 
@@ -37,7 +38,7 @@ const PROGRESS_STYLES = {
     label: "شروع نشده",
     text: "text-text-light",
     dot: "bg-neutral-300",
-    icon: Lock,
+    icon:  LockKeyholeOpen,
     badge: "bg-neutral-indigo text-text-gray",
     iconWrap: "bg-neutral-indigo/40 border border-neutral-extralight",
     iconColor: "text-text-light",

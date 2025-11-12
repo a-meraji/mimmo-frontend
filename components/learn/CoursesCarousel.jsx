@@ -187,7 +187,7 @@ export default function CoursesCarousel({ courses = [] }) {
               {displayCourses.map((course, index) => (
                 <div
                   key={course.id || index}
-                  className="flex-shrink-0 w-full sm:w-[calc(50%-12px)] lg:w-[calc(30%-25px)]"
+                  className="flex-shrink-0 w-full sm:w-[calc(50%-12px)] lg:w-[calc(30%-25px)] min-w-60"
                 >
                   <CourseCard course={course} priority={index < 2} />
                 </div>

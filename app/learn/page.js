@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { RefreshCw } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
-import { ProfileCard, StatsGrid, CoursesCarousel, Achievements } from '@/components/learn';
+import { ProfileCard, StatsGrid, CoursesCarousel, Achievements, LeitnerPreview } from '@/components/learn';
 import { SocialLinks } from '@/components/home';
 
 const MOCK_USER_COURSES = [
@@ -178,6 +178,9 @@ export default function LearnPage() {
             <CoursesCarousel courses={userCourses} />
           )}
         </section>
+
+        {/* Leitner System Preview */}
+        <LeitnerPreview />
 
         {/* Social Links */}
         <SocialLinks />
