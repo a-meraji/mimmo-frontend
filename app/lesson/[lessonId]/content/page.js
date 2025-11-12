@@ -241,7 +241,7 @@ export default function LessonContentPage({ params }) {
           style={{
             left: `${position.x}px`,
             top: `${position.y}px`,
-            transform: 'translate(-50%, -100%)',
+            transform: 'translate(-50%, -200%)',
           }}
         >
           <Plus className="w-4 h-4" aria-hidden="true" />
