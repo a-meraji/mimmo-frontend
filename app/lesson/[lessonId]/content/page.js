@@ -8,11 +8,13 @@ import { ArrowRight, BookOpen, Sparkles, Clock, ArrowLeft, FilePenLine, Plus } f
 import { getLessonById } from '@/utils/lessonData';
 import ContentRenderer from '@/components/lesson/ContentRenderer';
 import WordModal from '@/components/lesson/WordModal';
+import TranslationPanel from '@/components/lesson/TranslationPanel';
 import LessonNavTabs from '@/components/lesson/LessonNavTabs';
 import AddFlashcardModal from '@/components/leitner/AddFlashcardModal';
 import LeitnerAccessibilityButton from '@/components/leitner/LeitnerAccessibilityButton';
 import useTextSelection from '@/hooks/useTextSelection';
 import { useToast } from '@/contexts/ToastContext';
+import { translateItToPe } from '@/utils/translationService';
 
 export default function LessonContentPage({ params }) {
   const { lessonId } = use(params);
@@ -22,6 +24,13 @@ export default function LessonContentPage({ params }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAddFlashcardModalOpen, setIsAddFlashcardModalOpen] = useState(false);
   const [flashcardInitialText, setFlashcardInitialText] = useState('');
+  
+  // Translation state
+  const [translationWord, setTranslationWord] = useState('');
+  const [translation, setTranslation] = useState('');
+  const [translationLoading, setTranslationLoading] = useState(false);
+  const [translationError, setTranslationError] = useState('');
+  const [isTranslationPanelOpen, setIsTranslationPanelOpen] = useState(false);
   
   // Text selection hook
   const { selectedText, isActive, position, clearSelection } = useTextSelection();
@@ -39,6 +48,42 @@ export default function LessonContentPage({ params }) {
   const closeModal = () => {
     setIsModalOpen(false);
     setTimeout(() => setSelectedWord(null), 200);
+  };
+
+  // Handle regular word click (for translation)
+  const handleRegularWordClick = async (word) => {
+    // Reset previous state
+    setTranslationWord(word);
+    setTranslation('');
+    setTranslationError('');
+    setTranslationLoading(true);
+    setIsTranslationPanelOpen(true);
+
+    try {
+      // Call translation service
+      const result = await translateItToPe(word);
+      
+      if (result.success) {
+        setTranslation(result.translation);
+      } else {
+        setTranslationError(result.error || 'خطا در ترجمه');
+      }
+    } catch (error) {
+      console.error('Translation error:', error);
+      setTranslationError('خطا در ترجمه');
+    } finally {
+      setTranslationLoading(false);
+    }
+  };
+
+  // Close translation panel
+  const closeTranslationPanel = () => {
+    setIsTranslationPanelOpen(false);
+    setTimeout(() => {
+      setTranslationWord('');
+      setTranslation('');
+      setTranslationError('');
+    }, 300);
   };
 
   // Handle adding text selection to Leitner
@@ -152,11 +197,16 @@ export default function LessonContentPage({ params }) {
 
           <div className="mb-4 lg:mb-6">
             <h2 className="text-lg lg:text-xl font-bold text-text-charcoal mb-2">محتوای درس</h2>
-            {lesson.vocabulary && lesson.vocabulary.length > 0 && (
-              <p className="text-sm text-text-gray">
-                کلمات <span className="font-bold text-primary">پررنگ</span> را کلیک کنید تا تعریف آن‌ها را مشاهده کنید.
-              </p>
-            )}
+            <p className="text-sm text-text-gray space-y-1">
+              {lesson.vocabulary && lesson.vocabulary.length > 0 && (
+                <span className="block">
+                  کلمات <span className="font-bold text-primary">پررنگ</span> را کلیک کنید تا تعریف آن‌ها را مشاهده کنید.
+                </span>
+              )}
+              <span className="block">
+                روی هر کلمه‌ای کلیک کنید تا ترجمه فارسی آن را ببینید.
+              </span>
+            </p>
           </div>
 
           {/* Rendered Content - Larger text for better readability */}
@@ -165,6 +215,7 @@ export default function LessonContentPage({ params }) {
               content={lesson.content}
               vocabulary={lesson.vocabulary}
               onWordClick={handleWordClick}
+              onRegularWordClick={handleRegularWordClick}
             />
           </div>
         </section>
@@ -231,6 +282,16 @@ export default function LessonContentPage({ params }) {
         word={selectedWord}
         isOpen={isModalOpen}
         onClose={closeModal}
+      />
+
+      {/* Translation Panel */}
+      <TranslationPanel
+        isOpen={isTranslationPanelOpen}
+        word={translationWord}
+        translation={translation}
+        loading={translationLoading}
+        error={translationError}
+        onClose={closeTranslationPanel}
       />
 
       {/* Floating Add to Leitner Button (on text selection) */}
