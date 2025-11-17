@@ -1,29 +1,34 @@
 "use client";
 
-import { use, useState, useMemo } from 'react';
+import { use, useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, BookOpen, Sparkles, Clock, ArrowLeft, FilePenLine, Plus } from 'lucide-react';
 import { getLessonById } from '@/utils/lessonData';
+import { getLessonNote, saveLessonNote } from '@/utils/lessonStorage';
 import ContentRenderer from '@/components/lesson/ContentRenderer';
 import WordModal from '@/components/lesson/WordModal';
 import TranslationPanel from '@/components/lesson/TranslationPanel';
+import LessonNote from '@/components/lesson/LessonNote';
 import LessonNavTabs from '@/components/lesson/LessonNavTabs';
 import AddFlashcardModal from '@/components/leitner/AddFlashcardModal';
 import LeitnerAccessibilityButton from '@/components/leitner/LeitnerAccessibilityButton';
 import useTextSelection from '@/hooks/useTextSelection';
 import { useToast } from '@/contexts/ToastContext';
 import { translateItToPe } from '@/utils/translationService';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function LessonContentPage({ params }) {
   const { lessonId } = use(params);
   const router = useRouter();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [selectedWord, setSelectedWord] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAddFlashcardModalOpen, setIsAddFlashcardModalOpen] = useState(false);
   const [flashcardInitialText, setFlashcardInitialText] = useState('');
+  const [isImagePreviewOpen, setIsImagePreviewOpen] = useState(false);
   
   // Translation state
   const [translationWord, setTranslationWord] = useState('');
@@ -32,11 +37,20 @@ export default function LessonContentPage({ params }) {
   const [translationError, setTranslationError] = useState('');
   const [isTranslationPanelOpen, setIsTranslationPanelOpen] = useState(false);
   
+  // Lesson note state
+  const [lessonNote, setLessonNote] = useState('');
+  
   // Text selection hook
   const { selectedText, isActive, position, clearSelection } = useTextSelection();
 
   // Get lesson data
   const lesson = useMemo(() => getLessonById(lessonId), [lessonId]);
+
+  // Load lesson note on mount
+  useEffect(() => {
+    const note = getLessonNote(lessonId, user);
+    setLessonNote(note);
+  }, [lessonId, user]);
 
   // Handle word click
   const handleWordClick = (word) => {
@@ -102,6 +116,14 @@ export default function LessonContentPage({ params }) {
     toast.success('کارت به لایتنر اضافه شد');
   };
 
+  // Handle lesson note save
+  const handleLessonNoteSave = async (lessonId, note) => {
+    const success = saveLessonNote(lessonId, note, user);
+    if (success) {
+      setLessonNote(note);
+    }
+  };
+
   // Handle 404
   if (!lesson) {
     return (
@@ -122,21 +144,21 @@ export default function LessonContentPage({ params }) {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-gradient-purple via-white to-gradient-yellow pt-20 lg:pt-28">
+    <main className="min-h-screen bg-gradient-to-br from-gradient-purple via-white to-gradient-yellow pt-16 lg:pt-24 pb-8 lg:pb-12">
       {/* Sticky Navigation Tabs */}
       <LessonNavTabs lessonId={lessonId} activeTab="content" />
 
-      <div className="container mx-auto px-4 lg:px-8 max-w-4xl py-4 lg:py-8">
+      <div className="container mx-auto px-3 lg:px-8 max-w-4xl py-3 lg:py-6">
         {/* Back Button (Mobile) / Breadcrumb (Desktop) */}
-        <div className="mb-4 lg:mb-6">
+        <div className="mb-3 lg:mb-4">
           {/* Mobile: Back button only */}
           <button
             onClick={() => router.back()}
-            className="lg:hidden inline-flex items-center gap-2 text-text-gray hover:text-primary transition-colors p-2 -ml-2"
+            className="lg:hidden inline-flex items-center gap-1.5 text-text-gray hover:text-primary transition-colors p-1 -ml-1"
             aria-label="بازگشت"
           >
-            <ArrowRight className="w-5 h-5" aria-hidden="true" />
-            <span className="text-sm font-medium">بازگشت</span>
+            <ArrowRight className="w-4 h-4" aria-hidden="true" />
+            <span className="text-xs font-medium">بازگشت</span>
           </button>
 
           {/* Desktop: Compact breadcrumb */}
@@ -153,127 +175,209 @@ export default function LessonContentPage({ params }) {
           </nav>
         </div>
 
-        {/* Lesson Header - Compact */}
-        <header className="bg-white/80 backdrop-blur-md border border-neutral-extralight rounded-2xl shadow-lg overflow-hidden mb-6 lg:mb-8">
-          <div className="p-4 lg:p-6 space-y-3">
-            <div className="flex items-center gap-2">
-              <BookOpen className="w-4 h-4 text-primary" aria-hidden="true" />
-              <span className="text-xs text-text-gray">محتوای درس</span>
-            </div>
-            <h1 className="text-xl lg:text-2xl font-black text-text-charcoal">
+        {/* Content Section - Merged header and content */}
+        <section className="bg-white border border-neutral-extralight rounded-xl lg:rounded-2xl shadow-sm overflow-hidden">
+          {/* Header with thumbnail - Mobile */}
+          <div className="lg:hidden p-3 border-b border-neutral-extralight">
+            <div className="flex items-start gap-3">
+              {/* Title and badges */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <BookOpen className="w-3 h-3 text-primary" aria-hidden="true" />
+                  <span className="text-xs text-text-gray">محتوای درس</span>
+                </div>
+                <h1 className="text-base font-black text-text-charcoal mb-2">
               {lesson.title}
             </h1>
-            
-            <div className="flex items-center gap-3 flex-wrap">
-              {/* Duration Badge */}
-              <div className="inline-flex items-center gap-1.5 bg-neutral-indigo/50 px-3 py-1.5 rounded-full">
-                <Clock className="w-3.5 h-3.5 text-text-gray" aria-hidden="true" />
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <div className="inline-flex items-center gap-1 bg-neutral-indigo/50 px-2 py-0.5 rounded-full">
+                    <Clock className="w-2.5 h-2.5 text-text-gray" aria-hidden="true" />
                 <span className="text-xs font-medium text-text-gray">{lesson.duration}</span>
+                  </div>
+                  {lesson.vocabulary && lesson.vocabulary.length > 0 && (
+                    <div className="inline-flex items-center gap-1 bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                      <Sparkles className="w-2.5 h-2.5" aria-hidden="true" />
+                      <span className="text-xs font-medium">{lesson.vocabulary.length} واژه</span>
+                    </div>
+                  )}
+                </div>
               </div>
-
-              {/* Vocabulary Count */}
-              {lesson.vocabulary && lesson.vocabulary.length > 0 && (
-                <div className="inline-flex items-center gap-1.5 bg-primary/10 text-primary px-3 py-1.5 rounded-full">
-                  <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
-                  <span className="text-xs font-medium">{lesson.vocabulary.length} واژه کلیدی</span>
+              {/* Thumbnail Image */}
+              {/* ---------- Image with Modal Preview (MOBILE) ---------- */}
+              <div className="relative w-20 h-20 bg-neutral-indigo/10 rounded-lg overflow-hidden flex-shrink-0">
+                <button
+                  type="button"
+                  className="absolute inset-0 w-full h-full focus:outline-none z-10"
+                  onClick={() => setIsImagePreviewOpen(true)}
+                  aria-label={`نمایش تصویر بزرگتر از ${lesson.title}`}
+                />
+                <Image
+                  src={lesson.image}
+                  alt={lesson.title}
+                  fill
+                  className="object-contain p-2 pointer-events-none"
+                  priority
+                />
+              </div>
+              {/* Modal for Preview (shared by desktop and mobile, state defined at top-level component) */}
+              {isImagePreviewOpen && (
+                <div
+                  className="fixed inset-0 z-[110] bg-black/80 flex items-center justify-center animate-in fade-in"
+                  onClick={() => setIsImagePreviewOpen(false)}
+                  tabIndex={-1}
+                  role="dialog"
+                  aria-modal="true"
+                >
+                  <div
+                    className="relative max-w-xl max-h-[80vh] w-[90vw] bg-transparent rounded-xl shadow-xl"
+                    onClick={e => e.stopPropagation()}
+                  >
+                    <button
+                      className="absolute top-2 left-2 z-20 bg-white/80 rounded-full p-2 shadow-md hover:bg-white"
+                      onClick={() => setIsImagePreviewOpen(false)}
+                      aria-label="بستن"
+                      tabIndex={0}
+                    >
+                      <svg className="w-5 h-5 text-gray-800" viewBox="0 0 20 20">
+                        <path d="M7 7l6 6M13 7l-6 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                      </svg>
+                    </button>
+                    <Image
+                      src={lesson.image}
+                      alt={lesson.title}
+                      width={1000}
+                      height={1000}
+                      className="object-contain rounded-xl"
+                      priority
+                    />
+                  </div>
                 </div>
               )}
+              
             </div>
           </div>
-        </header>
 
-        {/* Content Section - Enhanced for readability */}
-        <section className="bg-white border border-neutral-extralight rounded-2xl p-4 lg:p-8 shadow-sm overflow-hidden">
-          {/* Lesson Image - Always visible on top */}
-          <div className="relative w-full min-h-[200px] lg:min-h-[300px] bg-neutral-indigo/10 rounded-xl mb-6 lg:mb-8 overflow-hidden">
-            <Image
-              src={lesson.image}
-              alt={lesson.title}
-              fill
-              className="object-contain p-4 lg:p-8"
-              priority
-            />
+          {/* Desktop: Grid layout with sidebar image */}
+          <div className="hidden lg:grid lg:grid-cols-[200px_1fr] lg:gap-6 p-6">
+            {/* Sidebar Image */}
+            <div className="relative w-full h-[200px] bg-neutral-indigo/10 rounded-xl overflow-hidden flex-shrink-0">
+              <button
+                type="button"
+                className="absolute inset-0 w-full h-full focus:outline-none z-10"
+                onClick={() => setIsImagePreviewOpen(true)}
+                aria-label={`نمایش تصویر بزرگتر از ${lesson.title}`}
+              />
+              <Image
+                src={lesson.image}
+                alt={lesson.title}
+                fill
+                className="object-contain p-4 pointer-events-none"
+                priority
+              />
+            </div>
+
+            {/* Content area */}
+            <div className="min-w-0">
+              {/* Header */}
+              <div className="mb-4">
+                <div className="flex items-center gap-1.5 mb-2">
+                  <BookOpen className="w-3.5 h-3.5 text-primary" aria-hidden="true" />
+                <span className="text-xs text-text-gray">محتوای درس</span>
+              </div>
+                <h1 className="text-xl font-black text-text-charcoal mb-2">
+                {lesson.title}
+              </h1>
+                <div className="flex items-center gap-2 flex-wrap mb-3">
+                  <div className="inline-flex items-center gap-1.5 bg-neutral-indigo/50 px-2.5 py-1 rounded-full">
+                    <Clock className="w-3 h-3 text-text-gray" aria-hidden="true" />
+                  <span className="text-xs font-medium text-text-gray">{lesson.duration}</span>
+                </div>
+                {lesson.vocabulary && lesson.vocabulary.length > 0 && (
+                    <div className="inline-flex items-center gap-1.5 bg-primary/10 text-primary px-2.5 py-1 rounded-full">
+                      <Sparkles className="w-3 h-3" aria-hidden="true" />
+                    <span className="text-xs font-medium">{lesson.vocabulary.length} واژه کلیدی</span>
+                  </div>
+                )}
+                </div>
+                <p className="text-xs text-text-gray">
+                  {lesson.vocabulary && lesson.vocabulary.length > 0 && (
+                    <span>💡 کلمات پررنگ: واژگان | </span>
+                  )}
+                  <span>🔍 کلیک: ترجمه</span>
+                </p>
+              </div>
+
+              {/* Content Renderer */}
+              <div className="prose-content">
+                <ContentRenderer
+                  content={lesson.content}
+                  vocabulary={lesson.vocabulary}
+                  onWordClick={handleWordClick}
+                  onRegularWordClick={handleRegularWordClick}
+                />
+              </div>
+            </div>
           </div>
 
-          <div className="mb-4 lg:mb-6">
-            <h2 className="text-lg lg:text-xl font-bold text-text-charcoal mb-2">محتوای درس</h2>
-            <p className="text-sm text-text-gray space-y-1">
-              {lesson.vocabulary && lesson.vocabulary.length > 0 && (
-                <span className="block">
-                  کلمات <span className="font-bold text-primary">پررنگ</span> را کلیک کنید تا تعریف آن‌ها را مشاهده کنید.
-                </span>
+          {/* Mobile: Content below header */}
+          <div className="lg:hidden p-3">
+            <p className="text-xs text-text-gray mb-3">
+            {lesson.vocabulary && lesson.vocabulary.length > 0 && (
+                <span>💡 کلمات پررنگ: واژگان | </span>
               )}
-              <span className="block">
-                روی هر کلمه‌ای کلیک کنید تا ترجمه فارسی آن را ببینید.
-              </span>
-            </p>
-          </div>
-
-          {/* Rendered Content - Larger text for better readability */}
+              <span>🔍 کلیک: ترجمه</span>
+              </p>
           <div className="prose-content">
             <ContentRenderer
               content={lesson.content}
               vocabulary={lesson.vocabulary}
               onWordClick={handleWordClick}
-              onRegularWordClick={handleRegularWordClick}
+                onRegularWordClick={handleRegularWordClick}
             />
+            </div>
           </div>
         </section>
 
-        {/* Vocabulary List - Optimized touch targets */}
+        {/* Lesson Note Section */}
+        <div className="mt-3 lg:mt-4">
+          <LessonNote
+            lessonId={lessonId}
+            initialNote={lessonNote}
+            onSave={handleLessonNoteSave}
+          />
+        </div>
+
+        {/* Vocabulary List - Compact chips */}
         {lesson.vocabulary && lesson.vocabulary.length > 0 && (
-          <section className="mt-6 lg:mt-8 bg-white border border-neutral-extralight rounded-2xl p-4 lg:p-8 shadow-sm">
-            <h2 className="text-lg lg:text-xl font-bold text-text-charcoal mb-4 lg:mb-6">واژگان کلیدی</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 lg:gap-4">
+          <section className="mt-3 lg:mt-4 bg-white border border-neutral-extralight rounded-xl lg:rounded-2xl p-3 lg:p-4 shadow-sm">
+            <h2 className="text-sm lg:text-base font-bold text-text-charcoal mb-2 lg:mb-3 flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-primary" aria-hidden="true" />
+              واژگان کلیدی
+            </h2>
+            <div className="flex flex-wrap gap-2">
               {lesson.vocabulary.map((word) => (
                 <button
                   key={word.id}
                   onClick={() => handleWordClick(word)}
-                  className="flex items-center gap-3 p-4 bg-neutral-indigo/20 rounded-xl hover:bg-primary/10 hover:border-primary/20 border border-transparent transition-all duration-200 text-right min-h-[60px]"
+                  className="inline-flex items-center gap-1.5 bg-primary/10 hover:bg-primary/20 text-primary px-3 py-1.5 rounded-full text-sm font-medium transition-colors border border-primary/20 hover:border-primary/40"
                   type="button"
                 >
-                  <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center flex-shrink-0 shadow-sm">
-                    <span className="text-lg font-bold text-primary">
-                      {word.word.charAt(0)}
-                    </span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-bold text-text-charcoal text-sm truncate">
-                      {word.word}
-                    </p>
-                    <p className="text-xs text-text-gray truncate">
-                      {word.title}
-                    </p>
-                  </div>
+                  <span className="font-bold">{word.word}</span>
+                  <span className="text-xs opacity-75">({word.title})</span>
                 </button>
               ))}
             </div>
           </section>
         )}
 
-        {/* Navigation to Practice */}
+        {/* Navigation to Practice - Compact button */}
         <Link
           href={`/lesson/${lessonId}/practice`}
-          className="mt-8 lg:mt-10 group relative overflow-hidden bg-gradient-to-br from-primary/10 via-primary/5 to-secondary-accent/10 border-2 border-primary/20 rounded-2xl p-6 lg:p-8 hover:border-primary/40 hover:shadow-xl transition-all duration-300 block"
+          className="mt-4 lg:mt-5 w-full flex items-center justify-center gap-3 bg-gradient-to-r from-primary to-primary/80 text-white py-3 px-4 rounded-xl font-semibold hover:shadow-lg hover:scale-[1.02] transition-all shadow-md"
         >
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-4 flex-1">
-              <div className="w-14 h-14 lg:w-16 lg:h-16 rounded-2xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
-                <FilePenLine className="w-7 h-7 lg:w-8 lg:h-8 text-white" aria-hidden="true" />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-lg lg:text-xl font-bold text-text-charcoal mb-1 group-hover:text-primary transition-colors">
-                  بریم برای تمرین
-                </h3>
-                <p className="text-sm text-text-gray">
-                با حل تمرین، برای آزمون آمادگی کسب کنید
-                </p>
-              </div>
-            </div>
-            <ArrowLeft className="w-6 h-6 text-primary group-hover:translate-x-[-4px] transition-transform duration-300 flex-shrink-0" aria-hidden="true" />
-          </div>
-          {/* Decorative gradient overlay on hover */}
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/5 to-primary/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+          <FilePenLine className="w-5 h-5" aria-hidden="true" />
+          <span>بریم برای تمرین</span>
+          <ArrowLeft className="w-5 h-5" aria-hidden="true" />
         </Link>
       </div>
 

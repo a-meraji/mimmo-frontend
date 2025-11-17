@@ -3,10 +3,10 @@
 import { use, useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowRight, ArrowLeft, BookOpen, ArrowUp, ClipboardCheck, Plus } from 'lucide-react';
+import { ArrowRight, ArrowLeft, BookOpen, ArrowUp, ClipboardCheck, Plus, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { getLessonById, getQuestionsForLesson } from '@/utils/lessonData';
-import { getQuestionStats } from '@/utils/lessonStorage';
+import { getQuestionStats, getQuestionNote, saveQuestionNote } from '@/utils/lessonStorage';
 import QuestionCard from '@/components/lesson/QuestionCard';
 import LessonNavTabs from '@/components/lesson/LessonNavTabs';
 import AddFlashcardModal from '@/components/leitner/AddFlashcardModal';
@@ -22,21 +22,37 @@ export default function LessonPracticePage({ params }) {
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [isAddFlashcardModalOpen, setIsAddFlashcardModalOpen] = useState(false);
   const [flashcardInitialText, setFlashcardInitialText] = useState('');
+  const [questionNotes, setQuestionNotes] = useState({});
+  const [isMounted, setIsMounted] = useState(false);
   
   // Text selection hook
   const { selectedText, isActive, position, clearSelection } = useTextSelection();
+
+  // Set mounted state after client-side hydration
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Get lesson and questions data
   const lesson = useMemo(() => getLessonById(lessonId), [lessonId]);
   const questions = useMemo(() => getQuestionsForLesson(lessonId), [lessonId]);
 
-  // Get stats for all questions
+  // Load question notes on mount
+  useEffect(() => {
+    const notes = {};
+    questions.forEach(question => {
+      notes[question.id] = getQuestionNote(question.id, user);
+    });
+    setQuestionNotes(notes);
+  }, [questions, user]);
+
+  // Get stats for all questions (only on client)
   const questionsWithStats = useMemo(() => {
     return questions.map(question => ({
       ...question,
-      stats: getQuestionStats(question.id, user)
+      stats: isMounted ? getQuestionStats(question.id, user) : { totalAttempts: 0, correctAttempts: 0, incorrectAttempts: 0, doubtAttempts: 0 }
     }));
-  }, [questions, user]);
+  }, [questions, user, isMounted]);
 
   const totalQuestions = questions.length;
 
@@ -76,6 +92,17 @@ export default function LessonPracticePage({ params }) {
 
   const handleFlashcardSuccess = () => {
     toast.success('کارت به لایتنر اضافه شد');
+  };
+
+  // Handle question note save
+  const handleQuestionNoteSave = async (questionId, note) => {
+    const success = saveQuestionNote(questionId, note, user);
+    if (success) {
+      setQuestionNotes(prev => ({
+        ...prev,
+        [questionId]: note
+      }));
+    }
   };
 
   // Handle 404
@@ -133,73 +160,59 @@ export default function LessonPracticePage({ params }) {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-gradient-purple via-white to-gradient-yellow pb-20">
+    <main className="min-h-screen bg-gradient-to-br from-gradient-purple via-white to-gradient-yellow pb-16 lg:pb-20">
       {/* Sticky Navigation Tabs */}
       <LessonNavTabs lessonId={lessonId} activeTab="practice" />
 
-      {/* Sticky Page Header (Mobile) */}
-      <div className="lg:hidden">
-        <div className="container mx-auto px-4 py-2">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-base font-bold text-text-charcoal">{lesson.title}</h1>
-              <p className="text-xs text-text-gray">تمرین سوالات</p>
+      <div className="container mx-auto px-3 lg:px-8 max-w-4xl py-2 lg:py-4">
+        {/* Compact Header Bar - Mobile and Desktop */}
+        <div className="mb-3 lg:mb-4">
+          {/* Mobile: Single compact bar */}
+          <div className="lg:hidden flex items-center gap-2 mb-2">
+            <button
+              onClick={() => router.back()}
+              className="inline-flex items-center gap-1 text-text-gray hover:text-primary transition-colors"
+              aria-label="بازگشت"
+            >
+              <ArrowRight className="w-4 h-4" aria-hidden="true" />
+            </button>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-xs font-bold text-text-charcoal truncate">{lesson.title}</h1>
             </div>
-            <div className="text-left">
-              <p className="text-xs text-text-gray">پیشرفت</p>
-              <p className="text-sm font-bold text-primary">{progressPercent}%</p>
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs text-text-gray">{answeredQuestions}/{totalQuestions}</span>
+              <span className="text-xs font-bold text-primary">{progressPercent}%</span>
             </div>
           </div>
-          {/* Compact Progress Bar */}
-          <div className="h-1 bg-neutral-indigo/30 rounded-full overflow-hidden mt-2">
+          {/* Mobile: Progress bar */}
+          <div className="lg:hidden h-1 bg-neutral-indigo/30 rounded-full overflow-hidden">
             <div
               className="h-full bg-primary rounded-full transition-all duration-300"
               style={{ width: `${progressPercent}%` }}
               aria-hidden="true"
             />
           </div>
-        </div>
-      </div>
 
-      <div className="container mx-auto px-4 lg:px-8 max-w-4xl py-4 lg:py-8">
-        {/* Back Button (Mobile) / Breadcrumb (Desktop) */}
-        <div className="mb-4 lg:mb-6">
-          <button
-            onClick={() => router.back()}
-            className="lg:hidden inline-flex items-center gap-2 text-text-gray hover:text-primary transition-colors p-2 -ml-2"
-            aria-label="بازگشت"
-          >
-            <ArrowRight className="w-5 h-5" aria-hidden="true" />
-            <span className="text-sm font-medium">بازگشت</span>
-          </button>
-
-          <nav className="hidden lg:flex items-center gap-1.5 text-xs text-text-gray" aria-label="مسیر صفحه">
-            <Link href="/learn" className="hover:text-primary transition-colors">
-              یادگیری
-            </Link>
-            <ArrowRight className="w-3 h-3 text-text-light" aria-hidden="true" />
-            <Link href={`/learn/${lesson.courseId}`} className="hover:text-primary transition-colors">
-              دوره
-            </Link>
-            <ArrowRight className="w-3 h-3 text-text-light" aria-hidden="true" />
-            <span className="text-text-charcoal font-medium">{lesson.title}</span>
-          </nav>
-        </div>
-
-        {/* Page Header (Desktop) */}
-        <div className="hidden lg:block mb-6">
-          <div className="flex items-center justify-between mb-3">
-            <div>
-              <h1 className="text-2xl font-black text-text-charcoal">{lesson.title}</h1>
-              <p className="text-sm text-text-gray">تمرین سوالات</p>
-            </div>
-            <div className="text-left">
-              <p className="text-sm text-text-gray mb-1">پیشرفت کلی</p>
-              <p className="text-3xl font-bold text-primary">{progressPercent}%</p>
-              <p className="text-xs text-text-gray">{answeredQuestions} از {totalQuestions} سوال</p>
+          {/* Desktop: Breadcrumb with progress */}
+          <div className="hidden lg:flex items-center justify-between mb-3">
+            <nav className="flex items-center gap-1.5 text-xs text-text-gray" aria-label="مسیر صفحه">
+              <Link href="/learn" className="hover:text-primary transition-colors">
+                یادگیری
+              </Link>
+              <ArrowRight className="w-3 h-3 text-text-light" aria-hidden="true" />
+              <Link href={`/learn/${lesson.courseId}`} className="hover:text-primary transition-colors">
+                دوره
+              </Link>
+              <ArrowRight className="w-3 h-3 text-text-light" aria-hidden="true" />
+              <span className="text-text-charcoal font-medium">{lesson.title}</span>
+            </nav>
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-text-gray">{answeredQuestions} از {totalQuestions} سوال</span>
+              <span className="text-lg font-bold text-primary">{progressPercent}%</span>
             </div>
           </div>
-          <div className="h-2 bg-neutral-indigo/30 rounded-full overflow-hidden">
+          {/* Desktop: Progress bar */}
+          <div className="hidden lg:block h-1.5 bg-neutral-indigo/30 rounded-full overflow-hidden">
             <div
               className="h-full bg-primary rounded-full transition-all duration-300"
               style={{ width: `${progressPercent}%` }}
@@ -209,62 +222,42 @@ export default function LessonPracticePage({ params }) {
         </div>
 
         {/* All Questions - Scrollable */}
-        <div className="space-y-6 lg:space-y-8">
+        <div className="space-y-3 lg:space-y-4">
           {questionsWithStats.map((question, index) => (
-            <div key={question.id} className="scroll-mt-32">
-              {/* Question Number Header */}
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  <span className="text-sm font-bold text-primary">{index + 1}</span>
+            <div key={question.id} className="scroll-mt-20">
+              {/* Question Card with inline number */}
+              <div className="relative">
+                <div className="absolute -right-1 -top-1 w-6 h-6 lg:w-7 lg:h-7 rounded-full bg-primary text-white flex items-center justify-center text-xs lg:text-sm font-bold shadow-lg z-10">
+                  {index + 1}
                 </div>
-                <h2 className="text-sm font-semibold text-text-gray">
-                  سوال {index + 1} از {totalQuestions}
-                </h2>
-              </div>
-
-              {/* Question Card */}
               <QuestionCard
                 question={question}
                 stats={question.stats}
                 showStats={true}
+                note={questionNotes[question.id] || ''}
+                onNoteSave={handleQuestionNoteSave}
               />
+              </div>
             </div>
           ))}
         </div>
 
-        {/* Completion Message */}
-        <div className="mt-8 bg-neutral-extralight border border-neutral-indigo/20 rounded-2xl p-6 text-center">
-          <p className="text-sm text-text-gray mb-2">
-            تمام {totalQuestions} سوال را مرور کردید
-          </p>
-          <p className="text-lg font-bold text-text-dark">
-            {answeredQuestions} سوال پاسخ داده شده ({progressPercent}%)
-          </p>
+        {/* Completion Message - Compact banner */}
+        <div className="mt-4 lg:mt-5 flex items-center justify-center gap-2 bg-neutral-extralight border border-neutral-indigo/20 rounded-lg py-2 px-3">
+          <CheckCircle2 className="w-4 h-4 text-emerald-600" aria-hidden="true" />
+          <span className="text-xs lg:text-sm text-text-gray">
+            مرور کامل: <span className="font-bold text-text-dark">{answeredQuestions}/{totalQuestions} سوال ({progressPercent}%)</span>
+          </span>
         </div>
 
-        {/* Navigation to Test */}
+        {/* Navigation to Test - Compact button */}
         <Link
           href={`/lesson/${lessonId}/test`}
-          className="mt-8 lg:mt-10 group relative overflow-hidden bg-gradient-to-br from-primary/10 via-primary/5 to-secondary-accent/10 border-2 border-primary/20  rounded-2xl p-6 lg:p-8 hover:border-primary/40 hover:shadow-xl transition-all duration-300 block"
+          className="mt-3 lg:mt-4 w-full flex items-center justify-center gap-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white py-3 px-4 rounded-xl font-semibold hover:shadow-lg hover:scale-[1.02] transition-all shadow-md"
         >
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-4 flex-1">
-              <div className="w-14 h-14 lg:w-16 lg:h-16 rounded-2xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
-                <ClipboardCheck className="w-7 h-7 lg:w-8 lg:h-8 text-white" aria-hidden="true" />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-lg lg:text-xl font-bold text-text-charcoal mb-1 group-hover:text-primary transition-colors">
-                  بریم برای آزمون
-                </h3>
-                <p className="text-sm text-text-gray">
-                  با آزمون، آمادگی خود را بسنجید
-                </p>
-              </div>
-            </div>
-            <ArrowLeft className="w-6 h-6 text-primary group-hover:translate-x-[-4px] transition-transform duration-300 flex-shrink-0" aria-hidden="true" />
-          </div>
-          {/* Decorative gradient overlay on hover */}
-          <div className="absolute inset-0 bg-gradient-to-r from-amber-500/0 via-amber-500/5 to-amber-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+          <ClipboardCheck className="w-5 h-5" aria-hidden="true" />
+          <span>بریم برای آزمون</span>
+          <ArrowLeft className="w-5 h-5" aria-hidden="true" />
         </Link>
       </div>
 

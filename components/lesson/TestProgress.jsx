@@ -5,7 +5,8 @@ import { CheckCircle2, Circle, HelpCircle, XCircle } from 'lucide-react';
 export default function TestProgress({ 
   currentIndex, 
   totalQuestions, 
-  answers 
+  answers,
+  onQuestionClick
 }) {
   const progressPercent = ((currentIndex + 1) / totalQuestions) * 100;
 
@@ -73,15 +74,19 @@ export default function TestProgress({
           const isDoubt = answer?.isDoubt;
 
           let bgColor = 'bg-neutral-indigo/30';
+          let hoverBgColor = 'hover:bg-neutral-indigo/40';
           let borderColor = 'border-transparent';
 
           if (isAnswered) {
             if (isDoubt) {
               bgColor = 'bg-amber-500';
+              hoverBgColor = 'hover:bg-amber-600';
             } else if (isCorrect) {
               bgColor = 'bg-emerald-500';
+              hoverBgColor = 'hover:bg-emerald-600';
             } else {
               bgColor = 'bg-rose-500';
+              hoverBgColor = 'hover:bg-rose-600';
             }
           }
 
@@ -90,15 +95,19 @@ export default function TestProgress({
           }
 
           return (
-            <div
+            <button
               key={index}
-              className={`w-8 h-8 rounded-lg ${bgColor} border-2 ${borderColor} flex items-center justify-center text-xs font-bold ${
+              onClick={() => onQuestionClick?.(index)}
+              className={`min-w-[44px] min-h-[44px] w-11 h-11 rounded-lg ${bgColor} ${hoverBgColor} border-2 ${borderColor} flex items-center justify-center text-xs lg:text-sm font-bold ${
                 isAnswered ? 'text-white' : 'text-text-gray'
-              } transition-all duration-200`}
-              title={`سوال ${index + 1}`}
+              } transition-all duration-200 cursor-pointer touch-manipulation focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2`}
+              title={`رفتن به سوال ${index + 1}`}
+              aria-label={`رفتن به سوال ${index + 1}`}
+              aria-current={isCurrent ? 'true' : 'false'}
+              type="button"
             >
               {index + 1}
-            </div>
+            </button>
           );
         })}
       </div>

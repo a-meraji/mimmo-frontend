@@ -2,6 +2,8 @@
 
 const STORAGE_KEYS = {
   WORD_NOTES: 'mimmo_word_notes',
+  LESSON_NOTES: 'mimmo_lesson_notes',
+  QUESTION_NOTES: 'mimmo_question_notes',
   TEST_PREFERENCES: 'mimmo_test_preferences',
   QUESTION_STATS: 'mimmo_question_stats',
   TEST_HISTORY: 'mimmo_test_history'
@@ -94,6 +96,98 @@ export function saveWordNote(wordId, note, user) {
 export function getAllWordNotes(user) {
   const userId = getUserId(user);
   const data = safeGetItem(STORAGE_KEYS.WORD_NOTES) || {};
+  return data[userId] || {};
+}
+
+// ============= LESSON NOTES =============
+
+/**
+ * Get note for a specific lesson
+ * @param {string} lessonId - Lesson ID
+ * @param {Object} user - User object
+ * @returns {string} Note text or empty string
+ */
+export function getLessonNote(lessonId, user) {
+  const userId = getUserId(user);
+  const data = safeGetItem(STORAGE_KEYS.LESSON_NOTES) || {};
+  
+  if (!data[userId]) return '';
+  return data[userId][lessonId] || '';
+}
+
+/**
+ * Save note for a specific lesson
+ * @param {string} lessonId - Lesson ID
+ * @param {string} note - Note text
+ * @param {Object} user - User object
+ * @returns {boolean} Success status
+ */
+export function saveLessonNote(lessonId, note, user) {
+  const userId = getUserId(user);
+  const data = safeGetItem(STORAGE_KEYS.LESSON_NOTES) || {};
+  
+  if (!data[userId]) {
+    data[userId] = {};
+  }
+  
+  data[userId][lessonId] = note;
+  return safeSetItem(STORAGE_KEYS.LESSON_NOTES, data);
+}
+
+/**
+ * Get all lesson notes for a user
+ * @param {Object} user - User object
+ * @returns {Object} Object with lessonId as keys and notes as values
+ */
+export function getAllLessonNotes(user) {
+  const userId = getUserId(user);
+  const data = safeGetItem(STORAGE_KEYS.LESSON_NOTES) || {};
+  return data[userId] || {};
+}
+
+// ============= QUESTION NOTES =============
+
+/**
+ * Get note for a specific question
+ * @param {string} questionId - Question ID
+ * @param {Object} user - User object
+ * @returns {string} Note text or empty string
+ */
+export function getQuestionNote(questionId, user) {
+  const userId = getUserId(user);
+  const data = safeGetItem(STORAGE_KEYS.QUESTION_NOTES) || {};
+  
+  if (!data[userId]) return '';
+  return data[userId][questionId] || '';
+}
+
+/**
+ * Save note for a specific question
+ * @param {string} questionId - Question ID
+ * @param {string} note - Note text
+ * @param {Object} user - User object
+ * @returns {boolean} Success status
+ */
+export function saveQuestionNote(questionId, note, user) {
+  const userId = getUserId(user);
+  const data = safeGetItem(STORAGE_KEYS.QUESTION_NOTES) || {};
+  
+  if (!data[userId]) {
+    data[userId] = {};
+  }
+  
+  data[userId][questionId] = note;
+  return safeSetItem(STORAGE_KEYS.QUESTION_NOTES, data);
+}
+
+/**
+ * Get all question notes for a user
+ * @param {Object} user - User object
+ * @returns {Object} Object with questionId as keys and notes as values
+ */
+export function getAllQuestionNotes(user) {
+  const userId = getUserId(user);
+  const data = safeGetItem(STORAGE_KEYS.QUESTION_NOTES) || {};
   return data[userId] || {};
 }
 
@@ -327,6 +421,16 @@ export function clearUserData(user) {
     delete wordNotes[userId];
     safeSetItem(STORAGE_KEYS.WORD_NOTES, wordNotes);
     
+    // Clear lesson notes
+    const lessonNotes = safeGetItem(STORAGE_KEYS.LESSON_NOTES) || {};
+    delete lessonNotes[userId];
+    safeSetItem(STORAGE_KEYS.LESSON_NOTES, lessonNotes);
+    
+    // Clear question notes
+    const questionNotes = safeGetItem(STORAGE_KEYS.QUESTION_NOTES) || {};
+    delete questionNotes[userId];
+    safeSetItem(STORAGE_KEYS.QUESTION_NOTES, questionNotes);
+    
     // Clear test preferences
     const testPrefs = safeGetItem(STORAGE_KEYS.TEST_PREFERENCES) || {};
     delete testPrefs[userId];
@@ -353,6 +457,12 @@ export default {
   getWordNote,
   saveWordNote,
   getAllWordNotes,
+  getLessonNote,
+  saveLessonNote,
+  getAllLessonNotes,
+  getQuestionNote,
+  saveQuestionNote,
+  getAllQuestionNotes,
   getTestPreferences,
   saveTestPreferences,
   getQuestionStats,
