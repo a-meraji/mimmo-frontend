@@ -9,6 +9,21 @@ const AuthContext = createContext(undefined);
 // Token refresh interval: 14 minutes (before 15-minute expiry)
 const TOKEN_REFRESH_INTERVAL = 14 * 60 * 1000;
 
+// Helper function to decode JWT token
+const decodeJWT = (token) => {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) {
+      throw new Error('Invalid token format');
+    }
+    const payload = JSON.parse(atob(parts[1]));
+    return payload;
+  } catch (error) {
+    console.error('Error decoding JWT:', error);
+    return null;
+  }
+};
+
 export function AuthProvider({ children }) {
   const router = useRouter();
   const [user, setUser] = useState(null);
@@ -25,15 +40,26 @@ export function AuthProvider({ children }) {
     }
     
     try {
+      // Decode JWT to get role from token
+      const tokenPayload = decodeJWT(token);
+      
+      // Fetch additional user data from profile endpoint
       const userData = await clientAPI.get('/user/profile', {
         headers: {
           'Authorization': `Bearer ${token}`,
         }
       });
 
-      setUser(userData);
+      // Merge token data (role) with profile data
+      const completeUserData = {
+        ...userData,
+        role: tokenPayload?.role || 'user', // Extract role from JWT token
+        userId: tokenPayload?.sub, // User ID from token
+      };
+
+      setUser(completeUserData);
       setIsAuthenticated(true);
-      return userData;
+      return completeUserData;
     } catch (error) {
       console.error('Error fetching user profile:', error);
       return null;

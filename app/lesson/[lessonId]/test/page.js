@@ -261,10 +261,6 @@ export default function LessonTestPage({ params }) {
       }
 
       // Arrow Left / Right for Previous/Next navigation
-      if (e.key === 'ArrowLeft' && !hasAnswered) {
-        // Don't navigate if question not answered yet
-        return;
-      }
       if (e.key === 'ArrowLeft') {
         e.preventDefault();
         handleNextQuestion();
@@ -293,8 +289,8 @@ export default function LessonTestPage({ params }) {
         return;
       }
 
-      // Enter key to proceed to next question (if answered)
-      if (e.key === 'Enter' && hasAnswered) {
+      // Enter key to proceed to next question
+      if (e.key === 'Enter') {
         e.preventDefault();
         handleNextQuestion();
         return;
@@ -563,8 +559,7 @@ export default function LessonTestPage({ params }) {
                     {/* Next Button */}
                     <button
                       onClick={handleNextQuestion}
-                      disabled={!hasAnswered}
-                      className="flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white rounded-lg lg:rounded-xl font-semibold text-sm hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                      className="flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-white rounded-lg lg:rounded-xl font-semibold text-sm hover:bg-primary/90 transition-colors"
                       type="button"
                       aria-label={currentQuestionIndex < testQuestions.length - 1 ? 'سوال بعدی' : 'اتمام آزمون'}
                     >

@@ -20,7 +20,7 @@ export default function SocialCard({ platform, title, handle, image, gradientFro
     >
       <article className="flex items-center justify-between p-6 gap-4">
         {/* Text Content */}
-        <div className={`flex-1 font-bold text-right ${platform === "Instagram" ? "text-[#836880]" : "text-white"}`}>
+        <div className={`flex-1 font-bold text-right text-white`}>
           <h3 className="text-lg mb-2">
             {title}
           </h3>

@@ -113,16 +113,24 @@ class FetchInstance {
   async request(endpoint, options = {}) {
     const url = this.buildURL(endpoint);
     
-    // Default headers
-    const defaultHeaders = {
-      'Content-Type': 'application/json',
-    };
+    // Default headers - but NOT for FormData (browser must set Content-Type with boundary)
+    const defaultHeaders = {};
+    
+    // Only add Content-Type: application/json if body is NOT FormData
+    if (!(options.body instanceof FormData)) {
+      defaultHeaders['Content-Type'] = 'application/json';
+    }
 
     // Merge headers
     const headers = {
       ...defaultHeaders,
       ...options.headers,
     };
+
+    // Remove Content-Type if it was explicitly set to undefined (for FormData)
+    if (options.headers && options.headers['Content-Type'] === undefined) {
+      delete headers['Content-Type'];
+    }
 
     // Build fetch options with timeout (default 10 seconds)
     const timeout = options.timeout || 10000;
