@@ -1,44 +1,45 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNotification } from '@/contexts/NotificationContext';
 import { handleApiError, getSuccessMessage, ENTITY_NAMES } from '@/utils/errorHandler';
 import { packageManagement } from '@/utils/adminApi';
-import { getPackageChapters, getAllPackages } from '@/utils/api';
+import { getChapterParts, getAllPackages, getPackageChapters } from '@/utils/api';
 import Breadcrumbs from '@/components/admin/Breadcrumbs';
 import LoadingSpinner from '@/components/admin/ui/LoadingSpinner';
 import EmptyState from '@/components/admin/ui/EmptyState';
 import ConfirmDialog from '@/components/admin/ui/ConfirmDialog';
-import ChapterForm from '@/components/admin/packages/ChapterForm';
+import PartForm from '@/components/admin/packages/PartForm';
 import { Plus, Edit, Trash2, ChevronLeft, BookOpen } from 'lucide-react';
 import Link from 'next/link';
 
-export default function ChaptersPage() {
-  const router = useRouter();
+export default function PartsPage() {
   const params = useParams();
   const packageId = params.packageId;
+  const chapterId = params.chapterId;
   const { authenticatedFetch } = useAuth();
   const { success: notifySuccess, error: notifyError } = useNotification();
   
   const [packageData, setPackageData] = useState(null);
-  const [chapters, setChapters] = useState([]);
+  const [chapterData, setChapterData] = useState(null);
+  const [parts, setParts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isChapterFormOpen, setIsChapterFormOpen] = useState(false);
+  const [isPartFormOpen, setIsPartFormOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [selectedChapter, setSelectedChapter] = useState(null);
+  const [selectedPart, setSelectedPart] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    fetchPackageAndChapters();
-  }, [packageId]);
+    fetchData();
+  }, [chapterId]);
 
-  const fetchPackageAndChapters = async () => {
+  const fetchData = async () => {
     try {
       setLoading(true);
       
-      // Fetch package details from all packages
+      // Fetch package details
       const packagesResponse = await getAllPackages();
       const allPackages = packagesResponse?.data?.packages || [];
       const pkg = allPackages.find(p => p.id === packageId);
@@ -51,47 +52,60 @@ export default function ChaptersPage() {
       
       setPackageData(pkg);
       
-      // Fetch chapters for this package
+      // Fetch chapters to get chapter details
       const chaptersResponse = await getPackageChapters(packageId);
-      setChapters(chaptersResponse?.data?.chapters || []);
+      const chapters = chaptersResponse?.data?.chapters || [];
+      const chapter = chapters.find(c => c.id === chapterId);
+      
+      if (!chapter) {
+        notifyError('فصل یافت نشد');
+        setLoading(false);
+        return;
+      }
+      
+      setChapterData(chapter);
+      
+      // Fetch parts for this chapter
+      const partsResponse = await getChapterParts(chapterId);
+      setParts(partsResponse?.data?.parts || []);
     } catch (error) {
-      handleApiError(error, notifyError, ENTITY_NAMES.package);
+      handleApiError(error, notifyError, ENTITY_NAMES.chapter);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleCreateChapter = () => {
-    setSelectedChapter(null);
-    setIsChapterFormOpen(true);
+  const handleCreatePart = () => {
+    setSelectedPart(null);
+    setIsPartFormOpen(true);
   };
 
-  const handleEditChapter = (chapter) => {
-    setSelectedChapter(chapter);
-    setIsChapterFormOpen(true);
+  const handleEditPart = (part) => {
+    setSelectedPart(part);
+    setIsPartFormOpen(true);
   };
 
-  const handleDeleteChapter = (chapter) => {
-    setSelectedChapter(chapter);
+  const handleDeletePart = (part) => {
+    setSelectedPart(part);
     setIsDeleteDialogOpen(true);
   };
 
-  const handleSaveChapter = async (data) => {
+  const handleSavePart = async (data) => {
     try {
       setIsSubmitting(true);
       
-      if (selectedChapter) {
-        await packageManagement.updateChapter(selectedChapter.id, data, authenticatedFetch);
-        notifySuccess(getSuccessMessage('update', ENTITY_NAMES.chapter));
+      if (selectedPart) {
+        await packageManagement.updatePart(selectedPart.id, data, authenticatedFetch);
+        notifySuccess(getSuccessMessage('update', ENTITY_NAMES.part));
       } else {
-        await packageManagement.createChapter({ ...data, packageId }, authenticatedFetch);
-        notifySuccess(getSuccessMessage('create', ENTITY_NAMES.chapter));
+        await packageManagement.createPart({ ...data, chapterId }, authenticatedFetch);
+        notifySuccess(getSuccessMessage('create', ENTITY_NAMES.part));
       }
       
-      setIsChapterFormOpen(false);
-      fetchPackageAndChapters();
+      setIsPartFormOpen(false);
+      fetchData();
     } catch (error) {
-      handleApiError(error, notifyError, ENTITY_NAMES.chapter);
+      handleApiError(error, notifyError, ENTITY_NAMES.part);
     } finally {
       setIsSubmitting(false);
     }
@@ -100,102 +114,103 @@ export default function ChaptersPage() {
   const handleConfirmDelete = async () => {
     try {
       setIsSubmitting(true);
-      await packageManagement.deleteChapter(selectedChapter.id, authenticatedFetch);
-      notifySuccess(getSuccessMessage('delete', ENTITY_NAMES.chapter));
+      await packageManagement.deletePart(selectedPart.id, authenticatedFetch);
+      notifySuccess(getSuccessMessage('delete', ENTITY_NAMES.part));
       setIsDeleteDialogOpen(false);
-      fetchPackageAndChapters();
+      fetchData();
     } catch (error) {
-      handleApiError(error, notifyError, ENTITY_NAMES.chapter);
+      handleApiError(error, notifyError, ENTITY_NAMES.part);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   if (loading) return <LoadingSpinner fullPage message="در حال بارگذاری..." />;
-  if (!packageData) return <EmptyState title="پکیج یافت نشد" />;
+  if (!packageData || !chapterData) return <EmptyState title="اطلاعات یافت نشد" />;
 
   return (
     <div className="space-y-6">
       <Breadcrumbs
         items={[
           { label: 'مدیریت پکیج‌ها', href: '/admin/packages' },
-          { label: packageData.packageName },
+          { label: packageData.packageName, href: `/admin/packages/${packageId}/chapters` },
+          { label: chapterData.title },
         ]}
       />
 
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">فصل‌های {packageData.packageName}</h1>
-          <p className="text-gray-600 mt-1">مدیریت فصل‌های این پکیج</p>
+          <h1 className="text-2xl font-bold text-gray-900">بخش‌های {chapterData.title}</h1>
+          <p className="text-gray-600 mt-1">مدیریت بخش‌های این فصل</p>
         </div>
         <button
-          onClick={handleCreateChapter}
+          onClick={handleCreatePart}
           className="flex items-center gap-2 px-4 py-2.5 bg-primary text-white
                    rounded-lg hover:bg-primary/90 transition-colors font-medium"
         >
           <Plus className="w-5 h-5" />
-          افزودن فصل
+          افزودن بخش
         </button>
       </div>
 
       {/* Content */}
-      {chapters.length === 0 ? (
+      {parts.length === 0 ? (
         <EmptyState
           icon={BookOpen}
-          title="فصلی یافت نشد"
-          message="هنوز فصلی برای این پکیج ایجاد نشده است"
+          title="بخشی یافت نشد"
+          message="هنوز بخشی برای این فصل ایجاد نشده است"
           action={
             <button
-              onClick={handleCreateChapter}
+              onClick={handleCreatePart}
               className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90
                        transition-colors font-medium"
             >
-              افزودن اولین فصل
+              افزودن اولین بخش
             </button>
           }
         />
       ) : (
         <div className="space-y-4">
-          {chapters
+          {parts
             .sort((a, b) => a.numericOrder - b.numericOrder)
-            .map((chapter) => (
+            .map((part) => (
               <div
-                key={chapter.id}
+                key={part.id}
                 className="bg-white rounded-xl border border-gray-200 p-6
                          hover:shadow-lg transition-shadow"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                      <span className="text-lg font-bold text-primary">{chapter.numericOrder}</span>
+                      <span className="text-lg font-bold text-primary">{part.numericOrder}</span>
                     </div>
                     <div>
-                      <h3 className="text-lg font-bold text-gray-900">{chapter.title}</h3>
+                      <h3 className="text-lg font-bold text-gray-900">{part.title}</h3>
                       <p className="text-sm text-gray-600">
-                        {chapter.parts?.length || 0} بخش
+                        {part.lessons?.length || 0} درس
                       </p>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2">
                     <Link
-                      href={`/admin/packages/${packageId}/chapters/${chapter.id}/parts`}
+                      href={`/admin/packages/${packageId}/chapters/${chapterId}/parts/${part.id}/lessons`}
                       className="flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary
                                rounded-lg hover:bg-primary/20 transition-colors text-sm font-medium"
                     >
-                      مشاهده بخش‌ها
+                      مشاهده درس‌ها
                       <ChevronLeft className="w-4 h-4" />
                     </Link>
                     <button
-                      onClick={() => handleEditChapter(chapter)}
+                      onClick={() => handleEditPart(part)}
                       className="p-2 rounded-lg hover:bg-blue-50 text-blue-600 transition-colors"
                       aria-label="ویرایش"
                     >
                       <Edit className="w-4 h-4" />
                     </button>
                     <button
-                      onClick={() => handleDeleteChapter(chapter)}
+                      onClick={() => handleDeletePart(part)}
                       className="p-2 rounded-lg hover:bg-red-50 text-red-600 transition-colors"
                       aria-label="حذف"
                     >
@@ -209,11 +224,11 @@ export default function ChaptersPage() {
       )}
 
       {/* Modals */}
-      <ChapterForm
-        isOpen={isChapterFormOpen}
-        onClose={() => setIsChapterFormOpen(false)}
-        onSave={handleSaveChapter}
-        chapter={selectedChapter}
+      <PartForm
+        isOpen={isPartFormOpen}
+        onClose={() => setIsPartFormOpen(false)}
+        onSave={handleSavePart}
+        part={selectedPart}
         isLoading={isSubmitting}
       />
 
@@ -221,8 +236,8 @@ export default function ChaptersPage() {
         isOpen={isDeleteDialogOpen}
         onClose={() => setIsDeleteDialogOpen(false)}
         onConfirm={handleConfirmDelete}
-        title="حذف فصل"
-        message={`آیا از حذف فصل "${selectedChapter?.title}" اطمینان دارید؟ این عمل تمام بخش‌ها و درس‌های مرتبط را نیز حذف می‌کند.`}
+        title="حذف بخش"
+        message={`آیا از حذف بخش "${selectedPart?.title}" اطمینان دارید؟ این عمل تمام درس‌های مرتبط را نیز حذف می‌کند.`}
         confirmText="حذف"
         variant="danger"
         isLoading={isSubmitting}

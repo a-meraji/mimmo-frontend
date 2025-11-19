@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import { getImageUrl } from "@/utils/imageUrl";
 
 export default function ProductImage({ image, title, description }) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -12,7 +13,7 @@ export default function ProductImage({ image, title, description }) {
       {/* Product Image */}
       <div className="relative w-full aspect-square max-h-[60vh] bg-gradient-to-br from-neutral-indigo/30 to-white rounded-xl overflow-hidden">
         <Image
-          src={image}
+          src={getImageUrl(image)}
           alt={title}
           fill
           className="object-contain p-4 drop-shadow-lg"

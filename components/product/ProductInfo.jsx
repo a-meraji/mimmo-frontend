@@ -118,16 +118,28 @@ export default function ProductInfo({
         <h3 className="text-sm font-semibold text-text-charcoal">اطلاعات دوره</h3>
         <div className="space-y-2">
           {specs.map((spec, index) => {
-            const Icon = typeof spec.icon === 'string' ? iconMap[spec.icon] : spec.icon;
+            // Get icon component with robust fallback handling
+            let Icon = BookOpenText; // Default fallback
+            
+            if (spec && spec.icon) {
+              if (typeof spec.icon === 'string') {
+                // Map string icon names to components
+                Icon = iconMap[spec.icon] || BookOpenText;
+              } else if (typeof spec.icon === 'function') {
+                // Direct icon component reference
+                Icon = spec.icon;
+              }
+            }
+            
             return (
               <div key={index} className="flex items-center justify-between py-2 border-b border-neutral-extralight last:border-0">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-lg bg-primary/5 flex items-center justify-center">
                     <Icon className="w-4 h-4 text-primary" aria-hidden="true" />
                   </div>
-                  <span className="text-xs text-text-gray">{spec.label}</span>
+                  <span className="text-xs text-text-gray">{spec.label || ''}</span>
                 </div>
-                <span className="text-xs font-medium text-text-charcoal">{spec.value}</span>
+                <span className="text-xs font-medium text-text-charcoal">{spec.value || ''}</span>
               </div>
             );
           })}

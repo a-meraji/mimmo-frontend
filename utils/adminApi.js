@@ -16,7 +16,7 @@ export const userManagement = {
    */
   getAllUsers: async (page, authenticatedFetch) => {
     return authenticatedFetch('/admin/user/users', {
-      method: 'POST',
+      method: 'GET',
       body: JSON.stringify({ page }),
     });
   },

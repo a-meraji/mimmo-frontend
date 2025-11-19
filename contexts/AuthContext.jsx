@@ -6,20 +6,16 @@ import { clientAPI } from '../utils/fetchInstance';
 
 const AuthContext = createContext(undefined);
 
-// Token refresh interval: 14 minutes (before 15-minute expiry)
-const TOKEN_REFRESH_INTERVAL = 14 * 60 * 1000;
+// Auto-refresh token every 14 minutes (access token expires in 15 min)
+const REFRESH_INTERVAL = 14 * 60 * 1000;
 
-// Helper function to decode JWT token
-const decodeJWT = (token) => {
+// Decode JWT to get payload
+const decodeToken = (token) => {
   try {
-    const parts = token.split('.');
-    if (parts.length !== 3) {
-      throw new Error('Invalid token format');
-    }
-    const payload = JSON.parse(atob(parts[1]));
+    const payload = JSON.parse(atob(token.split('.')[1]));
     return payload;
   } catch (error) {
-    console.error('Error decoding JWT:', error);
+    console.error('Error decoding token:', error);
     return null;
   }
 };
@@ -28,247 +24,333 @@ export function AuthProvider({ children }) {
   const router = useRouter();
   const [user, setUser] = useState(null);
   const [accessToken, setAccessToken] = useState(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isInitialized, setIsInitialized] = useState(false);
   const refreshTimerRef = useRef(null);
+  const isRefreshingRef = useRef(false);
 
-  // Fetch user profile with access token
-  const fetchUserProfile = useCallback(async (token) => {
+  // Clear all auth state
+  const clearAuth = useCallback(() => {
+    console.log('[Auth] Clearing auth state');
+    setAccessToken(null);
+    setUser(null);
+    if (refreshTimerRef.current) {
+      clearInterval(refreshTimerRef.current);
+      refreshTimerRef.current = null;
+    }
+  }, []);
+
+  // Load user profile from backend
+  const loadUserProfile = useCallback(async (token) => {
     if (!token) {
-      console.warn('No token provided to fetchUserProfile');
+      console.error('[Auth] Cannot load profile: no token provided');
       return null;
     }
-    
+
     try {
-      // Decode JWT to get role from token
-      const tokenPayload = decodeJWT(token);
-      
-      // Fetch additional user data from profile endpoint
-      const userData = await clientAPI.get('/user/profile', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        }
+      console.log('[Auth] Loading user profile...');
+      const response = await clientAPI.get('/user/profile', {
+        headers: { Authorization: `Bearer ${token}` }
       });
-
-      // Merge token data (role) with profile data
-      const completeUserData = {
-        ...userData,
-        role: tokenPayload?.role || 'user', // Extract role from JWT token
-        userId: tokenPayload?.sub, // User ID from token
-      };
-
-      setUser(completeUserData);
-      setIsAuthenticated(true);
-      return completeUserData;
+      
+      console.log('[Auth] Profile response:', response);
+      
+      // Backend returns: { status: 200, message: "User found", data: {...} }
+      if (response && response.status === 200 && response.data) {
+        const payload = decodeToken(token);
+        const userData = {
+          ...response.data,
+          userId: payload?.sub,
+          role: payload?.role || response.data.role || 'user',
+        };
+        
+        console.log('[Auth] User profile loaded:', userData);
+        setUser(userData);
+        return userData;
+      } else {
+        console.error('[Auth] Invalid profile response structure:', response);
+        return null;
+      }
     } catch (error) {
-      console.error('Error fetching user profile:', error);
+      console.error('[Auth] Error loading user profile:', error);
       return null;
     }
   }, []);
 
-  // Refresh access token using refresh token (HTTPOnly cookie)
-  const refreshAccessToken = useCallback(async (isInitializing = false) => {
-    try {
-      const data = await clientAPI.post('/auth/refresh', null);
-
-      const newAccessToken = data.data.accessToken || null;
-      
-      if (newAccessToken) {
-        setAccessToken(newAccessToken);
-        await fetchUserProfile(newAccessToken);
-        return newAccessToken;
-      }
-      
-      throw new Error('Failed to refresh token');
-    } catch (error) {
-      // If this is during initialization, silently handle expected errors
-      if (isInitializing) {
-        // 401 = No refresh token (expected for non-authenticated users)
-        // Network errors = Server might not be running in dev mode
-        if (error.status === 401 || error.isNetworkError) {
-          return null;
-        }
-      }
-      
-      // For other errors or non-initialization cases, log and handle
-      if (!isInitializing) {
-        console.error('Error refreshing token:', error);
-        // If refresh fails, logout user
-        await logout();
-      }
-      
+  // Refresh access token using HTTP-only refresh token cookie
+  const refreshAccessToken = useCallback(async (silent = false) => {
+    // Prevent concurrent refresh attempts
+    if (isRefreshingRef.current) {
+      if (!silent) console.log('[Auth] Refresh already in progress, skipping...');
       return null;
     }
-  }, [fetchUserProfile]);
 
-  // Setup auto-refresh timer
-  const setupRefreshTimer = useCallback(() => {
+    isRefreshingRef.current = true;
+    
+    // Log cookie information
+    if (typeof document !== 'undefined') {
+      const cookies = document.cookie;
+      console.log(`[Auth] 🍪 Browser cookies: ${cookies || '(empty)'}`);
+      console.log(`[Auth] 🍪 Has refresh_token cookie: ${cookies.includes('refresh_token')}`);
+    }
+    
+    if (!silent) console.log('[Auth] 📡 Sending refresh request to /auth/refresh...');
+
+    try {
+      // Backend expects: POST /auth/refresh with refresh_token cookie
+      // Backend returns: 
+      // - Success (200): { status: 200, message: "Refresh token validated", data: { accessToken: string } }
+      // - No cookie/Invalid (403): { status: 403, message: "Invalid refresh token", data: null }
+      const response = await clientAPI.post('/auth/refresh', null);
+      
+      console.log('[Auth] 📥 Refresh response:', JSON.stringify(response, null, 2));
+      
+      if (response && response.status === 200 && response.data && response.data.accessToken) {
+        const newToken = response.data.accessToken;
+        console.log('[Auth] ✅ New access token received, length:', newToken.length);
+        
+        setAccessToken(newToken);
+        
+        // Load user profile with new token
+        const userData = await loadUserProfile(newToken);
+        
+        if (userData) {
+          console.log('[Auth] ✅ Token refresh successful, user:', userData.email || userData.phoneNumber);
+          return newToken;
+        } else {
+          console.error('[Auth] ❌ Failed to load user profile after refresh');
+          if (!silent) {
+            clearAuth();
+          }
+          return null;
+        }
+      } else if (response && response.status === 403) {
+        // 403 is expected when no refresh token exists (not logged in or token expired)
+        console.log('[Auth] ⚠️  No valid refresh token found (403) - User not logged in or token expired');
+        return null;
+      } else {
+        // Unexpected response structure
+        console.error('[Auth] ❌ Unexpected refresh response structure:', response);
+        if (!silent) {
+          clearAuth();
+        }
+        return null;
+      }
+    } catch (error) {
+      // Network or other errors
+      if (error?.status === 403 || error?.response?.status === 403) {
+        // 403 is expected, not an error
+        console.log('[Auth] ⚠️  No valid refresh token (403 error) - User not logged in');
+      } else {
+        console.error('[Auth] ❌ Token refresh error:', error);
+        if (!silent) {
+          clearAuth();
+        }
+      }
+      return null;
+    } finally {
+      isRefreshingRef.current = false;
+    }
+  }, [loadUserProfile, clearAuth]);
+
+  // Start auto-refresh timer
+  const startAutoRefresh = useCallback(() => {
+    console.log('[Auth] Starting auto-refresh timer (14 min interval)');
+    
     // Clear existing timer
     if (refreshTimerRef.current) {
       clearInterval(refreshTimerRef.current);
     }
-
-    // Setup new timer to refresh token every 14 minutes
+    
+    // Start new timer
     refreshTimerRef.current = setInterval(() => {
-      refreshAccessToken();
-    }, TOKEN_REFRESH_INTERVAL);
+      console.log('[Auth] Auto-refresh triggered');
+      refreshAccessToken(false);
+    }, REFRESH_INTERVAL);
   }, [refreshAccessToken]);
 
-  // Send OTP to phone
+  // Stop auto-refresh timer
+  const stopAutoRefresh = useCallback(() => {
+    console.log('[Auth] Stopping auto-refresh timer');
+    if (refreshTimerRef.current) {
+      clearInterval(refreshTimerRef.current);
+      refreshTimerRef.current = null;
+    }
+  }, []);
+
+  // Initialize authentication on mount (restore session)
+  useEffect(() => {
+    const initializeAuth = async () => {
+      console.log('='.repeat(60));
+      console.log('[Auth] 🚀 INITIALIZING AUTHENTICATION');
+      console.log('='.repeat(60));
+      setIsLoading(true);
+      
+      // Check cookies on initialization
+      if (typeof document !== 'undefined') {
+        const cookies = document.cookie;
+        console.log(`[Auth] 🍪 Initial cookies: ${cookies || '(empty)'}`);
+        console.log(`[Auth] 🍪 Has refresh_token cookie: ${cookies.includes('refresh_token')}`);
+      }
+      
+      try {
+        // Try to restore session from HTTP-only refresh token cookie
+        console.log('[Auth] 🔄 Attempting to restore session...');
+        const token = await refreshAccessToken(true); // Silent mode - won't log expected errors
+        
+        if (token) {
+          console.log('[Auth] ✅ SESSION RESTORED SUCCESSFULLY');
+          console.log('[Auth] 👤 User:', user?.email || user?.phoneNumber || 'Unknown');
+          startAutoRefresh();
+        } else {
+          console.log('[Auth] ⚠️  NO EXISTING SESSION TO RESTORE (user not logged in)');
+        }
+      } catch (error) {
+        console.error('[Auth] ❌ Auth initialization error:', error);
+      } finally {
+        setIsLoading(false);
+        setIsInitialized(true);
+        console.log('[Auth] 🏁 Initialization complete');
+        console.log('='.repeat(60));
+      }
+    };
+
+    if (!isInitialized) {
+      initializeAuth();
+    }
+
+    // Cleanup on unmount
+    return () => {
+      stopAutoRefresh();
+    };
+  }, [isInitialized, refreshAccessToken, startAutoRefresh, stopAutoRefresh, user]);
+
+  // Start/stop auto-refresh based on token presence
+  useEffect(() => {
+    if (accessToken && isInitialized) {
+      console.log('[Auth] 🔑 Access token is set, starting auto-refresh');
+      console.log('[Auth] 👤 Current user:', user?.email || user?.phoneNumber || 'Loading...');
+      startAutoRefresh();
+    } else {
+      console.log('[Auth] ⚠️  No access token, stopping auto-refresh');
+      console.log('[Auth] 📊 State - accessToken:', !!accessToken, 'isInitialized:', isInitialized, 'user:', !!user);
+      stopAutoRefresh();
+    }
+  }, [accessToken, isInitialized, user, startAutoRefresh, stopAutoRefresh]);
+
+  // Send phone OTP
   const sendPhoneOTP = useCallback(async (phoneNumber) => {
-    try {
-      await clientAPI.post('/auth/send-otp', { phoneNumber });
-      return { success: true };
-    } catch (error) {
-      console.error('Error sending phone OTP:', error);
-      throw error;
-    }
+    console.log('[Auth] Sending phone OTP to:', phoneNumber);
+    // Backend returns: { status: 200, message: "OTP sent successfully", data: { phoneNumber } }
+    const response = await clientAPI.post('/auth/send-otp', { phoneNumber });
+    return { success: true, message: response?.message || 'OTP sent successfully' };
   }, []);
 
-  // Send OTP to email
+  // Send email OTP
   const sendEmailOTP = useCallback(async (email) => {
-    try {
-      await clientAPI.post('/auth/send-email-otp', { email });
-      return { success: true };
-    } catch (error) {
-      console.error('Error sending email OTP:', error);
-      throw error;
-    }
+    console.log('[Auth] Sending email OTP to:', email);
+    // Backend returns: { status: 200, message: "OTP sent successfully", data: { email } }
+    const response = await clientAPI.post('/auth/send-email-otp', { email });
+    return { success: true, message: response?.message || 'OTP sent successfully' };
   }, []);
 
-  // Verify phone OTP
+  // Verify phone OTP and login
   const verifyPhoneOTP = useCallback(async (phoneNumber, otp) => {
-    try {
-      const data = await clientAPI.post('/auth/verify-otp', 
-        { phoneNumber, otp }
-      );
-      
-      // Check if response has the expected structure
-      if (!data || !data.data) {
-        throw new Error(data?.message || 'Invalid response from server');
-      }
-      
-      const newAccessToken = data.data.accessToken || null;
-      
-      if (newAccessToken) {
-        setAccessToken(newAccessToken);
-        await fetchUserProfile(newAccessToken);
-        setupRefreshTimer();
-        return { success: true };
-      }
-
-      throw new Error('No access token received');
-    } catch (error) {
-      console.error('Error verifying phone OTP:', error);
-      throw error;
+    console.log('[Auth] 📱 Verifying phone OTP for:', phoneNumber);
+    // Backend returns: { status: 200, message: "OTP verified successfully", data: { user, accessToken } }
+    // Backend also sets HTTP-only refresh_token cookie
+    const response = await clientAPI.post('/auth/verify-otp', { phoneNumber, otp });
+    
+    console.log('[Auth] 📥 Login response:', JSON.stringify(response, null, 2));
+    
+    // Check cookies after login
+    if (typeof document !== 'undefined') {
+      const cookies = document.cookie;
+      console.log(`[Auth] 🍪 Cookies after login: ${cookies || '(empty)'}`);
+      console.log(`[Auth] 🍪 Has refresh_token cookie: ${cookies.includes('refresh_token')}`);
     }
-  }, [fetchUserProfile, setupRefreshTimer]);
+    
+    if (response && response.status === 200 && response.data && response.data.accessToken) {
+      const token = response.data.accessToken;
+      console.log('[Auth] ✅ Phone OTP verified, access token received, length:', token.length);
+      
+      setAccessToken(token);
+      await loadUserProfile(token);
+      startAutoRefresh();
+      
+      console.log('[Auth] ✅ Login complete, user authenticated');
+      return { success: true };
+    } else {
+      console.error('[Auth] ❌ No access token in response');
+      throw new Error('No access token received');
+    }
+  }, [loadUserProfile, startAutoRefresh]);
 
-  // Verify email OTP
+  // Verify email OTP and login
   const verifyEmailOTP = useCallback(async (email, otp) => {
-    try {
-      const data = await clientAPI.post('/auth/verify-email-otp',
-        { email, otp }
-      );
-      
-      // Check if response has the expected structure
-      if (!data || !data.data) {
-        throw new Error(data?.message || 'Invalid response from server');
-      }
-      
-      const newAccessToken = data.data.accessToken || null;
-      
-      if (newAccessToken) {
-        setAccessToken(newAccessToken);
-        await fetchUserProfile(newAccessToken);
-        setupRefreshTimer();
-        return { success: true };
-      }
-
-      throw new Error('No access token received');
-    } catch (error) {
-      console.error('Error verifying email OTP:', error);
-      throw error;
+    console.log('[Auth] 📧 Verifying email OTP for:', email);
+    // Backend returns: { status: 200, message: "OTP verified successfully", data: { user, accessToken } }
+    // Backend also sets HTTP-only refresh_token cookie
+    const response = await clientAPI.post('/auth/verify-email-otp', { email, otp });
+    
+    console.log('[Auth] 📥 Login response:', JSON.stringify(response, null, 2));
+    
+    // Check cookies after login
+    if (typeof document !== 'undefined') {
+      const cookies = document.cookie;
+      console.log(`[Auth] 🍪 Cookies after login: ${cookies || '(empty)'}`);
+      console.log(`[Auth] 🍪 Has refresh_token cookie: ${cookies.includes('refresh_token')}`);
     }
-  }, [fetchUserProfile, setupRefreshTimer]);
+    
+    if (response && response.status === 200 && response.data && response.data.accessToken) {
+      const token = response.data.accessToken;
+      console.log('[Auth] ✅ Email OTP verified, access token received, length:', token.length);
+      
+      setAccessToken(token);
+      await loadUserProfile(token);
+      startAutoRefresh();
+      
+      console.log('[Auth] ✅ Login complete, user authenticated');
+      return { success: true };
+    } else {
+      console.error('[Auth] ❌ No access token in response');
+      throw new Error('No access token received');
+    }
+  }, [loadUserProfile, startAutoRefresh]);
 
   // Logout
   const logout = useCallback(async () => {
-    try {
-      // Clear refresh timer
-      if (refreshTimerRef.current) {
-        clearInterval(refreshTimerRef.current);
-      }
-
-      // Call logout endpoint if we have an access token
-      if (accessToken) {
-        await clientAPI.post('/auth/logout', null, {
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-          }
-        });
-      }
-
-      // Clear state
-      setAccessToken(null);
-      setUser(null);
-      setIsAuthenticated(false);
-      
-      // Redirect to home
-      router.push('/');
-    } catch (error) {
-      console.error('Error during logout:', error);
-      // Still clear local state even if API call fails
-      setAccessToken(null);
-      setUser(null);
-      setIsAuthenticated(false);
-      router.push('/');
-    }
-  }, [accessToken, router]);
-
-  // Initialize auth state on mount
-  useEffect(() => {
-    const initAuth = async () => {
+    console.log('[Auth] Logging out...');
+    stopAutoRefresh();
+    
+    if (accessToken) {
       try {
-        // Add a timeout to prevent infinite loading if backend is down
-        const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(() => reject(new Error('Auth initialization timeout')), 5000);
+        // Backend returns: { status: 200, message: "Logged out successfully", data: null }
+        await clientAPI.post('/auth/logout', null, {
+          headers: { Authorization: `Bearer ${accessToken}` }
         });
-
-        // Try to refresh token (in case we have a valid refresh token cookie)
-        // Pass true to indicate this is during initialization
-        const token = await Promise.race([
-          refreshAccessToken(true),
-          timeoutPromise
-        ]);
-        
-        if (token) {
-          setupRefreshTimer();
-        }
+        console.log('[Auth] Logout successful');
       } catch (error) {
-        // Silently fail - user is simply not authenticated
-        // This is expected for first-time visitors or when backend is unavailable
-        console.log('Auth initialization failed (this is normal if not logged in or backend is unavailable)');
-      } finally {
-        // ALWAYS set loading to false, even if there's an error
-        setIsLoading(false);
+        console.error('[Auth] Logout error:', error);
       }
-    };
+    }
+    
+    clearAuth();
+    router.push('/');
+  }, [accessToken, clearAuth, stopAutoRefresh, router]);
 
-    initAuth();
+  // Refresh user profile manually
+  const refreshUserProfile = useCallback(async () => {
+    console.log('[Auth] Manually refreshing user profile');
+    if (accessToken) {
+      await loadUserProfile(accessToken);
+    }
+  }, [accessToken, loadUserProfile]);
 
-    // Cleanup timer on unmount
-    return () => {
-      if (refreshTimerRef.current) {
-        clearInterval(refreshTimerRef.current);
-      }
-    };
-  }, [refreshAccessToken, setupRefreshTimer]);
-
-  // Make authenticated API requests
+  // Make authenticated requests with auto-retry on 401
   const authenticatedFetch = useCallback(async (endpoint, options = {}) => {
     if (!accessToken) {
-      throw new Error('No access token available');
+      throw new Error('Not authenticated');
     }
 
     try {
@@ -276,23 +358,25 @@ export function AuthProvider({ children }) {
         ...options,
         headers: {
           ...options.headers,
-          'Authorization': `Bearer ${accessToken}`,
+          Authorization: `Bearer ${accessToken}`
         }
       });
-
+      
       return response;
     } catch (error) {
-      // If unauthorized, try to refresh token
-      if (error.status === 401) {
-        const newToken = await refreshAccessToken();
+      // Auto-retry once with refreshed token on 401
+      if (error?.status === 401 || error?.response?.status === 401) {
+        console.log('[Auth] Got 401, attempting token refresh and retry...');
+        const newToken = await refreshAccessToken(false);
         
         if (newToken) {
-          // Retry request with new token
-          return clientAPI.request(endpoint, {
+          console.log('[Auth] Retrying request with new token');
+          // Retry with new token
+          return await clientAPI.request(endpoint, {
             ...options,
             headers: {
               ...options.headers,
-              'Authorization': `Bearer ${newToken}`,
+              Authorization: `Bearer ${newToken}`
             }
           });
         }
@@ -303,27 +387,36 @@ export function AuthProvider({ children }) {
   }, [accessToken, refreshAccessToken]);
 
   const value = {
+    // State
     user,
     accessToken,
-    isAuthenticated,
+    isAuthenticated: !!accessToken && !!user,
     isLoading,
+    
+    // Auth methods
     sendPhoneOTP,
     sendEmailOTP,
     verifyPhoneOTP,
     verifyEmailOTP,
     logout,
-    refreshAccessToken,
+    
+    // API methods
     authenticatedFetch,
+    refreshUserProfile,
+    refreshAccessToken,
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+  if (!context) {
+    throw new Error('useAuth must be used within AuthProvider');
   }
   return context;
 }
-

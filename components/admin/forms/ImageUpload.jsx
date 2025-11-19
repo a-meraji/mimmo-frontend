@@ -1,11 +1,13 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import { Upload, X, Loader2, Image as ImageIcon } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Upload, X, Loader2, Image as ImageIcon, Images, ChevronLeft, ChevronRight, Check } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNotification } from '@/contexts/NotificationContext';
 import { handleApiError, getSuccessMessage, ENTITY_NAMES } from '@/utils/errorHandler';
 import { uploader } from '@/utils/adminApi';
+import { getUploadedImages } from '@/utils/api';
+import { getImageUrl } from '@/utils/imageUrl';
 
 export default function ImageUpload({ 
   label, 
@@ -18,6 +20,12 @@ export default function ImageUpload({
   const { success: notifySuccess, error: notifyError } = useNotification();
   const [isUploading, setIsUploading] = useState(false);
   const [preview, setPreview] = useState(value || null);
+  const [showGallery, setShowGallery] = useState(false);
+  const [galleryImages, setGalleryImages] = useState([]);
+  const [galleryPage, setGalleryPage] = useState(1);
+  const [galleryTotal, setGalleryTotal] = useState(0);
+  const [galleryLoading, setGalleryLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('upload');
   const fileInputRef = useRef(null);
 
   const handleFileSelect = async (e) => {
@@ -71,6 +79,37 @@ export default function ImageUpload({
     }
   };
 
+  const fetchGalleryImages = async (page = 1) => {
+    try {
+      setGalleryLoading(true);
+      const response = await getUploadedImages(page);
+      setGalleryImages(response?.data?.images || []);
+      setGalleryTotal(response?.data?.totalPages || 0);
+      setGalleryPage(page);
+    } catch (error) {
+      handleApiError(error, notifyError, 'تصاویر');
+    } finally {
+      setGalleryLoading(false);
+    }
+  };
+
+  const handleSelectFromGallery = (filename) => {
+    // Store just the path, the actual URL will be built when rendering
+    const imagePath = `/images/${filename}`;
+    setPreview(imagePath);
+    onChange(imagePath);
+    setShowGallery(false);
+    setActiveTab('upload');
+  };
+
+  const handleOpenGallery = () => {
+    setShowGallery(true);
+    setActiveTab('gallery');
+    if (galleryImages.length === 0) {
+      fetchGalleryImages(1);
+    }
+  };
+
   return (
     <div className="space-y-2">
       {label && (
@@ -81,11 +120,11 @@ export default function ImageUpload({
       )}
 
       <div className="space-y-3">
-        {/* Preview or upload button */}
+        {/* Preview or tabs */}
         {preview ? (
           <div className="relative inline-block">
             <img
-              src={preview}
+              src={getImageUrl(preview)}
               alt="Preview"
               className="w-32 h-32 object-cover rounded-lg border border-gray-300"
             />
@@ -100,35 +139,140 @@ export default function ImageUpload({
             </button>
           </div>
         ) : (
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={isUploading}
-            className="flex flex-col items-center justify-center w-full h-32
-                     border-2 border-dashed border-gray-300 rounded-lg
-                     hover:border-primary hover:bg-primary/5
-                     transition-colors cursor-pointer
-                     disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isUploading ? (
-              <>
-                <Loader2 className="w-8 h-8 text-primary animate-spin mb-2" />
-                <span className="text-sm text-gray-600">در حال آپلود...</span>
-              </>
-            ) : (
-              <>
-                <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-2">
-                  <ImageIcon className="w-6 h-6 text-gray-400" />
+          <>
+            {/* Tabs */}
+            <div className="flex gap-2 border-b border-gray-200">
+              <button
+                type="button"
+                onClick={() => setActiveTab('upload')}
+                className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                  activeTab === 'upload'
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Upload className="w-4 h-4" />
+                  آپلود جدید
                 </div>
-                <span className="text-sm font-medium text-gray-700 mb-1">
-                  انتخاب تصویر
-                </span>
-                <span className="text-xs text-gray-500">
-                  PNG, JPG, GIF تا 5MB
-                </span>
-              </>
+              </button>
+              <button
+                type="button"
+                onClick={handleOpenGallery}
+                className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                  activeTab === 'gallery'
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Images className="w-4 h-4" />
+                  انتخاب از گالری
+                </div>
+              </button>
+            </div>
+
+            {/* Upload Tab */}
+            {activeTab === 'upload' && (
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isUploading}
+                className="flex flex-col items-center justify-center w-full h-32
+                         border-2 border-dashed border-gray-300 rounded-lg
+                         hover:border-primary hover:bg-primary/5
+                         transition-colors cursor-pointer
+                         disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isUploading ? (
+                  <>
+                    <Loader2 className="w-8 h-8 text-primary animate-spin mb-2" />
+                    <span className="text-sm text-gray-600">در حال آپلود...</span>
+                  </>
+                ) : (
+                  <>
+                    <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-2">
+                      <ImageIcon className="w-6 h-6 text-gray-400" />
+                    </div>
+                    <span className="text-sm font-medium text-gray-700 mb-1">
+                      انتخاب تصویر
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      PNG, JPG, GIF تا 5MB
+                    </span>
+                  </>
+                )}
+              </button>
             )}
-          </button>
+
+            {/* Gallery Tab */}
+            {activeTab === 'gallery' && (
+              <div className="space-y-4">
+                {galleryLoading ? (
+                  <div className="flex items-center justify-center h-64">
+                    <Loader2 className="w-8 h-8 text-primary animate-spin" />
+                  </div>
+                ) : galleryImages.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-64 text-gray-500">
+                    <Images className="w-12 h-12 mb-2 text-gray-400" />
+                    <p>هنوز تصویری آپلود نشده است</p>
+                  </div>
+                ) : (
+                  <>
+                    {/* Images Grid */}
+                    <div className="grid grid-cols-4 gap-3 max-h-80 overflow-y-auto p-2">
+                      {galleryImages.map((image) => (
+                        <button
+                          key={image.id}
+                          type="button"
+                          onClick={() => handleSelectFromGallery(image.filename)}
+                          className="relative aspect-square rounded-lg overflow-hidden border-2 border-gray-200
+                                   hover:border-primary transition-colors group"
+                        >
+                          <img
+                            src={getImageUrl(`/images/${image.filename}`)}
+                            alt="Gallery"
+                            className="w-full h-full object-cover"
+                          />
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors
+                                        flex items-center justify-center">
+                            <Check className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Pagination */}
+                    {galleryTotal > 1 && (
+                      <div className="flex items-center justify-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => fetchGalleryImages(galleryPage - 1)}
+                          disabled={galleryPage === 1 || galleryLoading}
+                          className="p-2 rounded-lg border border-gray-300 hover:bg-gray-50
+                                   disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                          <ChevronRight className="w-4 h-4" />
+                        </button>
+                        <span className="text-sm text-gray-600">
+                          صفحه {galleryPage} از {galleryTotal}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => fetchGalleryImages(galleryPage + 1)}
+                          disabled={galleryPage === galleryTotal || galleryLoading}
+                          className="p-2 rounded-lg border border-gray-300 hover:bg-gray-50
+                                   disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                          <ChevronLeft className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+          </>
         )}
 
         <input

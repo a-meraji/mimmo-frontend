@@ -6,6 +6,7 @@ import { useNotification } from '@/contexts/NotificationContext';
 import { handleApiError, getSuccessMessage, ENTITY_NAMES } from '@/utils/errorHandler';
 import { packageManagement } from '@/utils/adminApi';
 import { getAllPackages } from '@/utils/api';
+import { getImageUrl } from '@/utils/imageUrl';
 import Breadcrumbs from '@/components/admin/Breadcrumbs';
 import LoadingSpinner from '@/components/admin/ui/LoadingSpinner';
 import EmptyState from '@/components/admin/ui/EmptyState';
@@ -32,7 +33,7 @@ export default function PackagesPage() {
     try {
       setLoading(true);
       const response = await getAllPackages();
-      setPackages(response.data || []);
+      setPackages(response.data.packages || []);
     } catch (error) {
       handleApiError(error, notifyError, ENTITY_NAMES.packages);
     } finally {
@@ -130,7 +131,7 @@ export default function PackagesPage() {
         />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {packages.map((pkg) => (
+          {packages.length > 0 && packages.map((pkg) => (
             <div
               key={pkg.id}
               className="bg-white rounded-xl border border-gray-200 overflow-hidden
@@ -139,7 +140,7 @@ export default function PackagesPage() {
               {/* Image */}
               <div className="relative h-48 bg-gray-100">
                 <img
-                  src={pkg.imageUrl}
+                  src={getImageUrl(pkg.imageUrl)}
                   alt={pkg.packageName}
                   className="w-full h-full object-cover"
                 />

@@ -5,27 +5,38 @@ import Link from "next/link";
 import Image from "next/image";
 import { ShoppingCart, BookOpenText, Clock, NotebookText, Eye } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
+import { getImageUrl } from "@/utils/imageUrl";
 
 export default function StorePackageCard({ 
   id,
-  title, 
+  packageName,     // Backend field
+  title,           // Fallback for compatibility
   subtitle,
   level,
-  price, 
+  discountedPrice, // Backend field
   originalPrice,
+  price,           // Fallback for compatibility
   euroPrice,
   originalEuroPrice,
-  image,
+  imageUrl,        // Backend field
+  image,           // Fallback for compatibility
   specifications = [],
   badge,
+  category,
   onAddToCart 
 }) {
   const { addToCart } = useCart();
+  
+  // Map backend fields to frontend
+  const displayTitle = packageName || title;
+  const displayPrice = discountedPrice || price || originalPrice;
+  const displayOriginalPrice = discountedPrice ? originalPrice : null;
+  const displayImage = imageUrl || image;
 
   const discount = useMemo(() => {
-    if (!originalPrice) return null;
-    return Math.round(((originalPrice - price) / originalPrice) * 100);
-  }, [price, originalPrice]);
+    if (!displayOriginalPrice) return null;
+    return Math.round(((displayOriginalPrice - displayPrice) / displayOriginalPrice) * 100);
+  }, [displayPrice, displayOriginalPrice]);
 
   const levelColor = useMemo(() => {
     switch (level) {
@@ -53,11 +64,11 @@ export default function StorePackageCard({
     
     addToCart({
       id,
-      title,
+      title: displayTitle,
       subtitle: subtitle || '',
-      image,
-      price,
-      originalPrice: originalPrice || null,
+      image: displayImage,
+      price: displayPrice,
+      originalPrice: displayOriginalPrice || null,
       euroPrice: euroPrice || null,
       originalEuroPrice: originalEuroPrice || null,
     });
@@ -74,8 +85,8 @@ export default function StorePackageCard({
         {/* Image Container */}
         <div className="relative w-full aspect-[4/3] flex-shrink-0 overflow-hidden bg-[#fcfcfc]">
         <Image
-          src={image}
-          alt={`پکیج ${title}`}
+          src={getImageUrl(displayImage)}
+          alt={`پکیج ${displayTitle}`}
           fill
           className="object-contain group-hover:scale-105 transition-transform duration-500 drop-shadow-lg"
           loading="lazy"
@@ -113,7 +124,7 @@ export default function StorePackageCard({
         {/* Title & Subtitle */}
         <div className="mb-4">
           <h3 className="text-lg font-bold text-text-charcoal mb-1 line-clamp-2">
-            {title}
+            {displayTitle}
           </h3>
           {subtitle && (
             <p className="text-sm text-text-gray line-clamp-1">
@@ -123,18 +134,29 @@ export default function StorePackageCard({
         </div>
 
         {/* Specifications - Same structure as ProductInfo.jsx */}
-        {specifications.length > 0 && (
+        {specifications && specifications.length > 0 && (
           <div className="space-y-1 mb-4">
             {specifications.map((spec, index) => {
-              const Icon = typeof spec.icon === 'string' ? iconMap[spec.icon] : spec.icon;
+              // Get icon component with robust fallback handling
+              let Icon = BookOpenText; // Default fallback
+              
+              if (spec && spec.icon) {
+                if (typeof spec.icon === 'string') {
+                  // Map string icon names to components
+                  Icon = iconMap[spec.icon] || BookOpenText;
+                } else if (typeof spec.icon === 'function') {
+                  // Direct icon component reference
+                  Icon = spec.icon;
+                }
+              }
+              
               return (
                 <div key={index} className="flex items-center justify-between py-2 border-b border-neutral-extralight last:border-0">
                   <div className="flex items-center gap-2">
-                      <Icon className="w-4 h-4 text-text-gray" aria-hidden="true" />
-     
-                    <span className="text-xs text-text-gray">{spec.label}</span>
+                    <Icon className="w-4 h-4 text-text-gray" aria-hidden="true" />
+                    <span className="text-xs text-text-gray">{spec.label || ''}</span>
                   </div>
-                  <span className="text-xs font-medium text-text-charcoal">{spec.value}</span>
+                  <span className="text-xs font-medium text-text-charcoal">{spec.value || ''}</span>
                 </div>
               );
             })}
@@ -151,26 +173,26 @@ export default function StorePackageCard({
             <span className="text-xl font-bold text-primary">{euroPrice} €</span>
           </div>
           <div className="flex flex-col items-end">
-            {originalPrice && discount ? (
+            {displayOriginalPrice && discount ? (
               <span 
                 className="text-xs text-text-light line-through mb-1"
-                aria-label={`قیمت اصلی: ${originalPrice.toLocaleString('fa-IR')} تومان`}
+                aria-label={`قیمت اصلی: ${displayOriginalPrice.toLocaleString('fa-IR')} تومان`}
               >
-                {originalPrice.toLocaleString('fa-IR')} تومان
+                {displayOriginalPrice.toLocaleString('fa-IR')} تومان
               </span>
             ):
            ( <span 
                 className="text-xs text-text-light line-through mb-1 opacity-0"
-                aria-label={`قیمت اصلی: ${price.toLocaleString('fa-IR')} تومان`}
+                aria-label={`قیمت اصلی: ${displayPrice.toLocaleString('fa-IR')} تومان`}
               >
-               ${price.toLocaleString('fa-IR')} تومان
+               ${displayPrice.toLocaleString('fa-IR')} تومان
               </span>)
             }
             <span 
               className="text-xl font-bold text-primary"
-              aria-label={`قیمت: ${price.toLocaleString('fa-IR')} تومان`}
+              aria-label={`قیمت: ${displayPrice.toLocaleString('fa-IR')} تومان`}
             >
-              {price.toLocaleString('fa-IR')} تومان
+              {displayPrice.toLocaleString('fa-IR')} تومان
             </span>
           </div>
         </div>
@@ -184,7 +206,7 @@ export default function StorePackageCard({
           <Link
             href={`/store/${id}`}
             className="flex-1 flex items-center justify-center gap-2 bg-white border-2 border-primary text-primary py-3 rounded-xl font-semibold hover:bg-primary hover:text-white transition-all duration-200"
-            aria-label={`مشاهده ${title}`}
+            aria-label={`مشاهده ${displayTitle}`}
           >
             <Eye className="w-5 h-5" aria-hidden="true" />
             <span>مشاهده دوره</span>
@@ -194,7 +216,7 @@ export default function StorePackageCard({
           <button
             onClick={handleAddToCart}
             className="flex items-center justify-center bg-primary text-white p-3 rounded-xl hover:bg-primary/90 transition-colors duration-200 shadow-md hover:shadow-lg"
-            aria-label={`افزودن ${title} به سبد خرید`}
+            aria-label={`افزودن ${displayTitle} به سبد خرید`}
             type="button"
           >
             <ShoppingCart className="w-5 h-5" aria-hidden="true" />
