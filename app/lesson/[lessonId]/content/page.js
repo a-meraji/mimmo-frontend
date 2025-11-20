@@ -1,56 +1,84 @@
 "use client";
 
-import { use, useState, useMemo, useEffect } from 'react';
+import { use, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, BookOpen, Sparkles, Clock, ArrowLeft, FilePenLine, Plus } from 'lucide-react';
-import { getLessonById } from '@/utils/lessonData';
-import { getLessonNote, saveLessonNote } from '@/utils/lessonStorage';
-import ContentRenderer from '@/components/lesson/ContentRenderer';
+import { ArrowRight, BookOpen, Sparkles, Clock, RefreshCw, Lock, FileText } from 'lucide-react';
+import { getFreeLesson, getPaidLesson, getLessonWords, createPersonalNote } from '@/utils/learningApi';
 import WordModal from '@/components/lesson/WordModal';
-import TranslationPanel from '@/components/lesson/TranslationPanel';
-import LessonNote from '@/components/lesson/LessonNote';
 import LessonNavTabs from '@/components/lesson/LessonNavTabs';
-import AddFlashcardModal from '@/components/leitner/AddFlashcardModal';
-import LeitnerAccessibilityButton from '@/components/leitner/LeitnerAccessibilityButton';
-import useTextSelection from '@/hooks/useTextSelection';
 import { useToast } from '@/contexts/ToastContext';
-import { translateItToPe } from '@/utils/translationService';
 import { useAuth } from '@/contexts/AuthContext';
+import { getImageUrl } from '@/utils/imageUrl';
 
 export default function LessonContentPage({ params }) {
   const { lessonId } = use(params);
   const router = useRouter();
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user, isAuthenticated, isLoading, authenticatedFetch } = useAuth();
+  
+  // Lesson data state
+  const [lesson, setLesson] = useState(null);
+  const [words, setWords] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [accessDenied, setAccessDenied] = useState(false);
+  
+  // UI state
   const [selectedWord, setSelectedWord] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isAddFlashcardModalOpen, setIsAddFlashcardModalOpen] = useState(false);
-  const [flashcardInitialText, setFlashcardInitialText] = useState('');
-  const [isImagePreviewOpen, setIsImagePreviewOpen] = useState(false);
-  
-  // Translation state
-  const [translationWord, setTranslationWord] = useState('');
-  const [translation, setTranslation] = useState('');
-  const [translationLoading, setTranslationLoading] = useState(false);
-  const [translationError, setTranslationError] = useState('');
-  const [isTranslationPanelOpen, setIsTranslationPanelOpen] = useState(false);
-  
-  // Lesson note state
-  const [lessonNote, setLessonNote] = useState('');
-  
-  // Text selection hook
-  const { selectedText, isActive, position, clearSelection } = useTextSelection();
 
-  // Get lesson data
-  const lesson = useMemo(() => getLessonById(lessonId), [lessonId]);
-
-  // Load lesson note on mount
+  // Fetch lesson data from backend
   useEffect(() => {
-    const note = getLessonNote(lessonId, user);
-    setLessonNote(note);
-  }, [lessonId, user]);
+    const fetchLessonData = async () => {
+      if (isLoading) return;
+
+      try {
+        setLoading(true);
+        setError(null);
+        setAccessDenied(false);
+
+        // Try to get as free lesson first
+        const freeResult = await getFreeLesson(lessonId);
+        
+        let lessonData = null;
+        
+        if (freeResult.success) {
+          // It's a free lesson
+          lessonData = freeResult.data;
+        } else if (freeResult.notFree && isAuthenticated) {
+          // Not free, try to get as paid lesson
+          // Note: We need packageId from somewhere - ideally from URL params or state
+          // For now, show access denied with a message to purchase
+          setAccessDenied(true);
+          setError('این درس رایگان نیست. برای دسترسی باید دوره را خریداری کنید.');
+          setLoading(false);
+          return;
+        } else {
+          setError(freeResult.error || 'خطا در بارگذاری درس');
+          setLoading(false);
+          return;
+        }
+
+        setLesson(lessonData);
+
+        // Fetch words for the lesson
+        const wordsResult = await getLessonWords(lessonId);
+        if (wordsResult.success) {
+          setWords(wordsResult.data);
+        }
+
+      } catch (err) {
+        console.error('Error fetching lesson:', err);
+        setError('خطا در بارگذاری درس');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchLessonData();
+  }, [lessonId, isAuthenticated, isLoading]);
 
   // Handle word click
   const handleWordClick = (word) => {
@@ -64,73 +92,81 @@ export default function LessonContentPage({ params }) {
     setTimeout(() => setSelectedWord(null), 200);
   };
 
-  // Handle regular word click (for translation)
-  const handleRegularWordClick = async (word) => {
-    // Reset previous state
-    setTranslationWord(word);
-    setTranslation('');
-    setTranslationError('');
-    setTranslationLoading(true);
-    setIsTranslationPanelOpen(true);
+  // Handle personal note save
+  const handlePersonalNoteSave = async (wordId, content) => {
+    if (!isAuthenticated) {
+      toast.error('برای ذخیره یادداشت باید وارد شوید');
+      return false;
+    }
 
-    try {
-      // Call translation service
-      const result = await translateItToPe(word);
+    const result = await createPersonalNote(wordId, content, authenticatedFetch);
+    
+    if (result.success) {
+      toast.success(result.isUpdate ? 'یادداشت به‌روزرسانی شد' : 'یادداشت ذخیره شد');
       
-      if (result.success) {
-        setTranslation(result.translation);
-      } else {
-        setTranslationError(result.error || 'خطا در ترجمه');
-      }
-    } catch (error) {
-      console.error('Translation error:', error);
-      setTranslationError('خطا در ترجمه');
-    } finally {
-      setTranslationLoading(false);
-    }
-  };
-
-  // Close translation panel
-  const closeTranslationPanel = () => {
-    setIsTranslationPanelOpen(false);
-    setTimeout(() => {
-      setTranslationWord('');
-      setTranslation('');
-      setTranslationError('');
-    }, 300);
-  };
-
-  // Handle adding text selection to Leitner
-  const handleAddToLeitner = () => {
-    if (selectedText) {
-      setFlashcardInitialText(selectedText);
-      setIsAddFlashcardModalOpen(true);
-      clearSelection();
+      // Update words array with new note
+      setWords(prevWords => 
+        prevWords.map(w => 
+          w.id === wordId 
+            ? { ...w, personalNotes: [{ content, user, word: w }] }
+            : w
+        )
+      );
+      
+      return true;
     } else {
-      setFlashcardInitialText('');
-      setIsAddFlashcardModalOpen(true);
+      toast.error(result.error || 'خطا در ذخیره یادداشت');
+      return false;
     }
   };
 
-  const handleFlashcardSuccess = () => {
-    toast.success('کارت به لایتنر اضافه شد');
-  };
+  // Loading state
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-gradient-to-br from-gradient-purple via-white to-gradient-yellow flex items-center justify-center px-4">
+        <div className="flex items-center gap-3">
+          <RefreshCw className="w-8 h-8 text-primary animate-spin" aria-hidden="true" />
+          <p className="text-lg font-medium text-text-gray">در حال بارگذاری...</p>
+        </div>
+      </main>
+    );
+  }
 
-  // Handle lesson note save
-  const handleLessonNoteSave = async (lessonId, note) => {
-    const success = saveLessonNote(lessonId, note, user);
-    if (success) {
-      setLessonNote(note);
-    }
-  };
+  // Access denied state
+  if (accessDenied) {
+    return (
+      <main className="min-h-screen bg-gradient-to-br from-gradient-purple via-white to-gradient-yellow flex items-center justify-center px-4">
+        <div className="text-center max-w-md">
+          <Lock className="w-16 h-16 text-amber-500 mx-auto mb-4" aria-hidden="true" />
+          <h1 className="text-3xl font-black text-text-charcoal mb-4">دسترسی محدود</h1>
+          <p className="text-text-gray mb-6">{error}</p>
+          <div className="flex gap-3 justify-center">
+            <button
+              onClick={() => router.back()}
+              className="inline-flex items-center gap-2 bg-neutral-gray text-white px-6 py-3 rounded-xl font-semibold hover:bg-neutral-gray/90 transition-colors"
+            >
+              <ArrowRight className="w-5 h-5" aria-hidden="true" />
+              بازگشت
+            </button>
+            <Link
+              href="/store"
+              className="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-xl font-semibold hover:bg-primary/90 transition-colors"
+            >
+              مشاهده فروشگاه
+            </Link>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
-  // Handle 404
-  if (!lesson) {
+  // Error state
+  if (error || !lesson) {
     return (
       <main className="min-h-screen bg-gradient-to-br from-gradient-purple via-white to-gradient-yellow flex items-center justify-center px-4">
         <div className="text-center">
-          <h1 className="text-4xl font-black text-text-charcoal mb-4">درس یافت نشد</h1>
-          <p className="text-text-gray mb-8">درس مورد نظر شما وجود ندارد یا حذف شده است.</p>
+          <h1 className="text-4xl font-black text-text-charcoal mb-4">خطا</h1>
+          <p className="text-text-gray mb-8">{error || 'درس یافت نشد'}</p>
           <button
             onClick={() => router.back()}
             className="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-xl font-semibold hover:bg-primary/90 transition-colors"
@@ -144,293 +180,131 @@ export default function LessonContentPage({ params }) {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-gradient-purple via-white to-gradient-yellow pt-16 lg:pt-24 pb-8 lg:pb-12">
-      {/* Sticky Navigation Tabs */}
-      <LessonNavTabs lessonId={lessonId} activeTab="content" />
+    <main className="min-h-screen bg-gradient-to-br from-gradient-purple via-white to-gradient-yellow py-8 lg:py-16">
+      <div className="container mx-auto px-4 lg:px-8 max-w-6xl">
+        {/* Breadcrumb */}
+        <nav className="flex items-center gap-2 text-sm text-text-gray mb-6" aria-label="مسیر صفحه">
+          <Link href="/learn" className="hover:text-primary transition-colors">
+            بخش یادگیری
+          </Link>
+          <ArrowRight className="w-3.5 h-3.5 text-text-light" aria-hidden="true" />
+          <span className="text-text-charcoal font-medium">{lesson.title}</span>
+        </nav>
 
-      <div className="container mx-auto px-3 lg:px-8 max-w-4xl py-3 lg:py-6">
-        {/* Back Button (Mobile) / Breadcrumb (Desktop) */}
-        <div className="mb-3 lg:mb-4">
-          {/* Mobile: Back button only */}
-          <button
-            onClick={() => router.back()}
-            className="lg:hidden inline-flex items-center gap-1.5 text-text-gray hover:text-primary transition-colors p-1 -ml-1"
-            aria-label="بازگشت"
-          >
-            <ArrowRight className="w-4 h-4" aria-hidden="true" />
-            <span className="text-xs font-medium">بازگشت</span>
-          </button>
+        {/* Lesson Navigation Tabs */}
+        <LessonNavTabs lessonId={lessonId} />
 
-          {/* Desktop: Compact breadcrumb */}
-          <nav className="hidden lg:flex items-center gap-1.5 text-xs text-text-gray" aria-label="مسیر صفحه">
-            <Link href="/learn" className="hover:text-primary transition-colors">
-              یادگیری
-            </Link>
-            <ArrowLeft className="w-3 h-3 text-text-light" aria-hidden="true" />
-            <Link href={`/learn/${lesson.courseId}`} className="hover:text-primary transition-colors">
-              دوره
-            </Link>
-            <ArrowLeft className="w-3 h-3 text-text-light" aria-hidden="true" />
-            <span className="text-text-charcoal font-medium">{lesson.title}</span>
-          </nav>
-        </div>
-
-        {/* Content Section - Merged header and content */}
-        <section className="bg-white border border-neutral-extralight rounded-xl lg:rounded-2xl shadow-sm overflow-hidden">
-          {/* Header with thumbnail - Mobile */}
-          <div className="lg:hidden p-3 border-b border-neutral-extralight">
-            <div className="flex items-start gap-3">
-              {/* Title and badges */}
+        {/* Lesson Content Container */}
+        <div className="bg-white border border-neutral-light rounded-2xl overflow-hidden shadow-lg mb-8">
+          {/* Lesson Header */}
+          <div className="border-b border-neutral-extralight p-6 lg:p-8">
+            <div className="flex items-start gap-4">
+              {lesson.imageUrl && (
+                <div className="relative w-20 h-20 lg:w-24 lg:h-24 bg-neutral-indigo/10 rounded-xl overflow-hidden flex-shrink-0">
+                  <Image
+                    src={getImageUrl(lesson.imageUrl)}
+                    alt={lesson.title}
+                    fill
+                    className="object-contain p-2"
+                    priority
+                  />
+                </div>
+              )}
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-1.5 mb-1.5">
-                  <BookOpen className="w-3 h-3 text-primary" aria-hidden="true" />
-                  <span className="text-xs text-text-gray">محتوای درس</span>
+                <div className="flex items-center gap-2 mb-2">
+                  <BookOpen className="w-5 h-5 text-primary" aria-hidden="true" />
+                  <span className="text-sm text-text-gray">محتوای درس</span>
                 </div>
-                <h1 className="text-base font-black text-text-charcoal mb-2">
-              {lesson.title}
-            </h1>
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  <div className="inline-flex items-center gap-1 bg-neutral-indigo/50 px-2 py-0.5 rounded-full">
-                    <Clock className="w-2.5 h-2.5 text-text-gray" aria-hidden="true" />
-                <span className="text-xs font-medium text-text-gray">{lesson.duration}</span>
-                  </div>
-                  {lesson.vocabulary && lesson.vocabulary.length > 0 && (
-                    <div className="inline-flex items-center gap-1 bg-primary/10 text-primary px-2 py-0.5 rounded-full">
-                      <Sparkles className="w-2.5 h-2.5" aria-hidden="true" />
-                      <span className="text-xs font-medium">{lesson.vocabulary.length} واژه</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-              {/* Thumbnail Image */}
-              {/* ---------- Image with Modal Preview (MOBILE) ---------- */}
-              <div className="relative w-20 h-20 bg-neutral-indigo/10 rounded-lg overflow-hidden flex-shrink-0">
-                <button
-                  type="button"
-                  className="absolute inset-0 w-full h-full focus:outline-none z-10"
-                  onClick={() => setIsImagePreviewOpen(true)}
-                  aria-label={`نمایش تصویر بزرگتر از ${lesson.title}`}
-                />
-                <Image
-                  src={lesson.image}
-                  alt={lesson.title}
-                  fill
-                  className="object-contain p-2 pointer-events-none"
-                  priority
-                />
-              </div>
-              {/* Modal for Preview (shared by desktop and mobile, state defined at top-level component) */}
-              {isImagePreviewOpen && (
-                <div
-                  className="fixed inset-0 z-[110] bg-black/80 flex items-center justify-center animate-in fade-in"
-                  onClick={() => setIsImagePreviewOpen(false)}
-                  tabIndex={-1}
-                  role="dialog"
-                  aria-modal="true"
-                >
-                  <div
-                    className="relative max-w-xl max-h-[80vh] w-[90vw] bg-transparent rounded-xl shadow-xl"
-                    onClick={e => e.stopPropagation()}
-                  >
-                    <button
-                      className="absolute top-2 left-2 z-20 bg-white/80 rounded-full p-2 shadow-md hover:bg-white"
-                      onClick={() => setIsImagePreviewOpen(false)}
-                      aria-label="بستن"
-                      tabIndex={0}
-                    >
-                      <svg className="w-5 h-5 text-gray-800" viewBox="0 0 20 20">
-                        <path d="M7 7l6 6M13 7l-6 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                      </svg>
-                    </button>
-                    <Image
-                      src={lesson.image}
-                      alt={lesson.title}
-                      width={1000}
-                      height={1000}
-                      className="object-contain rounded-xl"
-                      priority
-                    />
-                  </div>
-                </div>
-              )}
-              
-            </div>
-          </div>
-
-          {/* Desktop: Grid layout with sidebar image */}
-          <div className="hidden lg:grid lg:grid-cols-[200px_1fr] lg:gap-6 p-6">
-            {/* Sidebar Image */}
-            <div className="relative w-full h-[200px] bg-neutral-indigo/10 rounded-xl overflow-hidden flex-shrink-0">
-              <button
-                type="button"
-                className="absolute inset-0 w-full h-full focus:outline-none z-10"
-                onClick={() => setIsImagePreviewOpen(true)}
-                aria-label={`نمایش تصویر بزرگتر از ${lesson.title}`}
-              />
-              <Image
-                src={lesson.image}
-                alt={lesson.title}
-                fill
-                className="object-contain p-4 pointer-events-none"
-                priority
-              />
-            </div>
-
-            {/* Content area */}
-            <div className="min-w-0">
-              {/* Header */}
-              <div className="mb-4">
-                <div className="flex items-center gap-1.5 mb-2">
-                  <BookOpen className="w-3.5 h-3.5 text-primary" aria-hidden="true" />
-                <span className="text-xs text-text-gray">محتوای درس</span>
-              </div>
-                <h1 className="text-xl font-black text-text-charcoal mb-2">
-                {lesson.title}
-              </h1>
-                <div className="flex items-center gap-2 flex-wrap mb-3">
-                  <div className="inline-flex items-center gap-1.5 bg-neutral-indigo/50 px-2.5 py-1 rounded-full">
-                    <Clock className="w-3 h-3 text-text-gray" aria-hidden="true" />
-                  <span className="text-xs font-medium text-text-gray">{lesson.duration}</span>
-                </div>
-                {lesson.vocabulary && lesson.vocabulary.length > 0 && (
-                    <div className="inline-flex items-center gap-1.5 bg-primary/10 text-primary px-2.5 py-1 rounded-full">
-                      <Sparkles className="w-3 h-3" aria-hidden="true" />
-                    <span className="text-xs font-medium">{lesson.vocabulary.length} واژه کلیدی</span>
-                  </div>
+                <h1 className="text-2xl lg:text-3xl font-black text-text-charcoal mb-3">
+                  {lesson.title}
+                </h1>
+                {lesson.description && (
+                  <p className="text-sm text-text-gray leading-relaxed">
+                    {lesson.description}
+                  </p>
                 )}
-                </div>
-                <p className="text-xs text-text-gray">
-                  {lesson.vocabulary && lesson.vocabulary.length > 0 && (
-                    <span>💡 کلمات پررنگ: واژگان | </span>
-                  )}
-                  <span>🔍 کلیک: ترجمه</span>
-                </p>
-              </div>
-
-              {/* Content Renderer */}
-              <div className="prose-content">
-                <ContentRenderer
-                  content={lesson.content}
-                  vocabulary={lesson.vocabulary}
-                  onWordClick={handleWordClick}
-                  onRegularWordClick={handleRegularWordClick}
-                />
+                {lesson.isFree && (
+                  <span className="inline-flex items-center gap-1 mt-3 bg-emerald-100 text-emerald-700 text-xs font-medium px-3 py-1 rounded-full">
+                    رایگان
+                  </span>
+                )}
               </div>
             </div>
           </div>
 
-          {/* Mobile: Content below header */}
-          <div className="lg:hidden p-3">
-            <p className="text-xs text-text-gray mb-3">
-            {lesson.vocabulary && lesson.vocabulary.length > 0 && (
-                <span>💡 کلمات پررنگ: واژگان | </span>
-              )}
-              <span>🔍 کلیک: ترجمه</span>
-              </p>
-          <div className="prose-content">
-            <ContentRenderer
-              content={lesson.content}
-              vocabulary={lesson.vocabulary}
-              onWordClick={handleWordClick}
-                onRegularWordClick={handleRegularWordClick}
-            />
+          {/* Lesson Description/Content */}
+          {lesson.description && (
+            <div className="p-6 lg:p-8 border-b border-neutral-extralight">
+              <div className="prose prose-sm max-w-none">
+                <p className="text-text-charcoal leading-relaxed">{lesson.description}</p>
+              </div>
             </div>
-          </div>
-        </section>
+          )}
 
-        {/* Lesson Note Section */}
-        <div className="mt-3 lg:mt-4">
-          <LessonNote
-            lessonId={lessonId}
-            initialNote={lessonNote}
-            onSave={handleLessonNoteSave}
-          />
+          {/* Vocabulary Section */}
+          <section className="p-6 lg:p-8">
+            <h2 className="flex items-center gap-2 text-xl lg:text-2xl font-bold text-text-charcoal mb-6">
+              <Sparkles className="w-6 h-6 text-primary" aria-hidden="true" />
+              لغات کلیدی ({words.length})
+            </h2>
+            
+            {words.length > 0 ? (
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-4">
+                {words.map((word) => (
+                  <button
+                    key={word.id}
+                    onClick={() => handleWordClick(word)}
+                    className="group bg-gradient-to-br from-neutral-indigo/40 to-neutral-indigo/20 hover:from-primary/10 hover:to-primary/5 border border-neutral-light hover:border-primary/30 rounded-xl p-4 transition-all duration-200 hover:scale-[1.02] hover:shadow-md text-right"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-lg font-bold text-text-charcoal group-hover:text-primary transition-colors">
+                        {word.word}
+                      </span>
+                      <BookOpen className="w-5 h-5 text-primary/40 group-hover:text-primary transition-colors" aria-hidden="true" />
+                    </div>
+                    <p className="text-sm text-text-gray group-hover:text-text-charcoal transition-colors">
+                      {word.title}
+                    </p>
+                    {word.personalNotes && word.personalNotes.length > 0 && (
+                      <div className="mt-2 flex items-center gap-1 text-xs text-primary">
+                        <FileText className="w-3 h-3" aria-hidden="true" />
+                        <span>یادداشت شخصی</span>
+                      </div>
+                    )}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12 bg-neutral-extralight/50 rounded-xl">
+                <BookOpen className="w-12 h-12 text-neutral-gray mx-auto mb-3" aria-hidden="true" />
+                <p className="text-text-gray">هنوز لغتی برای این درس اضافه نشده است.</p>
+              </div>
+            )}
+          </section>
         </div>
 
-        {/* Vocabulary List - Compact chips */}
-        {lesson.vocabulary && lesson.vocabulary.length > 0 && (
-          <section className="mt-3 lg:mt-4 bg-white border border-neutral-extralight rounded-xl lg:rounded-2xl p-3 lg:p-4 shadow-sm">
-            <h2 className="text-sm lg:text-base font-bold text-text-charcoal mb-2 lg:mb-3 flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-primary" aria-hidden="true" />
-              واژگان کلیدی
-            </h2>
-            <div className="flex flex-wrap gap-2">
-              {lesson.vocabulary.map((word) => (
-                <button
-                  key={word.id}
-                  onClick={() => handleWordClick(word)}
-                  className="inline-flex items-center gap-1.5 bg-primary/10 hover:bg-primary/20 text-primary px-3 py-1.5 rounded-full text-sm font-medium transition-colors border border-primary/20 hover:border-primary/40"
-                  type="button"
-                >
-                  <span className="font-bold">{word.word}</span>
-                  <span className="text-xs opacity-75">({word.title})</span>
-                </button>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Navigation to Practice - Compact button */}
-        <Link
-          href={`/lesson/${lessonId}/practice`}
-          className="mt-4 lg:mt-5 w-full flex items-center justify-center gap-3 bg-gradient-to-r from-primary to-primary/80 text-white py-3 px-4 rounded-xl font-semibold hover:shadow-lg hover:scale-[1.02] transition-all shadow-md"
-        >
-          <FilePenLine className="w-5 h-5" aria-hidden="true" />
-          <span>بریم برای تمرین</span>
-          <ArrowLeft className="w-5 h-5" aria-hidden="true" />
-        </Link>
+        {/* Continue to Practice Button */}
+        <div className="flex justify-center">
+          <Link
+            href={`/lesson/${lessonId}/practice`}
+            className="inline-flex items-center gap-2 bg-primary text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-primary/90 transition-all hover:scale-105 shadow-lg"
+          >
+            ادامه به تمرین‌ها
+            <ArrowRight className="w-5 h-5 rotate-180" aria-hidden="true" />
+          </Link>
+        </div>
       </div>
 
       {/* Word Modal */}
-      <WordModal
-        word={selectedWord}
-        isOpen={isModalOpen}
-        onClose={closeModal}
-      />
-
-      {/* Translation Panel */}
-      <TranslationPanel
-        isOpen={isTranslationPanelOpen}
-        word={translationWord}
-        translation={translation}
-        loading={translationLoading}
-        error={translationError}
-        onClose={closeTranslationPanel}
-      />
-
-      {/* Floating Add to Leitner Button (on text selection) */}
-      {isActive && selectedText && (
-        <button
-          onClick={handleAddToLeitner}
-          className="fixed z-50 px-4 py-2 bg-gradient-to-r from-primary to-primary/80 text-white rounded-lg shadow-lg hover:shadow-xl transition-all text-sm font-semibold flex items-center gap-2 animate-in fade-in zoom-in duration-200"
-          style={{
-            left: `${position.x}px`,
-            top: `${position.y}px`,
-            transform: 'translate(-50%, -200%)',
-          }}
-        >
-          <Plus className="w-4 h-4" aria-hidden="true" />
-          افزودن به لایتنر
-        </button>
+      {selectedWord && (
+        <WordModal
+          word={selectedWord}
+          isOpen={isModalOpen}
+          onClose={closeModal}
+          onSaveNote={handlePersonalNoteSave}
+          userId={user?.id}
+        />
       )}
-
-      {/* Leitner Accessibility Button */}
-      <LeitnerAccessibilityButton onAddFlashcard={handleAddToLeitner} />
-
-      {/* Add Flashcard Modal */}
-      <AddFlashcardModal
-        isOpen={isAddFlashcardModalOpen}
-        onClose={() => {
-          setIsAddFlashcardModalOpen(false);
-          setFlashcardInitialText('');
-        }}
-        initialFront={flashcardInitialText}
-        courseId={lesson?.courseId}
-        lessonId={lessonId}
-        sourcePage="content"
-        onSuccess={handleFlashcardSuccess}
-      />
     </main>
   );
 }
-

@@ -24,7 +24,7 @@ class FetchInstance {
     // Client-side
     return isDev
       ? process.env.NEXT_PUBLIC_API_URL_DEV || 'http://localhost:3000'
-      : process.env.NEXT_PUBLIC_API_URL_PROD || 'https://back.mimmoacademy.com';
+      : process.env.NEXT_PUBLIC_API_URL_PROD || 'https://mimmoacademy.com/api';
   }
 
   /**
@@ -60,7 +60,7 @@ class FetchInstance {
     const response = await fetch(url, {
       ...options,
       headers,
-      credentials: 'include', // ✅ CRITICAL: Include cookies (refresh token)
+      //credentials: 'include', // ✅ CRITICAL: Include cookies (refresh token)
     });
 
     console.log(`[FetchInstance] Response from ${endpoint}:`, response.status, response.statusText);

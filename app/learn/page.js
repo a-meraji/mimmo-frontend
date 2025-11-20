@@ -2,38 +2,15 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, ShoppingBag } from 'lucide-react';
+import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { ProfileCard, StatsGrid, CoursesCarousel, Achievements, LeitnerPreview } from '@/components/learn';
 import { SocialLinks } from '@/components/home';
-
-const MOCK_USER_COURSES = [
-  {
-    id: 'espresso-1',
-    learnPath: 'espresso-1',
-    title: 'اسپرسو ۱ - مکالمه روزمره',
-    subtitle: 'دروس ۱ تا ۵ | سطح A1',
-    level: 'A1',
-    image: '/es1.webp',
-  },
-  {
-    id: 'espresso-2',
-    learnPath: 'espresso-2',
-    title: 'اسپرسو ۲ - مکالمه پیشرفته',
-    subtitle: 'دروس ۶ تا ۱۰ | سطح A2',
-    level: 'A2',
-    image: '/es2.webp',
-  },
-  {
-    id: 'driving-license',
-    learnPath: 'driving-license',
-    title: 'دوره جامع گواهینامه ایتالیا',
-    subtitle: 'آزمون تئوری با تمرین تعاملی',
-    level: 'B1',
-    image: '/license0.webp',
-  },
-];
+import { getUserPayments } from '@/utils/learningApi';
+import { getUserExams } from '@/utils/examApi';
+import { getImageUrl } from '@/utils/imageUrl';
 
 export default function LearnPage() {
   const router = useRouter();
@@ -41,10 +18,11 @@ export default function LearnPage() {
   const { toast } = useToast();
 
   const [userStats, setUserStats] = useState(null);
-  const [userCourses, setUserCourses] = useState(MOCK_USER_COURSES);
+  const [userCourses, setUserCourses] = useState([]);
   const [isLoadingData, setIsLoadingData] = useState(true);
+  const [hasError, setHasError] = useState(false);
 
-  // Fetch user stats and courses
+  // Fetch user payments and exams to build dashboard
   useEffect(() => {
     const fetchUserData = async () => {
       if (!isAuthenticated || !user) {
@@ -54,40 +32,96 @@ export default function LearnPage() {
 
       try {
         setIsLoadingData(true);
+        setHasError(false);
 
-        // Fetch user stats and courses in parallel
-        const [statsResponse, coursesResponse] = await Promise.allSettled([
-          authenticatedFetch('/user/stats', { method: 'GET' }).catch(() => null),
-          authenticatedFetch('/user/courses', { method: 'GET' }).catch(() => null),
-        ]);
+        // Fetch payments to get purchased packages
+        const paymentsResult = await getUserPayments(authenticatedFetch);
+        
+        // Fetch exams for statistics
+        const examsResult = await getUserExams(authenticatedFetch);
 
-        // Set stats if available
-        if (statsResponse.status === 'fulfilled' && statsResponse.value) {
-          setUserStats(statsResponse.value);
-        }
+        if (paymentsResult.success && paymentsResult.data) {
+          // Extract packages from completed and partial payments
+          const packages = [];
+          const validStatuses = ['COMPLETED', 'PARTIAL_PAYMENT'];
+          
+          paymentsResult.data.forEach(payment => {
+            if (validStatuses.includes(payment.status) && payment.packages) {
+              payment.packages.forEach(pkg => {
+                // Avoid duplicates
+                if (!packages.find(p => p.id === pkg.id)) {
+                  packages.push({
+                    id: pkg.id,
+                    learnPath: pkg.id, // Use UUID as path
+                    title: pkg.packageName,
+                    subtitle: pkg.subtitle || '',
+                    level: pkg.level || '',
+                    image: getImageUrl(pkg.imageUrl),
+                    paymentStatus: payment.status,
+                    paymentMethod: payment.paymentMethod
+                  });
+                }
+              });
+            }
+          });
 
-        // Set courses if available
-        if (coursesResponse.status === 'fulfilled' && coursesResponse.value) {
-          const extractedCourses = coursesResponse.value.courses || coursesResponse.value || [];
-
-          const normalisedCourses = Array.isArray(extractedCourses)
-            ? extractedCourses.map((course) => ({
-                id: course.id || course.slug || course.courseId || course.learnPath,
-                learnPath: course.learnPath || course.slug || course.id || course.courseId,
-                title: course.title || course.name,
-                subtitle: course.subtitle || course.description || '',
-                level: course.level || course.courseLevel || '',
-                image: course.image || course.coverImage || '/es1.webp',
-              }))
-            : [];
-
-          setUserCourses(normalisedCourses.length ? normalisedCourses : MOCK_USER_COURSES);
+          setUserCourses(packages);
         } else {
-          setUserCourses(MOCK_USER_COURSES);
+          console.error('Failed to fetch payments:', paymentsResult.error);
+          setHasError(true);
         }
+
+        // Calculate stats from exams
+        if (examsResult.success && examsResult.data) {
+          const exams = examsResult.data;
+          const completedExams = exams.filter(e => e.status === 'completed');
+          
+          // Calculate streak (consecutive days with completed exams)
+          const calculateStreak = (exams) => {
+            if (exams.length === 0) return 0;
+            
+            const dates = exams
+              .filter(e => e.completedAt)
+              .map(e => new Date(e.completedAt).toDateString())
+              .sort((a, b) => new Date(b) - new Date(a));
+            
+            if (dates.length === 0) return 0;
+            
+            let streak = 1;
+            const today = new Date().toDateString();
+            
+            if (dates[0] !== today && 
+                new Date(dates[0]).getTime() !== new Date(today).getTime() - 86400000) {
+              return 0; // Streak broken
+            }
+            
+            for (let i = 1; i < dates.length; i++) {
+              const diff = new Date(dates[i-1]).getTime() - new Date(dates[i]).getTime();
+              if (diff === 86400000) { // 1 day
+                streak++;
+              } else {
+                break;
+              }
+            }
+            
+            return streak;
+          };
+
+          // Calculate practice minutes (assuming 1 minute per question)
+          const totalQuestions = completedExams.reduce((sum, exam) => sum + (exam.totalQuestions || 0), 0);
+          
+          setUserStats({
+            totalExams: exams.length,
+            completedExams: completedExams.length,
+            streakDays: calculateStreak(completedExams),
+            practiceMinutes: totalQuestions, // Approximate
+            totalPackages: userCourses.length
+          });
+        }
+
       } catch (error) {
         console.error('Error fetching user data:', error);
-        // Don't show error toast, just use default values
+        setHasError(true);
       } finally {
         setIsLoadingData(false);
       }
@@ -173,6 +207,38 @@ export default function LearnPage() {
           {isLoadingData ? (
             <div className="flex items-center justify-center py-12">
               <RefreshCw className="w-8 h-8 text-primary animate-spin" aria-hidden="true" />
+            </div>
+          ) : hasError ? (
+            <div className="max-w-md mx-auto text-center py-12">
+              <div className="bg-rose-50 border border-rose-200 rounded-2xl p-6 mb-4">
+                <p className="text-rose-700 mb-4">خطا در بارگذاری دوره‌ها</p>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="inline-flex items-center gap-2 bg-primary text-white px-6 py-2 rounded-xl font-semibold hover:bg-primary/90 transition-colors"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                  تلاش مجدد
+                </button>
+              </div>
+            </div>
+          ) : userCourses.length === 0 ? (
+            <div className="max-w-md mx-auto text-center py-12">
+              <div className="bg-gradient-to-br from-primary/10 to-secondary/10 border border-primary/20 rounded-2xl p-8">
+                <ShoppingBag className="w-16 h-16 text-primary mx-auto mb-4" aria-hidden="true" />
+                <h3 className="text-xl font-bold text-text-charcoal mb-2">
+                  هنوز دوره‌ای خریداری نکرده‌اید
+                </h3>
+                <p className="text-text-gray mb-6">
+                  برای شروع یادگیری، یک دوره از فروشگاه انتخاب کنید
+                </p>
+                <Link
+                  href="/store"
+                  className="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-xl font-semibold hover:bg-primary/90 transition-colors"
+                >
+                  <ShoppingBag className="w-5 h-5" />
+                  مشاهده فروشگاه
+                </Link>
+              </div>
             </div>
           ) : (
             <CoursesCarousel courses={userCourses} />
