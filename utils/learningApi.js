@@ -13,8 +13,7 @@ import { clientAPI } from './fetchInstance';
 export async function getUserPayments(authenticatedFetch) {
   try {
     const response = await authenticatedFetch('/payment/get-user-payments', {
-      method: 'POST',
-      body: null
+      method: 'POST'
     });
     
     if (response && response.status === 200) {
@@ -30,6 +29,37 @@ export async function getUserPayments(authenticatedFetch) {
     };
   } catch (error) {
     console.error('Error fetching user payments:', error);
+    return {
+      success: false,
+      error: error?.message || 'Network error'
+    };
+  }
+}
+
+/**
+ * Get user's bought packages (requires authentication)
+ * @param {Function} authenticatedFetch - Authenticated fetch function from AuthContext
+ * @returns {Promise<Object>} Bought packages
+ */
+export async function getBoughtPackages(authenticatedFetch) {
+  try {
+    const response = await authenticatedFetch('/payment/get-bought-packages', {
+      method: 'POST'
+    });
+    
+    if (response && response.status === 200) {
+      return {
+        success: true,
+        data: response.data || []
+      };
+    }
+    
+    return {
+      success: false,
+      error: response?.message || 'Failed to fetch bought packages'
+    };
+  } catch (error) {
+    console.error('Error fetching bought packages:', error);
     return {
       success: false,
       error: error?.message || 'Network error'

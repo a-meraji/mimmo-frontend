@@ -33,7 +33,14 @@ export default function CommentsPage() {
     try {
       setLoading(true);
       const response = await commentManagement.getAll(status, page, authenticatedFetch);
-      setComments(response.data.comments || []);
+      const comments = response.data.comments || [];
+      
+      // ⚠️ Check if backend is returning incomplete data
+      if (comments.length > 0 && !comments[0].user) {
+        console.warn('[Admin Comments] Backend is not returning user and package relations. Contact backend team to fix the /admin/comment/get-all endpoint.');
+      }
+      
+      setComments(comments);
       setTotalPages(Math.ceil(response.data.total / response.data.pageSize));
     } catch (error) {
       handleApiError(error, notifyError, ENTITY_NAMES.comments);
@@ -136,7 +143,7 @@ export default function CommentsPage() {
                     <div className="flex items-center gap-3 mb-2">
                       <div className="flex items-center gap-2">
                         <span className="font-semibold text-gray-900">
-                          {comment.user.name || comment.user.email || 'کاربر نامشخص'}
+                          {comment.user?.name || comment.user?.email || 'کاربر نامشخص'}
                         </span>
                         <Badge variant={comment.status === 'APPROVED' ? 'success' : 'warning'}>
                           {comment.status === 'APPROVED' ? 'تأیید شده' : 'در انتظار'}
@@ -146,10 +153,12 @@ export default function CommentsPage() {
                         {new Date(comment.createdAt).toLocaleDateString('fa-IR')}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
-                      <Package className="w-4 h-4" />
-                      <span>{comment.package.packageName}</span>
-                    </div>
+                    {comment.package && (
+                      <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
+                        <Package className="w-4 h-4" />
+                        <span>{comment.package.packageName}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
 

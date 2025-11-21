@@ -1,59 +1,48 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Package } from "lucide-react";
 import PackageCard from "./PackageCard";
 
-export default function PackagesCarousel() {
+export default function PackagesCarousel({ packages: packagesProp = [] }) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [slidesPerView, setSlidesPerView] = useState(1); // Default to mobile view for SSR
   const scrollContainerRef = useRef(null);
 
-  // Sample packages data - same structure as store page
-  const packages = useMemo(() => [
-    {
-      id: 1,
-      title: "Full Espresso 1",
-      subtitle: "پکیج کامل سطح مقدماتی",
-      level: "A1",
-      price: 2599000,
-      originalPrice: 2799000,
-      euroPrice: 25,
-      badge: "پرفروش",
-      image: "/es1.webp",
-    },
-    {
-      id: 2,
-      title: "Full Espresso 2",
-      subtitle: "پکیج کامل سطح متوسط",
-      level: "A2",
-      price: 2599000,
-      euroPrice: 25,
-      badge: "پرفروش",
-      image: "/es2.webp",
-    },
-    {
-      id: 3,
-      title: "Full Espresso 3",
-      subtitle: "پکیج کامل سطح پیشرفته",
-      level: "A1",
-      price: 3599000,
-      originalPrice: 3799000,
-      euroPrice: 35,
-      originalEuroPrice: 39,
-      image: "/es3.webp",
-    },
-    {
-      id:4,
-      title: "Espresso 1 (درس‌های 1 تا 5)",
-      subtitle: "شروع مسیر یادگیری زبان ایتالیایی",
-      level: "A1",
-      price: 2599000,
-      originalPrice: 2799000,
-      euroPrice: 25,
-      image: "/es1.webp",
-    },
-  ], []);
+  // Transform packages from backend structure to PackageCard props
+  const packages = useMemo(() => {
+    // If no packages provided, use empty array
+    if (!packagesProp || packagesProp.length === 0) {
+      return [];
+    }
+
+    return packagesProp.map(pkg => ({
+      id: pkg.id,
+      title: pkg.packageName || pkg.title,
+      subtitle: pkg.subtitle || '',
+      level: pkg.level || '',
+      price: pkg.discountedPrice || pkg.originalPrice || pkg.price || 0,
+      originalPrice: pkg.discountedPrice ? pkg.originalPrice : null,
+      euroPrice: pkg.euroPrice || null,
+      originalEuroPrice: pkg.originalEuroPrice || null,
+      badge: pkg.badge || '',
+      image: pkg.imageUrl || pkg.image || '/es1.webp',
+    }));
+  }, [packagesProp]);
+
+  // Show empty state if no packages
+  if (packages.length === 0) {
+    return (
+      <div className="container mx-auto px-6">
+        <div className="text-center py-12 bg-white rounded-2xl border border-neutral-extralight">
+          <Package className="w-16 h-16 text-text-light mx-auto mb-4" />
+          <p className="text-text-gray text-lg">
+            محصولی برای نمایش وجود ندارد
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   // Update slides per view on mount and window resize
   useEffect(() => {

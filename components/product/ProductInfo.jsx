@@ -15,7 +15,8 @@ export default function ProductInfo({
   rating = 4.9,
   reviewCount = 1237,
   specifications = [],
-  onAddToCart 
+  onAddToCart,
+  commentsCount
 }) {
   const { addToCart } = useCart();
   const discount = originalPrice ? Math.round(((originalPrice - price) / originalPrice) * 100) : null;
@@ -69,7 +70,7 @@ export default function ProductInfo({
           <Star className="w-5 h-5 text-secondary fill-secondary" aria-hidden="true" />
           <span className="text-lg font-bold text-text-charcoal">{rating}</span>
         </div>
-        <span className="text-xs text-text-light">({reviewCount.toLocaleString('fa-IR')} نظر)</span>
+        <span className="text-xs text-text-light">({commentsCount?commentsCount.toLocaleString('fa-IR'):reviewCount.toLocaleString('fa-IR')} دیدگاه)</span>
       </div>
 
       {/* Price & Add to Cart */}

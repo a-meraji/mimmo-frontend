@@ -57,10 +57,19 @@ class FetchInstance {
       headers['Content-Type'] = 'application/json';
     }
 
+    // ✅ FIX: Remove body property for GET/HEAD requests
+    // Browser throws error if body is present (even if null) for GET/HEAD
+    const method = options.method?.toUpperCase() || 'GET';
+    const fetchOptions = { ...options };
+    
+    if (method === 'GET' || method === 'HEAD') {
+      delete fetchOptions.body;
+    }
+
     const response = await fetch(url, {
-      ...options,
+      ...fetchOptions,
       headers,
-      //credentials: 'include', // ✅ CRITICAL: Include cookies (refresh token)
+      credentials: 'include', // ✅ CRITICAL: Include cookies (refresh token)
     });
 
     console.log(`[FetchInstance] Response from ${endpoint}:`, response.status, response.statusText);

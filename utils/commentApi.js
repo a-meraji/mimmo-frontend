@@ -34,7 +34,7 @@ export async function createComment(packageId, content, accessToken) {
  * @param {number} page - Page number (0-based)
  * @returns {Promise<Object>} Response with comments array
  */
-export async function getCommentsByPackageId(packageId, page = 0) {
+export async function getCommentsByPackageId(packageId, page = 1) {
   try {
     return await clientAPI.post('/comment/get-comments-by-package-id', {
       packageId,

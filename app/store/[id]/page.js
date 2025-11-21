@@ -3,7 +3,7 @@ import ProductDetailClient from "@/components/product/ProductDetailClient";
 import CourseChapters from "@/components/product/CourseChapters";
 import ProductTestimonials from "@/components/product/ProductTestimonials";
 import { PackageConteiner } from "@/components/home";
-import { getAllPackagesPages, getCompletePackageStructure } from "@/utils/serverApi";
+import { getAllPackagesPages, getCompletePackageStructure, getCommentsByPackageIdServer } from "@/utils/serverApi";
 import { notFound } from "next/navigation";
 
 // ISR: Revalidate every 1 hour (3600 seconds)
@@ -58,14 +58,28 @@ function transformChaptersToSeasons(chapters) {
 }
 
 export default async function ProductPage({ params }) {
-  const { id } = params;
+  const { id } = await params;
   
-  // Fetch complete package structure
-  const packageData = await getCompletePackageStructure(id);
+  // Fetch all data in parallel for better performance
+  const [packageResult, commentsResult, packagesResult] = await Promise.allSettled([
+    getCompletePackageStructure(id),
+    getCommentsByPackageIdServer(id, 1),
+    getAllPackagesPages()
+  ]);
   
-  if (!packageData) {
+  // Handle package not found
+  if (packageResult.status === 'rejected' || !packageResult.value) {
     notFound();
   }
+  
+  const packageData = packageResult.value;
+  const initialComments = commentsResult.status === 'fulfilled' ? commentsResult.value : [];
+  const allPackages = packagesResult.status === 'fulfilled' ? packagesResult.value : [];
+  
+  // Filter out current package and limit to 6 other packages
+  const otherPackages = allPackages
+    .filter(p => p.id !== id)
+    .slice(0, 6);
 
   // Transform data to match component props
   const product = {
@@ -94,9 +108,9 @@ export default async function ProductPage({ params }) {
             title={product.title}
             description={product.description}
           />
-          <ProductDetailClient product={product} />
+          <ProductDetailClient product={product} commentsCount={initialComments.length} />
           <CourseChapters seasons={product.seasons} />
-          <ProductTestimonials packageId={id} />
+          <ProductTestimonials packageId={id} initialComments={initialComments} />
         </div>
 
         {/* Desktop Layout: Grid */}
@@ -109,18 +123,18 @@ export default async function ProductPage({ params }) {
               description={product.description}
             />
             <CourseChapters seasons={product.seasons} />
-            <ProductTestimonials packageId={id} />
+            <ProductTestimonials packageId={id} initialComments={initialComments} />
           </div>
 
           {/* Right Column: Info & Comment */}
           <div className="col-span-5">
-            <ProductDetailClient product={product} />
+            <ProductDetailClient product={product} commentsCount={initialComments.length} />
           </div>
         </div>
       </div>
 
       {/* Popular products */}
-      <PackageConteiner title="دیگر محصولات محبوب میمو" />
+      <PackageConteiner title="دیگر محصولات محبوب میمو" packages={otherPackages} />
     </div>
   );
 }

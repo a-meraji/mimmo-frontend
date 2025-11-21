@@ -152,3 +152,23 @@ export async function getCompletePackageStructure(packageId) {
   }
 }
 
+/**
+ * Fetch approved comments for a package (server-side)
+ * @param {string} packageId - Package ID (UUID)
+ * @param {number} page - Page number (1-based)
+ * @returns {Promise<Array>} Array of approved comments
+ */
+export async function getCommentsByPackageIdServer(packageId, page = 1) {
+  try {
+    const response = await serverAPI.post('/comment/get-comments-by-package-id', {
+      packageId,
+      page
+    });
+    return response?.data?.comments || [];
+  } catch (error) {
+    console.error(`Error fetching comments for package ${packageId}:`, error);
+    // Return empty array on error for graceful degradation
+    return [];
+  }
+}
+

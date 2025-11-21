@@ -6,8 +6,8 @@ import { clientAPI } from '../utils/fetchInstance';
 
 const AuthContext = createContext(undefined);
 
-// Auto-refresh token every 14 minutes (access token expires in 15 min)
-const REFRESH_INTERVAL = 14 * 60 * 1000;
+// Auto-refresh token every 13 minutes (access token expires in 15 min)
+const REFRESH_INTERVAL = 13 * 60 * 1000;
 
 // Decode JWT to get payload
 const decodeToken = (token) => {

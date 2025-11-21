@@ -70,12 +70,6 @@ const TestimonialCard = ({ comment }) => {
           </div>
         </div>
 
-        {/* Status Badge */}
-        {comment.status === 'APPROVED' && (
-          <span className="text-xs bg-green-500/10 text-green-700 px-2 py-1 rounded-full">
-            تایید شده
-          </span>
-        )}
       </div>
     </article>
   );
@@ -83,7 +77,7 @@ const TestimonialCard = ({ comment }) => {
 
 export default function ProductTestimonials({ packageId, initialComments = [] }) {
   const [comments, setComments] = useState(initialComments);
-  const [currentPage, setCurrentPage] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [showAll, setShowAll] = useState(false);
@@ -95,7 +89,7 @@ export default function ProductTestimonials({ packageId, initialComments = [] })
     const fetchComments = async () => {
       setIsLoading(true);
       try {
-        const response = await getCommentsByPackageId(packageId, 0);
+        const response = await getCommentsByPackageId(packageId, 1);
         
         if (response?.status === 200 && response?.data?.comments) {
           setComments(response.data.comments);
@@ -118,7 +112,7 @@ export default function ProductTestimonials({ packageId, initialComments = [] })
     if (!packageId || isLoading || !hasMore) return;
 
     setIsLoading(true);
-    try {
+    try {currentPage
       const nextPage = currentPage + 1;
       const response = await getCommentsByPackageId(packageId, nextPage);
       

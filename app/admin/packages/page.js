@@ -14,6 +14,7 @@ import ConfirmDialog from '@/components/admin/ui/ConfirmDialog';
 import PackageForm from '@/components/admin/packages/PackageForm';
 import { Plus, Edit, Trash2, ChevronLeft, Package as PackageIcon } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function PackagesPage() {
   const { authenticatedFetch } = useAuth();
@@ -139,14 +140,17 @@ export default function PackagesPage() {
             >
               {/* Image */}
               <div className="relative h-48 bg-gray-100">
-                <img
+                <Image
                   src={getImageUrl(pkg.imageUrl)}
                   alt={pkg.packageName}
-                  className="w-full h-full object-cover"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  quality={75}
                 />
                 {pkg.badge && (
                   <span className="absolute top-3 right-3 px-3 py-1 bg-primary text-white
-                                 text-xs font-medium rounded-full">
+                                 text-xs font-medium rounded-full z-10">
                     {pkg.badge}
                   </span>
                 )}

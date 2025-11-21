@@ -5,7 +5,7 @@ import ProductInfo from "./ProductInfo";
 import CommentForm from "./CommentForm";
 import StickyProductInfo from "./StickyProductInfo";
 
-export default function ProductDetailClient({ product }) {
+export default function ProductDetailClient({ product, commentsCount }) {
   const commentFormRef = useRef(null);
   const [showStickyInfo, setShowStickyInfo] = useState(false);
 
@@ -64,6 +64,7 @@ export default function ProductDetailClient({ product }) {
           reviewCount={product.reviewCount}
           specifications={product.specifications}
           onAddToCart={handleAddToCart}
+          commentsCount={commentsCount}
         />
         <CommentForm packageId={product.id} onCommentCreated={handleCommentCreated} />
       </div>
@@ -84,6 +85,7 @@ export default function ProductDetailClient({ product }) {
             reviewCount={product.reviewCount}
             specifications={product.specifications}
             onAddToCart={handleAddToCart}
+            commentsCount={commentsCount}
           />
           <div ref={commentFormRef}>
             <CommentForm packageId={product.id} onCommentCreated={handleCommentCreated} />
@@ -104,6 +106,7 @@ export default function ProductDetailClient({ product }) {
           reviewCount={product.reviewCount}
           onAddToCart={handleAddToCart}
           isVisible={showStickyInfo}
+          commentsCount={commentsCount}
         />
       </div>
     </>

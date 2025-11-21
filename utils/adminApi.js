@@ -16,7 +16,7 @@ export const userManagement = {
    */
   getAllUsers: async (page, authenticatedFetch) => {
     return authenticatedFetch('/admin/user/users', {
-      method: 'GET',
+      method: 'POST',
       body: JSON.stringify({ page }),
     });
   },
@@ -357,7 +357,7 @@ export const paymentManagement = {
   getAllPayments: async (authenticatedFetch) => {
     return authenticatedFetch('/admin/payments/get-all-payments', {
       method: 'POST',
-      body: JSON.stringify({}),
+      body: JSON.stringify({ page: 1 }),
     });
   },
 

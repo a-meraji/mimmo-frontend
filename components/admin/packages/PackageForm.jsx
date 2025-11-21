@@ -6,6 +6,21 @@ import Input from '../forms/Input';
 import TextArea from '../forms/TextArea';
 import Checkbox from '../forms/Checkbox';
 import ImageUpload from '../forms/ImageUpload';
+import Image from 'next/image';
+import { getImageUrl } from '@/utils/imageUrl';
+
+// Predefined constants
+const PREDEFINED_LEVELS = ['A1', 'A2', 'B1'];
+const PREDEFINED_BADGES = ['پرفروش', 'محبوب', 'جدید'];
+const PREDEFINED_CATEGORIES = [
+  { id: 'italian', label: 'زبان ایتالیایی' },
+  { id: 'license', label: 'گواهینامه رانندگی' }
+];
+const DEFAULT_SPECIFICATIONS = [
+  { icon: 'Clock', label: 'ساعت ویدیو آموزشی', value: '۲۴' },
+  { icon: 'BookOpenText', label: 'از متوسطه تا پیشرفته', value: 'سطح A1' },
+  { icon: 'NotebookText', label: 'تمرین و آزمون', value: 'دارد' }
+];
 
 export default function PackageForm({ isOpen, onClose, onSave, packageData = null, isLoading = false }) {
   const [formData, setFormData] = useState({
@@ -16,6 +31,8 @@ export default function PackageForm({ isOpen, onClose, onSave, packageData = nul
     description: '',
     originalPrice: '',
     discountedPrice: '',
+    euroPrice: '',
+    euroDiscountPrice: '',
     discountTitle: '',
     isInstallmentAvailable: false,
     installmentCount: '',
@@ -30,6 +47,12 @@ export default function PackageForm({ isOpen, onClose, onSave, packageData = nul
   const [categoryInput, setCategoryInput] = useState('');
   const [specInput, setSpecInput] = useState({ icon: '', label: '', value: '' });
   const [errors, setErrors] = useState({});
+  
+  // State for custom inputs
+  const [customLevel, setCustomLevel] = useState('');
+  const [showCustomLevel, setShowCustomLevel] = useState(false);
+  const [customBadge, setCustomBadge] = useState('');
+  const [showCustomBadge, setShowCustomBadge] = useState(false);
 
   useEffect(() => {
     if (packageData) {
@@ -41,6 +64,8 @@ export default function PackageForm({ isOpen, onClose, onSave, packageData = nul
         description: packageData.description || '',
         originalPrice: packageData.originalPrice || '',
         discountedPrice: packageData.discountedPrice || '',
+        euroPrice: packageData.euroPrice || '',
+        euroDiscountPrice: packageData.euroDiscountPrice || '',
         discountTitle: packageData.discountTitle || '',
         isInstallmentAvailable: packageData.isInstallmentAvailable || false,
         installmentCount: packageData.installmentCount || '',
@@ -49,7 +74,7 @@ export default function PackageForm({ isOpen, onClose, onSave, packageData = nul
         badge: packageData.badge || '',
         rate: packageData.rate || '',
         rateCount: packageData.rateCount || '',
-        specifications: packageData.specifications || [],
+        specifications: packageData.specifications || [...DEFAULT_SPECIFICATIONS],
       });
     } else {
       resetForm();
@@ -66,6 +91,8 @@ export default function PackageForm({ isOpen, onClose, onSave, packageData = nul
       description: '',
       originalPrice: '',
       discountedPrice: '',
+      euroPrice: '',
+      euroDiscountPrice: '',
       discountTitle: '',
       isInstallmentAvailable: false,
       installmentCount: '',
@@ -74,10 +101,14 @@ export default function PackageForm({ isOpen, onClose, onSave, packageData = nul
       badge: '',
       rate: '',
       rateCount: '',
-      specifications: [],
+      specifications: [...DEFAULT_SPECIFICATIONS],
     });
     setCategoryInput('');
     setSpecInput({ icon: '', label: '', value: '' });
+    setCustomLevel('');
+    setShowCustomLevel(false);
+    setCustomBadge('');
+    setShowCustomBadge(false);
   };
 
   const handleChange = (e) => {
@@ -91,17 +122,6 @@ export default function PackageForm({ isOpen, onClose, onSave, packageData = nul
   const handleImageChange = (url) => {
     setFormData(prev => ({ ...prev, imageUrl: url }));
   };
-
-  const addCategory = () => {
-    if (categoryInput.trim()) {
-      setFormData(prev => ({
-        ...prev,
-        category: [...prev.category, categoryInput.trim()],
-      }));
-      setCategoryInput('');
-    }
-  };
-
   const removeCategory = (index) => {
     setFormData(prev => ({
       ...prev,
@@ -110,10 +130,14 @@ export default function PackageForm({ isOpen, onClose, onSave, packageData = nul
   };
 
   const addSpecification = () => {
-    if (specInput.icon && specInput.label && specInput.value) {
+    if (specInput.label && specInput.value) {
       setFormData(prev => ({
         ...prev,
-        specifications: [...prev.specifications, { ...specInput }],
+        specifications: [...prev.specifications, { 
+          icon: 'BookOpenText',
+          label: specInput.label,
+          value: specInput.value
+        }],
       }));
       setSpecInput({ icon: '', label: '', value: '' });
     }
@@ -134,7 +158,7 @@ export default function PackageForm({ isOpen, onClose, onSave, packageData = nul
     if (!formData.level.trim()) newErrors.level = 'سطح الزامی است';
     if (!formData.description.trim()) newErrors.description = 'توضیحات الزامی است';
     if (!formData.originalPrice) newErrors.originalPrice = 'قیمت اصلی الزامی است';
-    if (!formData.discountTitle.trim()) newErrors.discountTitle = 'عنوان تخفیف الزامی است';
+    // discountTitle is now optional
     if (!formData.source.trim()) newErrors.source = 'منبع الزامی است';
     if (!formData.imageUrl.trim()) newErrors.imageUrl = 'تصویر الزامی است';
     if (!formData.badge.trim()) newErrors.badge = 'نشان الزامی است';
@@ -148,12 +172,22 @@ export default function PackageForm({ isOpen, onClose, onSave, packageData = nul
   const handleSubmit = () => {
     if (!validate()) return;
 
-    // Convert prices to numbers
+    // Ensure all specs have icon
+    const specsWithIcons = formData.specifications.map(spec => ({
+      ...spec,
+      icon: spec.icon || 'BookOpenText'
+    }));
+
+    // Convert prices to numbers and clean data
     const cleanData = {
       ...formData,
+      specifications: specsWithIcons,
       originalPrice: Number(formData.originalPrice),
       discountedPrice: formData.discountedPrice ? Number(formData.discountedPrice) : null,
-      installmentCount: formData.installmentCount ? Number(formData.installmentCount) : null,
+      euroPrice: formData.euroPrice ? Number(formData.euroPrice) : null,
+      euroDiscountPrice: formData.euroDiscountPrice ? Number(formData.euroDiscountPrice) : null,
+      discountTitle: formData.discountTitle || '',
+      installmentCount: formData.installmentCount ? Number(formData.installmentCount) : 0,
       rate: formData.rate ? Number(formData.rate) : null,
       rateCount: formData.rateCount ? Number(formData.rateCount) : null,
     };
@@ -207,28 +241,137 @@ export default function PackageForm({ isOpen, onClose, onSave, packageData = nul
             name="subtitle"
             value={formData.subtitle}
             onChange={handleChange}
+            placeholder="مثلا ۵ درس اول اسپرو۱"
             required
             error={errors.subtitle}
           />
+          
           <div className="grid grid-cols-2 gap-4">
-            <Input
-              label="سطح"
-              name="level"
-              value={formData.level}
-              onChange={handleChange}
-              placeholder="مثال: مبتدی، متوسط، پیشرفته"
-              required
-              error={errors.level}
-            />
-            <Input
-              label="نشان"
-              name="badge"
-              value={formData.badge}
-              onChange={handleChange}
-              placeholder="مثال: محبوب، جدید"
-              required
-              error={errors.badge}
-            />
+            {/* Level Field */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                سطح <span className="text-red-500">*</span>
+              </label>
+              {!showCustomLevel ? (
+                <div className="space-y-2">
+                  <select
+                    name="level"
+                    value={formData.level}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  >
+                    <option value="">انتخاب کنید</option>
+                    {PREDEFINED_LEVELS.map(level => (
+                      <option key={level} value={level}>{level}</option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => setShowCustomLevel(true)}
+                    className="text-sm text-primary hover:underline"
+                  >
+                    + افزودن سطح سفارشی
+                  </button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={customLevel}
+                    onChange={(e) => setCustomLevel(e.target.value)}
+                    placeholder="سطح سفارشی"
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (customLevel.trim()) {
+                        setFormData(prev => ({ ...prev, level: customLevel }));
+                        setCustomLevel('');
+                        setShowCustomLevel(false);
+                      }
+                    }}
+                    className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
+                  >
+                    تایید
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowCustomLevel(false);
+                      setCustomLevel('');
+                    }}
+                    className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  >
+                    لغو
+                  </button>
+                </div>
+              )}
+              {errors.level && <p className="text-sm text-red-600 mt-1">{errors.level}</p>}
+            </div>
+
+            {/* Badge Field */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                نشان <span className="text-red-500">*</span>
+              </label>
+              {!showCustomBadge ? (
+                <div className="space-y-2">
+                  <select
+                    name="badge"
+                    value={formData.badge}
+                    onChange={handleChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  >
+                    <option value="">انتخاب کنید</option>
+                    {PREDEFINED_BADGES.map(badge => (
+                      <option key={badge} value={badge}>{badge}</option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => setShowCustomBadge(true)}
+                    className="text-sm text-primary hover:underline"
+                  >
+                    + افزودن نشان سفارشی
+                  </button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={customBadge}
+                    onChange={(e) => setCustomBadge(e.target.value)}
+                    placeholder="نشان سفارشی"
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (customBadge.trim()) {
+                        setFormData(prev => ({ ...prev, badge: customBadge }));
+                        setCustomBadge('');
+                        setShowCustomBadge(false);
+                      }
+                    }}
+                    className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
+                  >
+                    تایید
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowCustomBadge(false);
+                      setCustomBadge('');
+                    }}
+                    className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  >
+                    لغو
+                  </button>
+                </div>
+              )}
+              {errors.badge && <p className="text-sm text-red-600 mt-1">{errors.badge}</p>}
+            </div>
           </div>
           <TextArea
             label="توضیحات"
@@ -244,37 +387,47 @@ export default function PackageForm({ isOpen, onClose, onSave, packageData = nul
         {/* Categories */}
         <div className="space-y-4">
           <h3 className="font-semibold text-gray-900">دسته‌بندی‌ها</h3>
-          <div className="flex gap-2">
-            <Input
-              name="categoryInput"
-              value={categoryInput}
-              onChange={(e) => setCategoryInput(e.target.value)}
-              placeholder="دسته‌بندی جدید"
-            />
-            <button
-              type="button"
-              onClick={addCategory}
-              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
+          <div>
+            <select
+              value=""
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value && !formData.category.includes(value)) {
+                  setFormData(prev => ({
+                    ...prev,
+                    category: [...prev.category, value]
+                  }));
+                }
+              }}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
             >
-              افزودن
-            </button>
+              <option value="">انتخاب دسته‌بندی</option>
+              {PREDEFINED_CATEGORIES.map(cat => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.label}
+                </option>
+              ))}
+            </select>
           </div>
           <div className="flex flex-wrap gap-2">
-            {formData.category.map((cat, index) => (
-              <span
-                key={index}
-                className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm flex items-center gap-2"
-              >
-                {cat}
-                <button
-                  type="button"
-                  onClick={() => removeCategory(index)}
-                  className="text-red-500 hover:text-red-700"
+            {formData.category.map((catId, index) => {
+              const catData = PREDEFINED_CATEGORIES.find(c => c.id === catId);
+              return (
+                <span
+                  key={index}
+                  className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm flex items-center gap-2"
                 >
-                  ×
-                </button>
-              </span>
-            ))}
+                  {catData?.label || catId}
+                  <button
+                    type="button"
+                    onClick={() => removeCategory(index)}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    ×
+                  </button>
+                </span>
+              );
+            })}
           </div>
           {errors.category && <p className="text-sm text-red-600">{errors.category}</p>}
         </div>
@@ -284,7 +437,7 @@ export default function PackageForm({ isOpen, onClose, onSave, packageData = nul
           <h3 className="font-semibold text-gray-900">قیمت‌گذاری</h3>
           <div className="grid grid-cols-2 gap-4">
             <Input
-              label="قیمت اصلی"
+              label="قیمت اصلی (تومان)"
               name="originalPrice"
               type="number"
               value={formData.originalPrice}
@@ -293,11 +446,30 @@ export default function PackageForm({ isOpen, onClose, onSave, packageData = nul
               error={errors.originalPrice}
             />
             <Input
-              label="قیمت تخفیف‌خورده"
+              label="قیمت تخفیف‌خورده (تومان)"
               name="discountedPrice"
               type="number"
               value={formData.discountedPrice}
               onChange={handleChange}
+              placeholder="اختیاری"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+              label="قیمت یورو"
+              name="euroPrice"
+              type="number"
+              value={formData.euroPrice}
+              onChange={handleChange}
+              placeholder="اختیاری"
+            />
+            <Input
+              label="قیمت یورو با تخفیف"
+              name="euroDiscountPrice"
+              type="number"
+              value={formData.euroDiscountPrice}
+              onChange={handleChange}
+              placeholder="اختیاری"
             />
           </div>
           <Input
@@ -305,9 +477,7 @@ export default function PackageForm({ isOpen, onClose, onSave, packageData = nul
             name="discountTitle"
             value={formData.discountTitle}
             onChange={handleChange}
-            placeholder="مثال: تخفیف ویژه"
-            required
-            error={errors.discountTitle}
+            placeholder="اختیاری - مثال: 10% تخفیف ویژه"
           />
           <Checkbox
             label="امکان خرید اقساطی"
@@ -334,6 +504,7 @@ export default function PackageForm({ isOpen, onClose, onSave, packageData = nul
             name="source"
             value={formData.source}
             onChange={handleChange}
+            placeholder="لینک پکیج در نرم افزار دیگر و یا اشاره به بخش های کتاب اسپرسو"
             required
             error={errors.source}
           />
@@ -354,66 +525,99 @@ export default function PackageForm({ isOpen, onClose, onSave, packageData = nul
               onChange={handleChange}
             />
           </div>
-          <ImageUpload
-            label="تصویر پکیج"
-            value={formData.imageUrl}
-            onChange={handleImageChange}
-            required
-            error={errors.imageUrl}
-          />
+          <div>
+            <ImageUpload
+              label="تصویر پکیج"
+              value={formData.imageUrl}
+              onChange={handleImageChange}
+              required
+              error={errors.imageUrl}
+            />
+            {formData.imageUrl && (
+              <div className="mt-3">
+                <p className="text-sm text-gray-600 mb-2">پیش‌نمایش:</p>
+                <div className="relative w-full h-48 rounded-lg border border-gray-200 overflow-hidden">
+                  <Image
+                    src={getImageUrl(formData.imageUrl)}
+                    alt="پیش‌نمایش"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    quality={75}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Specifications */}
         <div className="space-y-4">
           <h3 className="font-semibold text-gray-900">مشخصات</h3>
-          <div className="grid grid-cols-3 gap-2">
-            <Input
-              name="specIcon"
-              value={specInput.icon}
-              onChange={(e) => setSpecInput(prev => ({ ...prev, icon: e.target.value }))}
-              placeholder="آیکون"
-            />
-            <Input
-              name="specLabel"
-              value={specInput.label}
-              onChange={(e) => setSpecInput(prev => ({ ...prev, label: e.target.value }))}
-              placeholder="عنوان"
-            />
-            <Input
-              name="specValue"
-              value={specInput.value}
-              onChange={(e) => setSpecInput(prev => ({ ...prev, value: e.target.value }))}
-              placeholder="مقدار"
-            />
-          </div>
-          <button
-            type="button"
-            onClick={addSpecification}
-            className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
-          >
-            افزودن مشخصه
-          </button>
-          <div className="space-y-2">
-            {formData.specifications.map((spec, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="text-gray-700">{spec.icon}</span>
-                  <span className="font-medium">{spec.label}:</span>
-                  <span className="text-gray-600">{spec.value}</span>
+          
+          {/* Existing specifications with edit capability */}
+          {formData.specifications.length > 0 && (
+            <div dir="rtl" className="space-y-2">
+              {formData.specifications.map((spec, index) => (
+                <div key={index} className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+                  <input
+                    value={spec.label}
+                    onChange={(e) => {
+                      const updated = [...formData.specifications];
+                      updated[index].label = e.target.value;
+                      setFormData(prev => ({ ...prev, specifications: updated }));
+                    }}
+                    className="flex-1 px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-primary focus:border-transparent"
+                    placeholder="عنوان"
+                  />
+                  <input
+                    value={spec.value}
+                    onChange={(e) => {
+                      const updated = [...formData.specifications];
+                      updated[index].value = e.target.value;
+                      setFormData(prev => ({ ...prev, specifications: updated }));
+                    }}
+                    className="flex-1 px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-primary focus:border-transparent"
+                    placeholder="مقدار"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeSpecification(index)}
+                    className="text-red-500 hover:text-red-700 px-3 py-1 rounded hover:bg-red-50"
+                  >
+                    حذف
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => removeSpecification(index)}
-                  className="text-red-500 hover:text-red-700"
-                >
-                  حذف
-                </button>
-              </div>
-            ))}
+              ))}
+            </div>
+          )}
+
+          {/* Add new specification */}
+          <div>
+            <p className="text-sm text-gray-600 mb-2">افزودن مشخصه جدید:</p>
+            <div className="grid grid-cols-2 gap-2">
+              <input
+                value={specInput.label}
+                onChange={(e) => setSpecInput(prev => ({ ...prev, label: e.target.value }))}
+                placeholder="عنوان مشخصه جدید"
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+              />
+              <input
+                value={specInput.value}
+                onChange={(e) => setSpecInput(prev => ({ ...prev, value: e.target.value }))}
+                placeholder="مقدار"
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={addSpecification}
+              className="mt-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 text-sm"
+            >
+              + افزودن مشخصه
+            </button>
           </div>
+          
           {errors.specifications && <p className="text-sm text-red-600">{errors.specifications}</p>}
         </div>
       </div>

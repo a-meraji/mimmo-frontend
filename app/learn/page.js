@@ -8,7 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { ProfileCard, StatsGrid, CoursesCarousel, Achievements, LeitnerPreview } from '@/components/learn';
 import { SocialLinks } from '@/components/home';
-import { getUserPayments } from '@/utils/learningApi';
+import { getBoughtPackages } from '@/utils/learningApi';
 import { getUserExams } from '@/utils/examApi';
 import { getImageUrl } from '@/utils/imageUrl';
 
@@ -34,40 +34,30 @@ export default function LearnPage() {
         setIsLoadingData(true);
         setHasError(false);
 
-        // Fetch payments to get purchased packages
-        const paymentsResult = await getUserPayments(authenticatedFetch);
-        
         // Fetch exams for statistics
         const examsResult = await getUserExams(authenticatedFetch);
 
-        if (paymentsResult.success && paymentsResult.data) {
-          // Extract packages from completed and partial payments
-          const packages = [];
-          const validStatuses = ['COMPLETED', 'PARTIAL_PAYMENT'];
-          
-          paymentsResult.data.forEach(payment => {
-            if (validStatuses.includes(payment.status) && payment.packages) {
-              payment.packages.forEach(pkg => {
-                // Avoid duplicates
-                if (!packages.find(p => p.id === pkg.id)) {
-                  packages.push({
-                    id: pkg.id,
-                    learnPath: pkg.id, // Use UUID as path
-                    title: pkg.packageName,
-                    subtitle: pkg.subtitle || '',
-                    level: pkg.level || '',
-                    image: getImageUrl(pkg.imageUrl),
-                    paymentStatus: payment.status,
-                    paymentMethod: payment.paymentMethod
-                  });
-                }
-              });
-            }
-          });
+        // Fetch bought packages directly
+        const packagesResult = await getBoughtPackages(authenticatedFetch);
+        
+        if (packagesResult.success && packagesResult.data) {
+          // Map packages to course format
+          const packages = packagesResult.data.map(pkg => ({
+            id: pkg.id,
+            learnPath: pkg.id, // Use UUID as path
+            title: pkg.packageName,
+            subtitle: pkg.subtitle || '',
+            level: pkg.level || '',
+            image: getImageUrl(pkg.imageUrl),
+            badge: pkg.badge || '',
+            category: pkg.category || [],
+            rate: pkg.rate || null,
+            rateCount: pkg.rateCount || null
+          }));
 
           setUserCourses(packages);
         } else {
-          console.error('Failed to fetch payments:', paymentsResult.error);
+          console.error('Failed to fetch bought packages:', packagesResult.error);
           setHasError(true);
         }
 

@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Upload, X, Loader2, Image as ImageIcon, Images, ChevronLeft, ChevronRight, Check } from 'lucide-react';
+import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNotification } from '@/contexts/NotificationContext';
 import { handleApiError, getSuccessMessage, ENTITY_NAMES } from '@/utils/errorHandler';
@@ -123,16 +124,21 @@ export default function ImageUpload({
         {/* Preview or tabs */}
         {preview ? (
           <div className="relative inline-block">
-            <img
-              src={getImageUrl(preview)}
-              alt="Preview"
-              className="w-32 h-32 object-cover rounded-lg border border-gray-300"
-            />
+            <div className="relative w-32 h-32 rounded-lg border border-gray-300 overflow-hidden">
+              <Image
+                src={getImageUrl(preview)}
+                alt="Preview"
+                fill
+                className="object-cover"
+                sizes="128px"
+                quality={75}
+              />
+            </div>
             <button
               type="button"
               onClick={handleRemove}
               className="absolute -top-2 -left-2 p-1 bg-red-500 text-white rounded-full
-                       hover:bg-red-600 transition-colors shadow-lg"
+                       hover:bg-red-600 transition-colors shadow-lg z-10"
               aria-label="حذف تصویر"
             >
               <X className="w-4 h-4" />
@@ -229,13 +235,16 @@ export default function ImageUpload({
                           className="relative aspect-square rounded-lg overflow-hidden border-2 border-gray-200
                                    hover:border-primary transition-colors group"
                         >
-                          <img
+                          <Image
                             src={getImageUrl(`/images/${image.filename}`)}
                             alt="Gallery"
-                            className="w-full h-full object-cover"
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 768px) 25vw, 150px"
+                            quality={60}
                           />
                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors
-                                        flex items-center justify-center">
+                                        flex items-center justify-center z-10">
                             <Check className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                           </div>
                         </button>

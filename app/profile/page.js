@@ -288,9 +288,6 @@ export default function ProfilePage() {
                     disabled:bg-neutral-lighter disabled:cursor-not-allowed
                     dir-ltr text-left"
                 />
-                {user?.isEmailVerified && (
-                  <p className="text-xs text-text-gray mt-1">ایمیل تایید شده قابل تغییر نیست</p>
-                )}
               </div>
 
               {/* Telegram ID */}

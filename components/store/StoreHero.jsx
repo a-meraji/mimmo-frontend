@@ -1,7 +1,5 @@
 "use client";
 
-import { ShoppingBag, Sparkles } from "lucide-react";
-
 export default function StoreHero() {
   return (
     <section className="relative w-full pb-6 lg:pb-12 pt-12 lg:pt-28 bg-gradient-to-b from-neutral-indigo via-white to-transparent">

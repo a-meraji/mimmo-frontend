@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowRight, BookOpenCheck, Clock3, Flame, RefreshCw } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { getUserPayments } from "@/utils/learningApi";
+import { getBoughtPackages } from "@/utils/learningApi";
 import { getProgressTracker } from "@/utils/examApi";
 import { PackageHierarchy } from "@/components/learn";
 import { getImageUrl } from "@/utils/imageUrl";
@@ -32,29 +32,17 @@ export default function LearnCoursePage({ params }) {
         setLoading(true);
         setError(null);
 
-        // Fetch user payments to get package details
-        const paymentsResult = await getUserPayments(authenticatedFetch);
+        // Fetch bought packages directly
+        const packagesResult = await getBoughtPackages(authenticatedFetch);
         
-        if (!paymentsResult.success) {
+        if (!packagesResult.success) {
           setError('خطا در بارگذاری اطلاعات دوره');
           setLoading(false);
           return;
         }
 
-        // Find the package in payments
-        let foundPackage = null;
-        paymentsResult.data.forEach(payment => {
-          if (payment.packages) {
-            const pkg = payment.packages.find(p => p.id === id);
-            if (pkg) {
-              foundPackage = {
-                ...pkg,
-                paymentStatus: payment.status,
-                paymentMethod: payment.paymentMethod
-              };
-            }
-          }
-        });
+        // Find the specific package by ID
+        const foundPackage = packagesResult.data.find(pkg => pkg.id === id);
 
         if (!foundPackage) {
           setError('دوره یافت نشد یا دسترسی ندارید');
@@ -164,18 +152,18 @@ export default function LearnCoursePage({ params }) {
               <div className="grid sm:grid-cols-3 gap-4 pt-4">
                 <StatBadge
                   icon={BookOpenCheck}
-                  title="وضعیت پرداخت"
-                  value={packageData.paymentStatus === 'COMPLETED' ? 'تکمیل شده' : 'در حال پرداخت'}
+                  title="تعداد دروس"
+                  value={packageData.specifications?.find(s => s.label.includes('درس'))?.value || 'نامشخص'}
                 />
                 <StatBadge
                   icon={Clock3}
-                  title="نوع پرداخت"
-                  value={packageData.paymentMethod === 'FULL_PAYMENT' ? 'پرداخت کامل' : 'اقساطی'}
+                  title="مدت زمان"
+                  value={packageData.specifications?.find(s => s.label.includes('ساعت'))?.value || 'نامشخص'}
                 />
                 <StatBadge
                   icon={Flame}
-                  title="دسترسی"
-                  value={packageData.paymentStatus === 'COMPLETED' ? 'کامل' : 'محدود'}
+                  title="سطح"
+                  value={packageData.level || 'نامشخص'}
                 />
               </div>
             </div>

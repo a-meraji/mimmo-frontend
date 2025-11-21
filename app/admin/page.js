@@ -64,7 +64,7 @@ export default function AdminDashboard() {
 
       // Fetch packages data
       const packagesResponse = await getAllPackages();
-      const totalPackages = packagesResponse.data?.length || 0;
+      const totalPackages = packagesResponse.data?.total || 0;
 
       // Fetch pending comments
       const commentsResponse = await commentManagement.getAll('PENDING', 1, authenticatedFetch);
